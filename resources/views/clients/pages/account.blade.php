@@ -57,13 +57,30 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
+                                                        @foreach ($orders as $order)
                                                         <tr>
-                                                            <td>1</td>
-                                                            <td>Jun 22, 2019</td>
-                                                            <td>Pending</td>
-                                                            <td>$3000</td>
-                                                            <td><a href="{{ route('cart.index') }}">View</a></td>
+                                                            <td>#{{$order->id}}</td>
+                                                            <td>{{$order->created_at->format('d/m/Y')}}</td>
+                                                            <td>
+                                                                @if ($order->status == 'pending')
+                                                                <span class="badge bg-warning">Chờ xác nhận</span>
+                                                                @elseif($order->status == 'processing')
+                                                                <span class="badge bg-primary">Đang xử lý</span>
+
+                                                                @elseif($order->status == 'completed')
+                                                                <span class="badge bg-success">Hoàn thành</span>
+
+                                                                @elseif($order->status == 'canceled')
+                                                                <span class="badge bg-danger">Đã hủy</span>
+
+
+                                                                @endif
+                                                            </td>
+                                                            <td>{{number_format($order->total_price, 0, ',', '.')}} đ</td>
+                                                            <td><a href="{{ route('order.show', $order->id) }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                                            </td>
                                                         </tr>
+                                                        @endforeach
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -86,34 +103,39 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                      @foreach ($addresses as $address)
-                                                            <tr>
+                                                        @foreach ($addresses as $address)
+                                                        <tr>
                                                             <td>{{ $address->full_name}}</td>
                                                             <td>{{ $address->address}}</td>
                                                             <td>{{ $address->city}}</td>
                                                             <td>{{ $address->phone}}</td>
                                                             <td>
                                                                 @if ($address->default)
-                                                                    <span class="badge bg-success">Mặc định</span>
+                                                                <span class="badge bg-success">Mặc định</span>
                                                                 @else
-                                                                    <form action="{{route('account.addresses.update', $address->id )}}" method="POST" class="d-inline">
-                                                                        @csrf
-                                                                        @method('PUT')
-                                                                        <button class="btn btn-effect-1 btn-warning">Chọn</button>
-                                                                    </form>
+                                                                <form
+                                                                    action="{{route('account.addresses.update', $address->id )}}"
+                                                                    method="POST" class="d-inline">
+                                                                    @csrf
+                                                                    @method('PUT')
+                                                                    <button
+                                                                        class="btn btn-effect-1 btn-warning">Chọn</button>
+                                                                </form>
                                                                 @endif
                                                             </td>
                                                             <td>
-                                                                  <form action="{{route('account.addresses.delete', $address->id)}}" method="POST" class="d-inline">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                      <button type="submit" class="btn btn-sm btn-danger"
-                                                                    onclick="return confirm('Bạn có chắc muốn xóa')">Xóa</button>
-                                                                    </form>
-                                                               
+                                                                <form
+                                                                    action="{{route('account.addresses.delete', $address->id)}}"
+                                                                    method="POST" class="d-inline">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="btn btn-sm btn-danger"
+                                                                        onclick="return confirm('Bạn có chắc muốn xóa')">Xóa</button>
+                                                                </form>
+
                                                             </td>
                                                         </tr>
-                                                      @endforeach
+                                                        @endforeach
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -135,7 +157,8 @@
                                                         aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    <form action="{{route('account.addresses.add')}}" method="POST" id="addAddressForm">
+                                                    <form action="{{route('account.addresses.add')}}" method="POST"
+                                                        id="addAddressForm">
                                                         @csrf
                                                         <div class="mb-3">
                                                             <label for="full_name" class="form-label">Tên người
@@ -165,7 +188,9 @@
                                                             <label for="default" class="form-label">Đặt làm địa chỉ mặt
                                                                 định</label>
                                                         </div>
-                                                        <button type="submit" class="btn theme-btn-1 btn-effect-1 mt-3">lưu địa chỉ</button>
+                                                        <button type="submit"
+                                                            class="btn theme-btn-1 btn-effect-1 mt-3">lưu địa
+                                                            chỉ</button>
                                                     </form>
                                                 </div>
                                             </div>
