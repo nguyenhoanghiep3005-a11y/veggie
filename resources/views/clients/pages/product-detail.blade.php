@@ -25,27 +25,22 @@
                                         @endforeach
                                     </div>
                                 </div>
-
                                 <div class="ltn__shop-details-small-img slick-arrow-2">
                                     @foreach ($product->images as $image)
                                     <div class="single-small-img">
-                                        <img src="{{asset('storage/' . $image->image)}}" alt="{{$product->name}}">
+                                        <img src="{{asset('storage/'. $image->image)}}" alt="{{$product->name}}">
                                     </div>
                                     @endforeach
                                 </div>
                             </div>
                         </div>
-
                         {{-- THÔNG TIN --}}
                         <div class="col-md-6">
                             <div class="modal-product-info shop-details-info pl-0">
-
                                 <h3>{{$product->name}}</h3>
-
                                 <div class="product-price">
                                     <span>{{number_format($product->price,0, ',', '.')}} VNĐ</span>
                                 </div>
-
                                 <div class="ltn__product-details-menu-2">
                                     <ul>
                                         <li>
@@ -54,7 +49,6 @@
                                                     data-max="{{$product->stock}}">
                                             </div>
                                         </li>
-
                                         <li>
                                             <a href="#" class="theme-btn-1 btn btn-effect-1 add-to-cart-btn"
                                                 data-id="{{$product->id}}">
@@ -64,13 +58,39 @@
                                         </li>
                                     </ul>
                                 </div>
-
+                                <div class="ltn__product-details-menu-3">
+                                    <ul>
+                                        <li>
+                                            <a href="#" class="" title="Wishlist" data-bs-toggle="modal"
+                                                data-bs-target="#liton_wishlist_modal">
+                                                <i class="far fa-heart"></i>
+                                                <span>Yêu thích</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <hr>
+                                <div class="ltn__social-media">
+                                    <ul>
+                                        <li>Share:</li>
+                                        <li><a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                                        </li>
+                                        <li><a href="#" title="Twitter"><i class="fab fa-twitter"></i></a></li>
+                                        <li><a href="#" title="Linkedin"><i class="fab fa-linkedin"></i></a>
+                                        </li>
+                                        <li><a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <hr>
+                                <div class="ltn__safe-checkout">
+                                    <h5>Có thể thanh toán</h5>
+                                    <img src="{{asset('assets/clients/img/icons/payment-2.png')}}" alt="Payment Image">
+                                </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
-
                 {{-- MÔ TẢ – ĐÁNH GIÁ --}}
                 <div class="ltn__shop-details-tab-inner ltn__shop-details-tab-inner-2">
                     <div class="ltn__shop-details-tab-menu">
@@ -89,68 +109,29 @@
                                 </p>
                             </div>
                         </div>
-
                         <!-- ĐÁNH GIÁ -->
                         <div class="tab-pane fade" id="liton_tab_details_1_2">
                             <div class="ltn__shop-details-tab-content-inner">
                                 <h4 class="title-2">Đánh giá của khách hàng</h4>
-
-                                {{-- <div class="product-ratting">
-                                    <ul>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
-                                        <li><a href="#"><i class="far fa-star"></i></a></li>
-                                        <li class="review-total"> <a href="#"> ( 95 đánh giá )</a></li>
-                                    </ul>
-                                </div> --}}
-
-                                <h r>
-
                                 <!-- DANH SÁCH BÌNH LUẬN -->
                                 <div class="ltn__comment-area mb-30">
                                     <div class="ltn__comment-inner">
-                                        <ul>
-                                            <li>
-                                                <div class="ltn__comment-item clearfix">
-                                                    <div class="ltn__commenter-img">
-                                                        <img src="img/testimonial/1.jpg" alt="Image">
-                                                    </div>
-                                                    <div class="ltn__commenter-comment">
-                                                        <h6><a href="#">Adam Smit</a></h6>
-                                                        <div class="product-ratting">
-                                                            <ul>
-                                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                                <li><a href="#"><i class="fas fa-star-half-alt"></i></a>
-                                                                </li>
-                                                                <li><a href="#"><i class="far fa-star"></i></a></li>
-                                                            </ul>
-                                                        </div>
-                                                        <p>Sản phẩm rất tốt, chất lượng đúng như mô tả. Tôi cảm thấy rất
-                                                            hài lòng!</p>
-                                                        <span class="ltn__comment-reply-btn">03/09/2025</span>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
+                                        @include('clients.components.modals.includes.review-list',
+                                        ['product'=>$product])
                                     </div>
                                 </div>
-
                                 <!-- FORM THÊM ĐÁNH GIÁ -->
                                 <div class="ltn__comment-reply-area ltn__form-box mb-30">
                                     <form id="review-form" data-product-id={{$product->id}}>
                                         <h4 class="title-2">Thêm đánh giá</h4>
-
                                         <div class="mb-30">
                                             <div class="add-a-review">
                                                 <h6>Chọn số sao:</h6>
                                                 <div class="product-ratting">
                                                     <ul>
                                                         @for ($i = 1; $i <= 5; $i++) <li>
-                                                            <a href="javascript:void(0)" class="rating-star" data-value="{{$i}}">
+                                                            <a href="javascript:void(0)" class="rating-star"
+                                                                data-value="{{$i}}">
                                                                 <i class="far fa-star"></i>
                                                             </a></li>
                                                             @endfor
@@ -163,11 +144,6 @@
                                             <textarea placeholder="Nhập nội dung đánh giá..."
                                                 id="review-content"></textarea>
                                         </div>
-                                        <label class="mb-0">
-                                            <input type="checkbox" name="agree">
-                                            Lưu thông tin của tôi cho lần bình luận tiếp theo.
-                                        </label>
-
                                         <div class="btn-wrapper">
                                             <button class="btn theme-btn-1 btn-effect-1 text-uppercase" type="submit">
                                                 Gửi đánh giá
@@ -175,7 +151,6 @@
                                         </div>
                                     </form>
                                 </div>
-
                             </div>
                         </div>
                     </div>

@@ -179,7 +179,8 @@
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a href="#" title="Thêm vào giỏ hàng" class="add-to-cart-btn" data-id="{{$product->id}}">
+                                                        <a href="#" title="Thêm vào giỏ hàng" class="add-to-cart-btn"
+                                                            data-id="{{$product->id}}">
                                                             <i class="fas fa-shopping-cart"></i>
                                                         </a>
                                                     </li>
@@ -194,13 +195,22 @@
                                         <div class="product-info">
                                             <div class="product-ratting">
                                                 <ul>
-                                                    <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                    <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                    <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                    <li><a href="#"><i class="fas fa-star-half-alt"></i></a>
-                                                    </li>
-                                                    <li><a href="#"><i class="far fa-star"></i></a></li>
-                                                    <li class="review-total"> <a href="#"> (24)</a></li>
+                                                    @php
+                                                    $avgRating = $product->reviews->avg('rating') ?? 0;
+                                                    $totalReviews = $product->reviews->count();
+                                                    @endphp
+
+                                                    @for ($i = 1; $i <= 5; $i++) <li>
+                                                        <a href="javascript:void(0)">
+                                                            <i
+                                                                class="{{ $i <= $avgRating ? 'fas fa-star' : 'far fa-star' }}"></i>
+                                                        </a>
+                                                        </li>
+                                                        @endfor
+
+                                                        <li class="review-total">
+                                                            ({{ $totalReviews }} Đánh giá)
+                                                        </li>
                                                 </ul>
                                             </div>
                                             <h2 class="product-title"><a

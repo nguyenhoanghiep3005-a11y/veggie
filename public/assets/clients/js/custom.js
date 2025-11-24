@@ -681,7 +681,9 @@ $(document).ready(function () {
     }
   }).render('#paypal-button-container');
   // =========================danh gia=========================
-  let seletecRating = 0;
+  if(window.location.pathname.startsWith("/product"))
+  {
+     let seletecRating = 0;
   $(".rating-star").hover(function () {
     let value = $(this).data("value");
     highlightStars(value);
@@ -710,16 +712,16 @@ $(document).ready(function () {
     })
   }
   // submit
- $("#review-form").submit(function (e) {
+  $("#review-form").submit(function (e) {
     e.preventDefault();
+
     let productId = $(this).data("product-id");
     let rating = $("#rating-value").val();
     let content = $("#review-content").val();
 
-    // Sửa đúng tại đây:
     if (!rating || rating === "0") {
-        alert("Vui lòng chọn số sao");
-        return;
+      alert("Vui lòng chọn số sao");
+      return;
     }
 
     $.ajaxSetup({
@@ -729,8 +731,8 @@ $(document).ready(function () {
     });
 
     $.ajax({
-      url: '/review',
-      type: 'POST',
+      url: "/review",
+      type: "POST",
       data: {
         product_id: productId,
         rating: rating,
@@ -741,14 +743,92 @@ $(document).ready(function () {
         $("#review-content").val("");
         highlightStars(0);
         seletecRating = 0;
-        $("ltn__comment-reply-area").hide();
+
+        $(".ltn__comment-reply-area").hide();
         toastr.success(response.message);
+
+        loadReviews(productId);
       },
 
       error: function (xhr) {
         alert(xhr.responseJSON.error);
       }
     });
-});
+  });
 
+  function loadReviews(productId) {
+    $.ajax({
+      url: "/review/" + productId,
+      type: "GET",
+      success: function (response) {
+        $(".ltn__comment-inner").html(response);
+      }
+    });
+  }
+
+  }
+  // =========================handle wishlist=========================
+    $(document).on('click', '.add-to-wishlist', function (e) {
+    e.preventDefault();
+
+    let productId = $(this).data('id');
+    $.ajaxSetup({
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      }
+    });
+
+    $.ajax({
+      url: '/wishlist/add',
+      type: 'POST',
+      data: {
+        product_id: productId,
+      },
+
+      success: function (response) {
+        if(response.status)
+        {
+          $("#liton_wishlist_modal-" + productId).modal('show');
+        }
+      },
+
+      error: function (xhr) {
+        alert("Lỗi với addToWishList");
+      }
+    });
+  });
+
+  $(document).on('click', '.wishlist-product-remove', function (e) {
+    e.preventDefault();
+
+    let productId = $(this).data('id');
+    let row = $(this).closest("tr");
+    $.ajaxSetup({
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      }
+    });
+
+    $.ajax({
+      url: '/wishlist/remove',
+      type: 'POST',
+      data: {
+        product_id: productId,
+      },
+
+      success: function (response) {
+        if(response.status)
+        {
+          row.remove();
+          toastr.success("Đã xóa sản phẩm khỏi danh sách yêu thích");
+        }
+      },
+
+      error: function (xhr) {
+        alert("Lỗi với removeWishList");
+      }
+    });
+  });
+
+ 
 });

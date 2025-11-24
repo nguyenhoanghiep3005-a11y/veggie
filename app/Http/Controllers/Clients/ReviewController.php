@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Clients;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
+    public function index(Product $product)
+    {
+        return view('clients.components.modals.includes.review-list', compact('product'))->render();
+    }
     public function createReview(Request $request)
     {
         $request->validate([

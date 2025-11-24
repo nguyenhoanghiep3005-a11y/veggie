@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\Clients\CheckoutController;
 use App\Http\Controllers\Clients\AccountController;
 use App\Http\Controllers\Clients\AuthController;
 use App\Http\Controllers\Clients\ForgotPasswordController;
@@ -11,7 +11,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Clients\CartController;
 use App\Http\Controllers\Clients\OrderController;
 use App\Http\Controllers\Clients\ReviewController;
+use App\Http\Controllers\Clients\SearchController;
+use App\Http\Controllers\Clients\WishlistController;
 
+
+
+Route::prefix('/')->group(function () {
+    
 Route::get('/', [HomeController::class, 'index'])
     ->name('home');
 
@@ -71,6 +77,11 @@ Route::middleware(['auth.custom'])->group(function () {
     Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('order.cancel');
 
     Route::post('/review', [ReviewController::class, 'createReview']);
+    Route::get('/review/{product}', [ReviewController::class, 'index']);
+
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
+    Route::post('/wishlist/add', [WishlistController::class, 'addToWishList']);
+    Route::post('/wishlist/remove', [WishlistController::class, 'removeWishListItem']);
 });
 
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
@@ -86,3 +97,11 @@ Route::get('/mini-cart', [CartController::class, 'loadMiniCart'])->name('cart.mi
 Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.index');
 Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.update');
 Route::post('/cart/remove-cart', [CartController::class, 'removeCartItem'])->name('cart.remove');
+//page cart
+Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+});
+    
+
+
+require __DIR__.'/admin.php';

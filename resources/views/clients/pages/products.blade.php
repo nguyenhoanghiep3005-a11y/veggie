@@ -71,40 +71,14 @@
                         </div>
                     </div>
                     <!-- Top Rated Product Widget -->
-                    <div class="widget ltn__top-rated-product-widget">
-                        <h4 class="ltn__widget-title ltn__widget-title-border">Sản phẩm được đánh giá cao nhất</h4>
-                        <ul>
-                            <li>
-                                <div class="top-rated-product-item clearfix">
-                                    <div class="top-rated-product-img">
-                                        <a href="product-details.html"><img src="img/product/1.png" alt="#"></a>
-                                    </div>
-                                    <div class="top-rated-product-info">
-                                        <div class="product-ratting">
-                                            <ul>
-                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                            </ul>
-                                        </div>
-                                        <h6><a href="product-details.html">Mixel Solid Seat Cover</a></h6>
-                                        <div class="product-price">
-                                            <span>$49.00</span>
-                                            <del>$65.00</del>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
                     <!-- Search Widget -->
                     <div class="widget ltn__search-widget">
                         <h4 class="ltn__widget-title ltn__widget-title-border">Tìm Kiếm</h4>
-                        <form action="#">
-                            <input type="text" name="search" placeholder="Nhập tên sản phẩm...">
-                            <button type="submit"><i class="fas fa-search"></i></button>
+                        <form id="#" method="get" action="{{route('search')}}">
+                            <input type="text" name="keyword" value="" placeholder="Tìm kiếm..." />
+                            <button type="submit">
+                                <span><i class="icon-search"></i></span>
+                            </button>
                         </form>
                     </div>
                     <!-- Banner Widget -->
