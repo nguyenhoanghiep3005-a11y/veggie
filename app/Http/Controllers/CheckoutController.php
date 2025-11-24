@@ -69,6 +69,12 @@ class CheckoutController extends Controller
                     'quantity' => $item->quantity,
                     'price' => $item->product->price,
                 ]);
+                $product = $item->product;
+                if ($product->stock < $item->quantity) {
+                    throw new \Exception("Sản phẩm($product->name) không đủ hàng trong kho");
+                }
+                $product->stock -= $item->quantity;
+                $product->save();
             }
 
             //create payment
@@ -113,6 +119,13 @@ class CheckoutController extends Controller
                     'quantity' => $item->quantity,
                     'price' => $item->product->price,
                 ]);
+                //cập nhật số luonjg 
+                $product = $item->product;
+                if ($product->stock < $item->quantity) {
+                    throw new \Exception("Sản phẩm($product->name) không đủ hàng trong kho");
+                }
+                $product->stock -= $item->quantity;
+                $product->save();
             }
 
             //create payment
@@ -128,7 +141,7 @@ class CheckoutController extends Controller
             //neu thanh cong xoa ht sp trong gio hang
             CartItem::where('user_id', $user->id)->delete();
             DB::commit();
-            return response()->json(['success'=>true]);
+            return response()->json(['success' => true]);
         } catch (\Exception $e) {
             Log::error('Lỗi đặt hàng' . $e->getMessage());
             DB::rollBack();

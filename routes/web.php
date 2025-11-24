@@ -10,6 +10,7 @@ use App\Http\Controllers\Clients\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Clients\CartController;
 use App\Http\Controllers\Clients\OrderController;
+use App\Http\Controllers\Clients\ReviewController;
 
 Route::get('/', [HomeController::class, 'index'])
     ->name('home');
@@ -66,8 +67,10 @@ Route::middleware(['auth.custom'])->group(function () {
     Route::get('/checkout/get-address', [CheckoutController::class, 'getAddress']);
     Route::post('/checkout', [CheckoutController::class, 'placeOrder'])->name('checkout.placeOrder');
     Route::post('/checkout/paypal', [CheckoutController::class, 'placeOrderPayPal'])->name('checkout.placeOrderPayPal');
-        Route::get('/order/{id}', [OrderController::class, 'showOrder'])->name('order.show');
+    Route::get('/order/{id}', [OrderController::class, 'showOrder'])->name('order.show');
+    Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('order.cancel');
 
+    Route::post('/review', [ReviewController::class, 'createReview']);
 });
 
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');

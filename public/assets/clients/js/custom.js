@@ -680,4 +680,75 @@ $(document).ready(function () {
       })
     }
   }).render('#paypal-button-container');
+  // =========================danh gia=========================
+  let seletecRating = 0;
+  $(".rating-star").hover(function () {
+    let value = $(this).data("value");
+    highlightStars(value);
+  }, function () {
+    highlightStars(seletecRating);
+  }
+  )
+
+  $(".rating-star").click(function (e) {
+    e.preventDefault();
+    seletecRating = $(this).data("value");
+    $("#rating-value").val(seletecRating);
+    highlightStars(seletecRating);
+  })
+
+  function highlightStars(value) {
+    $(".rating-star i").each(function () {
+      let starValue = $(this).parent().data('value');
+      if (starValue <= value) {
+        $(this).removeClass("far").addClass("fas");
+      }
+      else {
+        $(this).removeClass("fas").addClass("far");
+
+      }
+    })
+  }
+  // submit
+ $("#review-form").submit(function (e) {
+    e.preventDefault();
+    let productId = $(this).data("product-id");
+    let rating = $("#rating-value").val();
+    let content = $("#review-content").val();
+
+    // Sửa đúng tại đây:
+    if (!rating || rating === "0") {
+        alert("Vui lòng chọn số sao");
+        return;
+    }
+
+    $.ajaxSetup({
+      headers: {
+        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+      }
+    });
+
+    $.ajax({
+      url: '/review',
+      type: 'POST',
+      data: {
+        product_id: productId,
+        rating: rating,
+        comment: content
+      },
+
+      success: function (response) {
+        $("#review-content").val("");
+        highlightStars(0);
+        seletecRating = 0;
+        $("ltn__comment-reply-area").hide();
+        toastr.success(response.message);
+      },
+
+      error: function (xhr) {
+        alert(xhr.responseJSON.error);
+      }
+    });
+});
+
 });
