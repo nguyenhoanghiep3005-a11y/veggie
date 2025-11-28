@@ -9,7 +9,7 @@
     <!-- menu profile quick info -->
     <div class="profile clearfix">
       <div class="profile_pic">
-        <img src="images/img.jpg" alt="..." class="img-circle profile_img">
+        <img src="" alt="..." class="img-circle profile_img">
       </div>
       <div class="profile_info">
         <span>Xin chào,</span>
@@ -17,9 +17,7 @@
       </div>
     </div>
     <!-- /menu profile quick info -->
-
     <br />
-
     <!-- sidebar menu -->
     <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
       <div class="menu_section">
