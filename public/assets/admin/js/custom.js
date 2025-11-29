@@ -91,41 +91,41 @@ $(document).ready(function () {
         }
     });
 
-    // s
-  $(document).on('click', '.btn-update-submit-category', function (e) {
-    e.preventDefault();
-    let button = $(this);
-    let categoryId = button.data('id');
-    let form = button.closest(".modal").find('form');
-    let formData = new FormData(form[0]);
-    formData.append('category_id', categoryId);
+    // update category
+    $(document).on('click', '.btn-update-submit-category', function (e) {
+        e.preventDefault();
+        let button = $(this);
+        let categoryId = button.data('id');
+        let form = button.closest(".modal").find('form');
+        let formData = new FormData(form[0]);
+        formData.append('category_id', categoryId);
 
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
-    $.ajax({
-        type: 'POST',
-        url: 'categories/update',
-        data: formData,
-        processData: false,
-        contentType: false,
+        $.ajax({
+            type: 'POST',
+            url: 'categories/update',
+            data: formData,
+            processData: false,
+            contentType: false,
 
-        beforeSend: function () {
-            button.prop('disabled', true).text('Đang cập nhật...');
-        },
+            beforeSend: function () {
+                button.prop('disabled', true).text('Đang cập nhật...');
+            },
 
-        success: function (response) {
-            if (response.status) {
+            success: function (response) {
+                if (response.status) {
 
-                toastr.success(response.message);
+                    toastr.success(response.message);
 
-                // Update row
-                let id = response.data.id;
+                    // Update row
+                    let id = response.data.id;
 
-                let newRow = `
+                    let newRow = `
                 <tr id="category-row-${id}">
                     <td><img src="${response.data.image}" width="50"></td>
                     <td>${response.data.name}</td>
@@ -142,23 +142,81 @@ $(document).ready(function () {
                     </td>
                 </tr>`;
 
-                $('#category-row-' + id).replaceWith(newRow);
-                $('#modalupdate-' + id).modal('hide');
+                    $('#category-row-' + id).replaceWith(newRow);
+                    $('#modalupdate-' + id).modal('hide');
 
-            } else {
-                toastr.error(response.message);
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+
+            error: function (xhr) {
+                alert(xhr.responseText);
+            },
+
+            complete: function () {
+                button.prop('disabled', false).text('Cập nhật danh mục');
             }
-        },
+        });
+    });
+    //delete category
+    $(document).on('click', '.btn-delete-category', function (e) {
+        e.preventDefault();
+        let button = $(this);
+        let categoryId = button.data('id');
+        let row = button.closest('tr');
+        if (confirm('Bạn có chắc chắn muốn xóa danh mục này không?')) {
 
-        error: function (xhr) {
-            alert(xhr.responseText);
-        },
 
-        complete: function () {
-            button.prop('disabled', false).text('Cập nhật danh mục');
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.ajax({
+                type: 'POST',
+                url: 'categories/delete',
+                data: {
+                    category_id: categoryId,
+                },
+                success: function (response) {
+                    if (response.status) {
+                        toastr.success(response.message);
+                        row.fadeOut(300, function () {
+                            $(this).remove();
+                        });
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('Có lỗi xảy ra ' + error);
+                }
+            });
         }
     });
-});
+    // =========================management product=========================
+    $("#product-images").change(function (e) {
+        let files = e.target.files;
+        let previewContainer = $("#image-preview-container");
+        previewContainer.empty(); // Clear previous previews
+        
+        if(files.length > 0) {
+            for(let i = 0; i < files.length; i++) {
+                let file = files[i];
+                let reader = new FileReader();
+                reader.onload = function (event) {
+                    let img = $('<img>')
+                    .attr('src', event.target.result)
+                    .addClass("image-preview");
+                    previewContainer.append(img);
+                }
+                reader.readAsDataURL(file);
+            }
 
-
+        }else {
+            previewContainer.html("");
+        }
+    });
+    
 });

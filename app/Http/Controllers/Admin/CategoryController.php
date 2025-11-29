@@ -83,4 +83,30 @@ class CategoryController extends Controller
             ]);
         }
     }
+    public function deleteCategory(Request $request)
+    {
+        try {
+            $category = Category::findOrFail($request->category_id);
+            if (!$category) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Danh mục không tồn tại.'
+                ], 404);
+            }
+            // Xóa ảnh nếu có
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+            $category->delete();
+            return response()->json([
+                'status' => true,
+                'message' => 'Xóa danh mục thành công.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Đã xảy ra lỗi khi xóa danh mục.'
+            ]);
+        }
+    }
 }

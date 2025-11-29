@@ -28,13 +28,13 @@
                                         <li><i class="fa fa-phone"></i> SĐT : {{$user->phone_number}}</li>
                                     </ul>
                                 </div>
-                                <div class="right col-md-5 col-sm-5 text-center">
+                                <div class="right col-md-4 col-sm-4 text-center">
                                     <img src="{{ asset('storage/'.($user->avatar ?? 'uploads/users/default-avatar.jpg'))}}" alt="" class="img-circle img-fluid">
                                 </div>
                             </div>
                             <div class=" profile-bottom text-center">
                                 <div class="col-sm-4 emphasis" ></div>
-                                <div class=" col-sm-10 emphasis">
+                                <div class=" col-sm-12 emphasis">
                                    @if ($user->role->name == "customer")
                                     <button type="button" class="btn btn-primary btn-sm upgradeStaff" data-userid="{{$user->id}}">
                                         <i class="fa fa-user"> </i> Nhân viên

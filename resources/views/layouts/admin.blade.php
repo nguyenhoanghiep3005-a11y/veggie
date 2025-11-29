@@ -10,7 +10,7 @@
   <link rel="icon" href="images/favicon.ico" type="image/ico" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <title>Admin!</title>
+  <title>@yield('title')</title>
 
   <!-- Bootstrap -->
   <link href="{{asset('assets/admin/vendors/bootstrap/dist/css/bootstrap.min.css')}}" rel="stylesheet">
