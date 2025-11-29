@@ -27,7 +27,7 @@
                                             từ những nông trại Việt Nam chất lượng cao.</p>
                                     </div>
                                     <div class="btn-wrapper animated">
-                                        <a href="shop.html" class="theme-btn-1 btn btn-effect-1 text-uppercase">
+                                        <a href="{{route('products.index')}}" class="theme-btn-1 btn btn-effect-1 text-uppercase">
                                             Mua Ngay
                                         </a>
                                     </div>
@@ -55,10 +55,10 @@
                                             đảm bảo hương vị tự nhiên và dinh dưỡng tốt nhất.</p>
                                     </div>
                                     <div class="btn-wrapper animated">
-                                        <a href="shop.html" class="theme-btn-1 btn btn-effect-1 text-uppercase">
+                                        <a href="{{route('about')}}" class="theme-btn-1 btn btn-effect-1 text-uppercase">
                                             Khám Phá Ngay
                                         </a>
-                                        <a href="about.html" class="btn btn-transparent btn-effect-3">
+                                        <a href="{{route('service')}}" class="btn btn-transparent btn-effect-3">
                                             Tìm Hiểu Thêm
                                         </a>
                                     </div>
@@ -303,11 +303,7 @@
 
                         <h1 class="section-title white-color">Liên hệ ngay: 0388536385</h1>
                     </div>
-                    <div class="btn-wrapper">
-                        <a href="tel:+84897876987" class="theme-btn-1 btn btn-effect-1">GỌI NGAY</a>
-                        <a href="contact.html" class="btn btn-transparent btn-effect-4 white-color">LIÊN HỆ VỚI CHÚNG
-                            TÔI</a>
-                    </div>
+
                 </div>
             </div>
         </div>

@@ -45,7 +45,7 @@
                                     </div>
                                     <div class="tab-pane fade" id="liton_tab_orders">
                                         <div class="ltn__myaccount-tab-content-inner">
-                                            <div class="table-responsive">
+                                            <div class="table-responsive" style="overflow-x: auto; overflow-y: scroll; max-height: 400px;">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>

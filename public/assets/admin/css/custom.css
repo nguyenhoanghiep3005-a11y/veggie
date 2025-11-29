@@ -15,7 +15,7 @@
     background-color: #2a6ebd;
 }
 
-#category-image, #product-images {
+#category-image, #product-images, .product-images {
     display: none;
 }
 
@@ -55,4 +55,34 @@
     background: #3498db;
     color: #fff;
     border-radius: 6px;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child:before,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child:before {
+    display: none !important;
+}
+/* Ẩn cột rỗng Datatables tự sinh */
+#datatable-buttons td:empty,
+#datatable-buttons th:empty {
+    display: none !important;
+    visibility: collapse !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+/* Chặn Datatables tạo cell child/responsive */
+table.dataTable td.control,
+table.dataTable th.control,
+table.dataTable td.dtr-control,
+table.dataTable th.dtr-control {
+    display: none !important;
+}
+image-preview-listproduct {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+    margin-top:10px ;
+    gap: 10px;
+}
+.custom-badge{
+    padding: 10px 5px;
 }

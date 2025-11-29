@@ -16,7 +16,7 @@ class PermissionsTableSeeder extends Seeder
           $permissions = [
         'manage_user',
         'manage_products',
-        'manage_order',
+        'manage_orders',
         'manage_categories',
         'manage_contacts',
       ];

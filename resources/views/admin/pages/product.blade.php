@@ -32,7 +32,7 @@
                                         Trang quản lý danh mục cho phép Admin tạo mới, sửa và xóa các danh mục sản phẩm.
                                     </p>
                                     <table id="datatable-buttons" class="table table-striped table-bordered"
-                                        style="width:100%">
+                                        style="width:100%; text-align: center;">
                                         <thead>
                                             <tr>
                                                 <th>Hình ảnh</th>
@@ -44,7 +44,7 @@
                                                 <th>Giá</th>
                                                 <th>Đơn vị</th>
                                                 <th>Trạng thái</th>
-                                                <th></th>
+                                                <th ></th>
                                                 <th></th>
                                             </tr>
                                         </thead>
@@ -171,7 +171,7 @@
                                                                         <span class="required">*</span>
                                                                     </label>
                                                                     <div class="col-md-6 col-sm-6 ">
-                                                                        <input type="number" id="product-unit"
+                                                                        <input type="text" id="product-unit"
                                                                             name="unit" required class="form-control"
                                                                             value="{{$product->unit}}">
                                                                     </div>
@@ -179,21 +179,30 @@
                                                                 <div class="item form-group">
                                                                     <label
                                                                         class="col-form-label col-md-3 col-sm-3 label-align"
-                                                                        for="product-image">Hình
+                                                                        for="product-images">Hình
                                                                         ảnh</label>
                                                                     <div class="col-md-6 col-sm-6 ">
-                                                                        <img src="{{asset('storage/'. $product->image)}}"
-                                                                            alt="{{$product->name}}"
-                                                                            id="image-preview-{{$product->id}}"
-                                                                            class="image-preview">
+
                                                                         <label class="custom-file-upload"
-                                                                            for="product-image-{{$product->id}}">
+                                                                            for="product-images-{{$product->id}}">
                                                                             Chọn
                                                                             Ảnh</label>
-                                                                        <input type="file" name="image"
-                                                                            class="product-image"
-                                                                            id="product-image-{{$product->id}}"
-                                                                            data-id="{{$product->id}}" accept="image/*">
+                                                                        <input type="file" name="images[]"
+                                                                            class="product-images"
+                                                                            id="product-images-{{$product->id}}"
+                                                                            data-id="{{$product->id}}" accept="image/*"
+                                                                            multiple >
+                                                                        <div id="image-preview-container-{{$product->id}}"
+                                                                            class="image-preview-container image-preview-listproduct"
+                                                                            data-id="{{$product->id}}">
+                                                                            @foreach ($product->images as $image)
+                                                                            <img src="{{asset('storage/'. $image->image)}}"
+                                                                                alt="Ảnh sản phẩm"
+                                                                                style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px; margin-top:10px;">
+
+                                                                            @endforeach
+                                                                        </div>
+
                                                                     </div>
                                                                 </div>
                                                             </form>

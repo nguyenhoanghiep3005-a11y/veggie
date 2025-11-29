@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Clients\ProductController;
@@ -46,5 +47,12 @@ Route::prefix('admin')->group(function () {
         Route::get('/products', [AdminProductController::class, 'index'])->name('admin.products.index');
         Route::post('/product/update', [AdminProductController::class, 'updateProduct']);
         Route::post('/product/delete', [AdminProductController::class, 'deleteProduct']);
+    });
+    //quan ly don hang
+    Route::middleware(['permission:manage_order'])->group(function () {
+        Route::get('/orders', [OrderController::class, 'index'])->name('admin.order.index');
+        Route::post('/order/confirm', [AdminProductController::class, 'confirmOrder']);
+           Route::get('/orders/order-detail/{id}', [OrderController::class, 'showOrderDetail'])->name('admin.order-detail');
+
     });
 });

@@ -32,7 +32,7 @@
                                         Trang quản lý danh mục cho phép Admin tạo mới, sửa và xóa các danh mục sản phẩm.
                                     </p>
                                     <table id="datatable-buttons" class="table table-striped table-bordered"
-                                        style="width:100%">
+                                        style="width:100%; text-align: center;">
                                         <thead>
                                             <tr>
                                                 <th>Hình ảnh</th>
@@ -41,6 +41,7 @@
                                                 <th>Mô tả</th>
                                                 <th></th>
                                                 <th></th>
+
                                             </tr>
                                         </thead>
 
@@ -60,8 +61,9 @@
                                                             class="fa fa-edit"></i>Chỉnh
                                                         sữa</a>
                                                 </td>
-                                                <td> <a class="btn btn-app btn-delete-category" data-id="{{$category->id}}"> <i
-                                                            class="fa fa-close"></i>Xóa</a></td>
+                                                <td> <a class="btn btn-app btn-delete-category"
+                                                        data-id="{{$category->id}}"> <i class="fa fa-close"></i>Xóa</a>
+                                                </td>
                                             </tr>
 
                                             <div class="modal fade" id="modalupdate-{{$category->id}}" tabindex="-1"
@@ -104,8 +106,8 @@
                                                                     </label>
                                                                     <div class="col-md-6 col-sm-6 ">
                                                                         <input type="text" id="category-description"
-                                                                            name="description"
-                                                                            required="required" class="form-control"
+                                                                            name="description" required="required"
+                                                                            class="form-control"
                                                                             value="{{$category->description}}">
                                                                     </div>
                                                                 </div>
@@ -115,12 +117,18 @@
                                                                         for="category-image">Hình
                                                                         ảnh</label>
                                                                     <div class="col-md-6 col-sm-6 ">
-                                                                        <img src="{{asset('storage/'. $category->image)}}" alt="{{$category->name}}"
-                                                                            id="image-preview-{{$category->id}}" class="image-preview">
+                                                                        <img src="{{asset('storage/'. $category->image)}}"
+                                                                            alt="{{$category->name}}"
+                                                                            id="image-preview-{{$category->id}}"
+                                                                            class="image-preview">
                                                                         <label class="custom-file-upload"
-                                                                            for="category-image-{{$category->id}}"> Chọn Ảnh</label>
-                                                                        <input type="file" name="image" class="category-image"
-                                                                            id="category-image-{{$category->id}}" data-id="{{$category->id}}" accept="image/*">
+                                                                            for="category-image-{{$category->id}}"> Chọn
+                                                                            Ảnh</label>
+                                                                        <input type="file" name="image"
+                                                                            class="category-image"
+                                                                            id="category-image-{{$category->id}}"
+                                                                            data-id="{{$category->id}}"
+                                                                            accept="image/*">
                                                                     </div>
                                                                 </div>
                                                             </form>
@@ -128,7 +136,9 @@
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary"
                                                                 data-dismiss="modal">Quay lại</button>
-                                                            <button type="button" class="btn btn-primary btn-update-submit-category" data-id="{{$category->id}}">Chỉnh sửa</button>
+                                                            <button type="button"
+                                                                class="btn btn-primary btn-update-submit-category"
+                                                                data-id="{{$category->id}}">Chỉnh sửa</button>
                                                         </div>
                                                     </div>
                                                 </div>

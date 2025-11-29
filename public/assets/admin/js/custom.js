@@ -200,23 +200,177 @@ $(document).ready(function () {
         let files = e.target.files;
         let previewContainer = $("#image-preview-container");
         previewContainer.empty(); // Clear previous previews
-        
-        if(files.length > 0) {
-            for(let i = 0; i < files.length; i++) {
+
+        if (files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
                 let file = files[i];
                 let reader = new FileReader();
                 reader.onload = function (event) {
                     let img = $('<img>')
-                    .attr('src', event.target.result)
-                    .addClass("image-preview");
+                        .attr('src', event.target.result)
+                        .addClass("image-preview");
                     previewContainer.append(img);
                 }
                 reader.readAsDataURL(file);
             }
 
-        }else {
+        } else {
             previewContainer.html("");
         }
     });
-    
+    $(".product-images").change(function (e) {
+        let files = e.target.files;
+        let productId = $(this).data("id");
+        let previewContainer = $("#image-preview-container-" + productId);
+        previewContainer.empty(); // Clear previous previews
+        if (files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+                let file = files[i];
+                let reader = new FileReader();
+                reader.onload = function (event) {
+                    let img = $('<img>')
+                        .attr('src', event.target.result)
+                        .addClass("image-preview");
+                    previewContainer.append(img);
+                }
+                reader.readAsDataURL(file);
+            }
+
+        } else {
+            previewContainer.html("");
+        }
+    });
+    // update product
+    $(document).on('click', '.btn-update-submit-product', function (e) {
+        e.preventDefault();
+        let button = $(this);
+        let productId = button.data("id");
+        let form = button.closest(".modal").find('form');
+        let formData = new FormData(form[0]);
+        formData.append('product_id', productId);
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        $.ajax({
+            type: 'POST',
+            url: 'product/update',
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function () {
+                button.prop('disabled', true).text('Đang cập nhật...');
+            },
+
+            success: function (response) {
+                if (response.status) {
+                    // Update row
+                    let product = response.data;
+                    let productId = product.id;
+                    let imageSrc = product.images.length > 0 ? product.images[0] : "storage/products/product_default.png";
+                    let newRow = `
+                <tr id="product-row-${productId}">
+                    <td><img src="${imageSrc}" alt="${product.name}" class="image-product" width="50">
+                    </td>  
+                    <td>${product.name}</td>
+                    <td>${product.category_name}</td>
+                    <td>${product.slug}</td>
+                    <td>${product.description}</td>
+                    <td>${product.stock}</td> 
+                    <td>${new Intl.NumberFormat("vi-VN").format(product.price)}VND</td> 
+                    <td>${product.unit}</td>
+                    <td>${product.status}</td> 
+                    <td>
+                        <a class="btn btn-app btn-update-product" data-toggle="modal"
+                        data-target="#modalupdate-${productId}">
+                        <i class="fa fa-edit"></i>Chỉnh sửa</a>
+                    </td>
+                    <td>
+                        <a class="btn btn-app btn-delete-product" data-id="${productId}">
+                        <i class="fa fa-close"></i>Xóa</a>
+                    </td>
+                </tr>`;
+                    $('#product-row-' + productId).replaceWith(newRow);
+                    toastr.success(response.message);
+                    $('#modalupdate-' + productId).modal('hide');
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+
+            error: function (xhr) {
+                alert(xhr.responseText);
+            },
+            complete: function () {
+                button.prop('disabled', false).text('Cập nhật sản phẩm');
+            }
+        });
+    });
+    //xoa product
+    $(document).on('click', '.btn-delete-product', function (e) {
+        e.preventDefault();
+        let button = $(this);
+        let productId = button.data('id');
+        let row = button.closest('tr');
+        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.ajax({
+                type: 'POST',
+                url: 'product/delete',
+                data: {
+                    product_id: productId,
+                },
+                success: function (response) {
+                    if (response.status) {
+                        toastr.success(response.message);
+                        row.fadeOut(300, function () {
+                            $(this).remove();
+                        });
+                    } else {    
+                        toastr.error(response.message);
+                    }   
+                },
+                error: function (xhr, status, error) {
+                    alert('Có lỗi xảy ra ' + error);
+                }
+            });
+        }
+    });
+    // =========================management order=========================
+    $(document).on('click','.confirm-order', function (e) {
+        e.preventDefault();
+        let button = $(this);
+        let orderId = button.data("id");
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $.ajax({
+            type: 'POST',
+            url: 'order/confirm',
+            data: {
+                id: orderId,
+            },
+            success: function (response) {
+                if (response.status) {
+                    toastr.success(response.message);
+                    button.closest("tr").find(".order-status").html('<span class="custom-badge badge badge-info">Đang giao</span>');
+                    button.hide();
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert('AJAX error: ' + error);
+            }
+        });
+    });
+
 });

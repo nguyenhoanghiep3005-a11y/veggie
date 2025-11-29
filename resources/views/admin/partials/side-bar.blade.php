@@ -49,8 +49,8 @@
             </ul>
           </li>
           @endif
-          @if($adminUser->role->permissions->contains('name','manage_orders'))
-          <li><a href="#"><i class="fa fa-edit"></i> Quản lý đơn hàng </a></li>
+          @if($adminUser->role->permissions->contains('name','manage_order'))
+          <li><a href="{{route('admin.order.index')}}"><i class="fa fa-edit"></i> Quản lý đơn hàng </a></li>
           @endif
           @if($adminUser->role->permissions->contains('name','manage_contacts'))
           <li><a href="#"><i class="fa fa-edit"></i>Quản lý liên hệ </a></li>
