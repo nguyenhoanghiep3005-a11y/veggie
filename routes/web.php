@@ -9,6 +9,7 @@ use App\Http\Controllers\Clients\ProductController;
 use App\Http\Controllers\Clients\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Clients\CartController;
+use App\Http\Controllers\Clients\ContactController;
 use App\Http\Controllers\Clients\OrderController;
 use App\Http\Controllers\Clients\ReviewController;
 use App\Http\Controllers\Clients\SearchController;
@@ -88,6 +89,7 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('products/filter', [ProductController::class, 'filter'])->name('products.filter');
 //detaiproduct
 Route::get('/products/{slug}', [ProductController::class, 'detail'])->name('product.detail');
+
 //handle cart
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 Route::post('/cart/remove', [CartController::class, 'removeFormMiniCart'])->name('cart.remove');
@@ -99,6 +101,9 @@ Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.u
 Route::post('/cart/remove-cart', [CartController::class, 'removeCartItem'])->name('cart.remove');
 //page cart
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+//lien he
+Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
+Route::post('/contact', [ContactController::class, 'sendContact'])->name('contact.send');
 
 });
     

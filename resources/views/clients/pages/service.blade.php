@@ -15,7 +15,6 @@
                         <div class="col-lg-7 align-self-center">
                             <div class="about-us-info-wrap">
                                 <div class="section-title-area ltn__section-title-2">
-                                    <h6 class="section-subtitle ltn__secondary-color">// DỊCH VỤ ĐÁNG TIN CẬY</h6>
                                     <h1 class="section-title">Chúng Tôi Là Đội Ngũ
                                         Chuyên Nghiệp & Giàu Kinh Nghiệm<span>.</span></h1>
                                     <p>Chúng tôi cam kết mang đến những sản phẩm và dịch vụ chất lượng, đặt uy tín và sự hài lòng của khách hàng lên hàng đầu.</p>

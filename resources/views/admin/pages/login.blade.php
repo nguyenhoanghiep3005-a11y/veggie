@@ -49,7 +49,7 @@
               <br />
 
               <div>
-                <h1><i class="fa fa-paw"></i> HIEP SHOP</h1>
+                <h1><i class="fa fa-leaf"></i> HIEP SHOP</h1>
               </div>
             </div>
           </form>

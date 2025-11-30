@@ -81,7 +81,7 @@
             <div class="col-lg-6 col-md-6">
                 <div class="ltn__banner-item">
                     <div class="ltn__banner-img">
-                        <a href="shop.html"><img src="{{asset('assets/clients/img/banner/13.png')}}"
+                        <a href="{{route('products.index')}}"><img src="{{asset('assets/clients/img/banner/13.png')}}"
                                 alt="Banner Image"></a>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                     <div class="col-lg-12">
                         <div class="ltn__banner-item">
                             <div class="ltn__banner-img">
-                                <a href="shop.html"><img src="{{asset('assets/clients/img/banner/14.png')}}"
+                                <a href="{{route('products.index')}}"><img src="{{asset('assets/clients/img/banner/14.png')}}"
                                         alt="Banner Image"></a>
                             </div>
                         </div>
@@ -99,7 +99,7 @@
                     <div class="col-lg-12">
                         <div class="ltn__banner-item">
                             <div class="ltn__banner-img">
-                                <a href="shop.html"><img src="{{asset('assets/clients/img/banner/15.png')}}"
+                                <a href="{{route('products.index')}}"><img src="{{asset('assets/clients/img/banner/15.png')}}"
                                         alt="Banner Image"></a>
                             </div>
                         </div>
@@ -131,7 +131,7 @@
                         </a>
                     </div>
                     <div class="ltn__category-item-name">
-                        <h5><a href="shop.html">{{$category->name}}</a></h5>
+                        <h5><a href="{{route('products.index')}}" >{{$category->name}}</a></h5>
                         <h6>{{$category->products->count()}} Sản phẩm</h6>
                     </div>
                 </div>
@@ -148,7 +148,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-title-area ltn__section-title-2 text-center">
-                    <h1 class="section-title">Sản phẩm</h1>
+                    <h1 class="section-title">Sản Phẩm Bán Chạy</h1>
                 </div>
                 <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
                     <div class="nav">
@@ -214,7 +214,7 @@
                                                 </ul>
                                             </div>
                                             <h2 class="product-title"><a
-                                                    href="product-details.html">{{$product->name}}</a></h2>
+                                                    href="{{route('product.detail',$product->slug)}}">{{$product->name}}</a></h2>
                                             <div class="product-price">
                                                 <span>{{number_format($product->price,0,',','.')}} VNĐ</span>
                                             </div>

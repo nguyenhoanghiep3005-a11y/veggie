@@ -20,8 +20,8 @@
         @php
         $price = $product->price ?? 0;
         $name = $product->name ?? 'Sản phẩm';
-        $image = $product->image
-        ? asset('storage/' . $product->image)
+        $image = $product->image_url
+        ? asset( $product->image_url)
         : asset('storage/uploads/products/product_default.png');
         $subtotal = $price * $quantity;
         $total += $subtotal;

@@ -16,19 +16,13 @@
                     <div class="col-lg-6 align-self-center">
                         <div class="about-us-info-wrap">
                             <div class="section-title-area ltn__section-title-2">
-                                <h6 class="section-subtitle ltn__secondary-color">Tìm hiểu thêm về của hàng</h6>
-                                <h1 class="section-title">Cửa hàng thực phẩm<br class="d-none d-md-block"> Hữu cơ uy tính</h1>
+                                <h1 class="section-title">Cửa hàng thực phẩm Hữu cơ uy tính</h1>
                                 <p>Chúng tôi cam kết mang đến những sản phẩm chất lượng, an toàn và tốt cho sức khỏe</p>
                             </div>
                             <p>Những người bán hàng khao khát trở thành người tốt, làm điều tốt và lan tỏa lòng tốt. Chúng tôi là một thị trường dân chủ, tự chủ, hai chiều, phát triển mạnh mẽ dựa trên niềm tin và được xây dựng dựa trên cộng đồng và nội dung chất lượng.</p>
                             <div class="about-author-info d-flex">
                                 <div class="author-name-designation  align-self-center">
-                                    <h4 class="mb-0">Hoang Hiep</h4>
-                                    <small>/ Giám Đốc Cửa Hàng</small>
-                                </div>
-                                <div class="author-sign">
-                                    <img src="{{asset('assets/clients/img/icons/icon-img/author-sign.png')}}" alt="#">
-                                </div>
+                                </div>  
                             </div>
                         </div>
                     </div>
@@ -43,7 +37,6 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="section-title-area ltn__section-title-2 text-center">
-                            <h6 class="section-subtitle ltn__secondary-color">// Đặc điểm //</h6>
                             <h1 class="section-title">Tại Sao Chọn Chúng Tôi<span>.</span></h1>
                         </div>
                     </div>

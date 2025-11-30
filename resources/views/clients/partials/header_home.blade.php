@@ -1,43 +1,7 @@
 <!-- HEADER AREA START (header-5) -->
 <header class="ltn__header-area ltn__header-5 ltn__header-transparent-- gradient-color-4---">
     <!-- ltn__header-top-area start -->
-    <div class="ltn__header-top-area">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-7">
-                    <div class="ltn__top-bar-menu">
-                        <ul>
-                            <li><a href="locations.html"><i class="icon-placeholder"></i> Tan Phu, Ho Chi Minh</a></li>
-                            <li><a href="mailto:minhdien.dev@gmail.com?Subject=Contact%20with%20to%20you"><i
-                                        class="icon-mail"></i> nguyenhoanghiep3005@gmail.com</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <div class="top-bar-right text-right text-end">
-                        <div class="ltn__top-bar-menu">
-                            <ul>
-                                <li>
-                                    <!-- ltn__social-media -->
-                                    <div class="ltn__social-media">
-                                        <ul>
-                                            <li><a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
-                                            <li><a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
-                                            </li>
 
-                                            <li><a href="#" title="Instagram"><i class="fab fa-instagram"></i></a></li>
-                                            <li><a href="#" title="Dribbble"><i class="fab fa-dribbble"></i></a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <!-- ltn__header-top-area end -->
 
     <!-- ltn__header-middle-area start -->
@@ -48,7 +12,7 @@
                 <div class="col">
                     <div class="site-logo-wrap">
                         <div class="site-logo">
-                            <a href="\{{route('about')}}"><img src="{{asset('assets/clients/img/logo.png')}}"
+                            <a href="\{{route('about')}}"><img src="{{asset('assets/clients/img/logohiep.png')}}"
                                     alt="Logo"></a>
                         </div>
                     </div>
@@ -69,8 +33,8 @@
                                     </li>
                                     <li class="menu-icon"><a href="{{route('products.index')}}">Cửa hàng</a>
                                     </li>
-                                    <li><a href="contact.html">Liên hệ</a></li>
-                                    <li class="special-link"><a href="{{route('about')}}">Nhận báo giá</a></li>
+                                    <li><a href="{{route('contact.index')}}">Liên hệ</a></li>
+                                    <li class="special-link"><a href="{{route('contact.index')}}">Nhận báo giá</a></li>
                                 </ul>
                             </div>
                         </nav>

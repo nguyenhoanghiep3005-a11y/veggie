@@ -681,94 +681,93 @@ $(document).ready(function () {
     }
   }).render('#paypal-button-container');
   // =========================danh gia=========================
-  if(window.location.pathname.startsWith("/product"))
-  {
-     let seletecRating = 0;
-  $(".rating-star").hover(function () {
-    let value = $(this).data("value");
-    highlightStars(value);
-  }, function () {
-    highlightStars(seletecRating);
-  }
-  )
-
-  $(".rating-star").click(function (e) {
-    e.preventDefault();
-    seletecRating = $(this).data("value");
-    $("#rating-value").val(seletecRating);
-    highlightStars(seletecRating);
-  })
-
-  function highlightStars(value) {
-    $(".rating-star i").each(function () {
-      let starValue = $(this).parent().data('value');
-      if (starValue <= value) {
-        $(this).removeClass("far").addClass("fas");
-      }
-      else {
-        $(this).removeClass("fas").addClass("far");
-
-      }
-    })
-  }
-  // submit
-  $("#review-form").submit(function (e) {
-    e.preventDefault();
-
-    let productId = $(this).data("product-id");
-    let rating = $("#rating-value").val();
-    let content = $("#review-content").val();
-
-    if (!rating || rating === "0") {
-      alert("Vui lòng chọn số sao");
-      return;
+  if (window.location.pathname.startsWith("/product")) {
+    let seletecRating = 0;
+    $(".rating-star").hover(function () {
+      let value = $(this).data("value");
+      highlightStars(value);
+    }, function () {
+      highlightStars(seletecRating);
     }
+    )
 
-    $.ajaxSetup({
-      headers: {
-        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+    $(".rating-star").click(function (e) {
+      e.preventDefault();
+      seletecRating = $(this).data("value");
+      $("#rating-value").val(seletecRating);
+      highlightStars(seletecRating);
+    })
+
+    function highlightStars(value) {
+      $(".rating-star i").each(function () {
+        let starValue = $(this).parent().data('value');
+        if (starValue <= value) {
+          $(this).removeClass("far").addClass("fas");
+        }
+        else {
+          $(this).removeClass("fas").addClass("far");
+
+        }
+      })
+    }
+    // submit
+    $("#review-form").submit(function (e) {
+      e.preventDefault();
+
+      let productId = $(this).data("product-id");
+      let rating = $("#rating-value").val();
+      let content = $("#review-content").val();
+
+      if (!rating || rating === "0") {
+        alert("Vui lòng chọn số sao");
+        return;
       }
+
+      $.ajaxSetup({
+        headers: {
+          "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+        }
+      });
+
+      $.ajax({
+        url: "/review",
+        type: "POST",
+        data: {
+          product_id: productId,
+          rating: rating,
+          comment: content
+        },
+
+        success: function (response) {
+          $("#review-content").val("");
+          highlightStars(0);
+          seletecRating = 0;
+
+          $(".ltn__comment-reply-area").hide();
+          toastr.success(response.message);
+
+          loadReviews(productId);
+        },
+
+        error: function (xhr) {
+          alert(xhr.responseJSON.error);
+        }
+      });
     });
 
-    $.ajax({
-      url: "/review",
-      type: "POST",
-      data: {
-        product_id: productId,
-        rating: rating,
-        comment: content
-      },
-
-      success: function (response) {
-        $("#review-content").val("");
-        highlightStars(0);
-        seletecRating = 0;
-
-        $(".ltn__comment-reply-area").hide();
-        toastr.success(response.message);
-
-        loadReviews(productId);
-      },
-
-      error: function (xhr) {
-        alert(xhr.responseJSON.error);
-      }
-    });
-  });
-
-  function loadReviews(productId) {
-    $.ajax({
-      url: "/review/" + productId,
-      type: "GET",
-      success: function (response) {
-        $(".ltn__comment-inner").html(response);
-      }
-    });
-  }
+    function loadReviews(productId) {
+      $.ajax({
+        url: "/review/" + productId,
+        type: "GET",
+        success: function (response) {
+          $(".ltn__comment-inner").html(response);
+        }
+      });
+    }
 
   }
   // =========================handle wishlist=========================
-    $(document).on('click', '.add-to-wishlist', function (e) {
+  $(document).on('click', '.add-to-wishlist', function (e) {
     e.preventDefault();
 
     let productId = $(this).data('id');
@@ -786,8 +785,7 @@ $(document).ready(function () {
       },
 
       success: function (response) {
-        if(response.status)
-        {
+        if (response.status) {
           $("#liton_wishlist_modal-" + productId).modal('show');
         }
       },
@@ -817,8 +815,7 @@ $(document).ready(function () {
       },
 
       success: function (response) {
-        if(response.status)
-        {
+        if (response.status) {
           row.remove();
           toastr.success("Đã xóa sản phẩm khỏi danh sách yêu thích");
         }
@@ -829,6 +826,36 @@ $(document).ready(function () {
       }
     });
   });
+  // =========================handle page contact=========================
+$("#contact-form").on("submit", function (e) {
+    let name = $('input[name="name"]').val().trim();
+    let email = $('input[name="email"]').val().trim();
+    let phone = $('input[name="phone"]').val().trim();
+    let message = $('textarea[name="message"]').val().trim();
+    let errorMessage = "";
 
- 
+    // Tên phải >= 3 ký tự
+    if (name.length < 3) {
+        errorMessage += "Họ và tên phải có ít nhất 3 ký tự.<br>";
+    }
+
+    // SĐT phải đúng 10 số
+    if (!/^[0-9]{10}$/.test(phone)) {
+        errorMessage += "Số điện thoại phải là 10 số.<br>";
+    }
+
+    // Email hợp lệ
+    let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        errorMessage += "Email không hợp lệ.<br>";
+    }
+
+    // Nếu có lỗi -> chặn submit và báo lỗi
+    if (errorMessage !== "") {
+        toastr.error(errorMessage, "Lỗi");
+        e.preventDefault();
+    }
+});
+
+
 });

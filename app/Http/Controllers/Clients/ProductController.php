@@ -82,4 +82,5 @@ class ProductController extends Controller
     {
         return view('clients.pages.cart');
     }
+    
 }

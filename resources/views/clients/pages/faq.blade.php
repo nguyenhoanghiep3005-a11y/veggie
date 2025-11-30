@@ -1,7 +1,7 @@
 @extends('layouts.client')
 
 @section('title','FAQ')
-@section('breadcrumb','Những câu hỏi thường gặp')
+@section('breadcrumb','Những câu hỏi ')
 
 @section('content')
   <!-- FAQ AREA START (faq-2) (ID > accordion_2) -->
@@ -106,11 +106,11 @@
                             </div>
 
                             <div class="need-support text-center mt-100">
-                                <h2>Vẫn cần trợ giúp? Liên hệ hỗ trợ 24/7:</h2>
+                                <h2>Liên hệ hỗ trợ 24/7</h2>
                                 <div class="btn-wrapper mb-30">
-                                    <a href="contact.html" class="theme-btn-1 btn">Liên hệ ngay</a>
+                                    <a href="{{route('contact.send')}}" class="theme-btn-1 btn">Liên hệ ngay</a>
                                 </div>
-                                <h3><i class="fas fa-phone"></i> +0123-456-789</h3>
+                                <h3><i class="fas fa-phone"></i> 0388-536-385</h3>
                             </div>
                         </div>
                     </div>
@@ -142,50 +142,6 @@
         <!-- FAQ AREA START -->
 
         <!-- COUNTER UP AREA START -->
-     <div class="ltn__counterup-area bg-image bg-overlay-theme-black-80 pt-115 pb-70" data-bg="{{asset('assets/clients/img/bg/5.jpg')}}">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3 col-sm-6 align-self-center">
-                <div class="ltn__counterup-item-3 text-color-white text-center">
-                    <div class="counter-icon">
-                        <img src="{{asset('assets/clients/img/icons/icon-img/2.png')}}" alt="#">
-                    </div>
-                    <h1><span class="counter">733</span><span class="counterUp-icon">+</span></h1>
-                    <h6>Khách Hàng Đang Hoạt Động</h6>
-                </div>
-            </div>
-
-            <div class="col-md-3 col-sm-6 align-self-center">
-                <div class="ltn__counterup-item-3 text-color-white text-center">
-                    <div class="counter-icon">
-                        <img src="{{asset('assets/clients/img/icons/icon-img/3.png')}}" alt="#">
-                    </div>
-                    <h1><span class="counter">33</span><span class="counterUp-letter">K</span><span class="counterUp-icon">+</span></h1>
-                    <h6>Tách Cà Phê Được Thưởng Thức</h6>
-                </div>
-            </div>
-
-            <div class="col-md-3 col-sm-6 align-self-center">
-                <div class="ltn__counterup-item-3 text-color-white text-center">
-                    <div class="counter-icon">
-                        <img src="{{asset('assets/clients/img/icons/icon-img/4.png')}}" alt="#">
-                    </div>
-                    <h1><span class="counter">100</span><span class="counterUp-icon">+</span></h1>
-                    <h6>Giải Thưởng Đạt Được</h6>
-                </div>
-            </div>
-
-            <div class="col-md-3 col-sm-6 align-self-center">
-                <div class="ltn__counterup-item-3 text-color-white text-center">
-                    <div class="counter-icon">
-                        <img src="{{asset('assets/clients/img/icons/icon-img/5.png')}}" alt="#">
-                    </div>
-                    <h1><span class="counter">21</span><span class="counterUp-icon">+</span></h1>
-                    <h6>Quốc Gia Phân Phối</h6>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
         <!-- COUNTER UP AREA END -->

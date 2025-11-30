@@ -7,7 +7,7 @@
                     <div class="footer-widget footer-about-widget">
                         <div class="footer-logo">
                             <div class="site-logo">
-                                <img src="{{asset('assets/clienst/img/logo.png')}}" alt="Logo">
+                                <img src="{{asset('assets/clienst/img/logohiep.png')}}" alt="Logo">
                             </div>
                         </div>
                         <p>Chúng tôi chuyên cung cấp rau củ quả tươi sạch, có nguồn gốc rõ ràng, an toàn cho sức khỏe và
@@ -28,7 +28,7 @@
                                         <i class="icon-call"></i>
                                     </div>
                                     <div class="footer-address-info">
-                                        <p><a href="tel:+0123-456789">+0123-456789</a></p>
+                                        <p><a href="tel:0388536385">0388536385</a></p>
                                     </div>
                                 </li>
                                 <li>
@@ -36,7 +36,7 @@
                                         <i class="icon-mail"></i>
                                     </div>
                                     <div class="footer-address-info">
-                                        <p><a href="mailto:minhdien.dev@gmail.com">nguyenhoanghiep@gmail.com</a>
+                                        <p><a href="mailto:nguyenhoanghiep3005@gmail.com">nguyenhoanghiep@gmail.com</a>
                                         </p>
                                     </div>
                                 </li>
@@ -61,7 +61,7 @@
                                 <li><a href="{{route('about')}}">Về chúng tôi</a></li>
                                 <li><a href="{{route('products.index')}}">Sản phẩm</a></li>
                                 <li><a href="{{route('faq')}}">FAQ</a></li>
-                                <li><a href="#">Liên hệ</a></li>
+                                <li><a href="{{route('contact.send')}}">Liên hệ</a></li>
                             </ul>
                         </div>
                     </div>
@@ -89,7 +89,7 @@
                                 <li><a href="{{route('wishlist')}}">Danh sách yêu thích</a></li>
                                 <li><a href="{{route('account')}}">Theo dõi đơn hàng</a></li>
                                 <li><a href="{{route('faq')}}">FAQ</a></li>
-                                <li><a href="#">Liên hệ</a></li>
+                                <li><a href="{{route('contact.send')}}">Liên hệ</a></li>
                             </ul>
                         </div>
                     </div>
@@ -115,25 +115,6 @@
             </div>
         </div>
     </div>
-    <div class="ltn__copyright-area ltn__copyright-2 section-bg-2  ltn__border-top-2--- plr--5">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-6 col-12">
-                    <div class="ltn__copyright-design clearfix">
-                        <p>All Rights Reserved @ Company <span class="current-year"></span></p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-12 align-self-center">
-                    <div class="ltn__copyright-menu text-right text-end">
-                        <ul>
-                            <li><a href="#">Terms & Conditions</a></li>
-                            <li><a href="#">Claim</a></li>
-                            <li><a href="#">Privacy & Policy</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
 </footer>
 <!-- FOOTER AREA END -->
