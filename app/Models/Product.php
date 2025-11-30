@@ -42,6 +42,17 @@ class Product extends Model
     {
         return $this->hasMany(Review::class); 
     }
-    
+public function getImageUrlAttribute()
+{
+    // Nếu có ảnh đầu tiên
+    if ($this->firstImage && $this->firstImage->image) {
+        return asset('storage/' . $this->firstImage->image);
+    }
+
+    // Nếu không có ảnh
+    return asset('storage/uploads/products/product_default.png');
+}
+
+
     
 }

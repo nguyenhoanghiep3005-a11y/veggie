@@ -372,5 +372,64 @@ $(document).ready(function () {
             }
         });
     });
+//send email
+    // $(document).on('click', '.send-invoice-mail', function (e) {
+    //     e.preventDefault();
+    //     let button = $(this);
+    //     let orderId = button.data("id");
+    //     $.ajaxSetup({
+    //         headers: {
+    //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    //         }
+    //     });
+    //     $.ajax({
+    //         type: 'POST',
+    //         url: 'send-invoice',
+    //         data: {
+    //             id: orderId,
+    //         },
+    //         success: function (response) {
+    //             if (response.status) {
+    //                 toastr.success(response.message);
+    //                 button.remove();
+    //             } else {
+    //                 toastr.error(response.message);
+    //             }
+    //         },
+    //         error: function (xhr, status, error) {
+    //             alert('AJAX error: ' + error);
+    //         }
+    //     });
+    // });
+    // cancel order
+    $(document).on('click', '.cancel-order', function (e) {
+        e.preventDefault();
+        let button = $(this);
+        let orderId = button.data("id");
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $.ajax({
+            type: 'POST',
+            url: '/admin/order-detail/cancel-order',
+            data: {
+                id: orderId,
+            },
+            success: function (response) {
+                if (response.status) {
+                    toastr.success(response.message);
+                    button.remove();
+                }
+                else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert('AJAX error: ' + error);
+            }
+        });
+    });
 
 });

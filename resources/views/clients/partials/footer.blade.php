@@ -20,7 +20,7 @@
                                         <i class="icon-placeholder"></i>
                                     </div>
                                     <div class="footer-address-info">
-                                        <p>Ngu Hanh Son, Da Nang, Viet Nam</p>
+                                        <p>Tan Phu,Ho Chi Minh, Viet Nam</p>
                                     </div>
                                 </li>
                                 <li>
@@ -36,7 +36,7 @@
                                         <i class="icon-mail"></i>
                                     </div>
                                     <div class="footer-address-info">
-                                        <p><a href="mailto:minhdien.dev@gmail.com">minhdien.dev@gmail.com</a>
+                                        <p><a href="mailto:minhdien.dev@gmail.com">nguyenhoanghiep@gmail.com</a>
                                         </p>
                                     </div>
                                 </li>
@@ -58,10 +58,10 @@
                         <h4 class="footer-title">Công ty</h4>
                         <div class="footer-menu">
                             <ul>
-                                <li><a href="about.html">Về chúng tôi</a></li>
-                                <li><a href="shop.html">Sản phẩm</a></li>
-                                <li><a href="faq.html">FAQ</a></li>
-                                <li><a href="contact.html">Liên hệ</a></li>
+                                <li><a href="{{route('about')}}">Về chúng tôi</a></li>
+                                <li><a href="{{route('products.index')}}">Sản phẩm</a></li>
+                                <li><a href="{{route('faq')}}">FAQ</a></li>
+                                <li><a href="#">Liên hệ</a></li>
                             </ul>
                         </div>
                     </div>
@@ -71,12 +71,10 @@
                         <h4 class="footer-title">Dịch vụ</h4>
                         <div class="footer-menu">
                             <ul>
-                                <li><a href="order-tracking.html">Theo dõi đơn hàng</a></li>
-                                <li><a href="wishlist.html">Danh sách yêu thích</a></li>
-                                <li><a href="login.html">Đăng nhập</a></li>
-                                <li><a href="account.html">Tài khoản</a></li>
-                                <li><a href="about.html">Điều khoản & Điều kiện</a></li>
-                                <li><a href="about.html">Khuyến mãi</a></li>
+                                <li><a href="{{route('account')}}">Theo dõi đơn hàng</a></li>
+                                <li><a href="{{route('wishlist')}}">Danh sách yêu thích</a></li>
+                                <li><a href="{{route('login')}}">Đăng nhập</a></li>
+                                <li><a href="{{route('account')}}">Tài khoản</a></li>
                             </ul>
                         </div>
                     </div>
@@ -86,12 +84,12 @@
                         <h4 class="footer-title">Hỗ trợ khách hàng</h4>
                         <div class="footer-menu">
                             <ul>
-                                <li><a href="login.html">Đăng nhập</a></li>
-                                <li><a href="account.html">Tài khoản</a></li>
-                                <li><a href="wishlist.html">Danh sách yêu thích</a></li>
-                                <li><a href="order-tracking.html">Theo dõi đơn hàng</a></li>
-                                <li><a href="faq.html">FAQ</a></li>
-                                <li><a href="contact.html">Liên hệ</a></li>
+                                <li><a href="{{route('login')}}">Đăng nhập</a></li>
+                                <li><a href="{{route('account')}}">Tài khoản</a></li>
+                                <li><a href="{{route('wishlist')}}">Danh sách yêu thích</a></li>
+                                <li><a href="{{route('account')}}">Theo dõi đơn hàng</a></li>
+                                <li><a href="{{route('faq')}}">FAQ</a></li>
+                                <li><a href="#">Liên hệ</a></li>
                             </ul>
                         </div>
                     </div>

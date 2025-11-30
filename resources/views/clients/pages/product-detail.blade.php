@@ -11,19 +11,18 @@
                 {{-- CHI TIẾT SẢN PHẨM --}}
                 <div class="ltn__shop-details-inner mb-60">
                     <div class="row">
-
                         {{-- ẢNH SẢN PHẨM --}}
                         <div class="col-md-6">
                             <div class="ltn__shop-details-img-gallery">
                                 <div class="ltn__shop-details-large-img">
+                                     @foreach ($product->images as $image)
                                     <div class="single-large-img">
-                                        @foreach ($product->images as $image)
                                         <a href="{{asset('storage/' . $image->image)}}"
                                             data-rel="lightcase:myCollection">
                                             <img src="{{asset('storage/' . $image->image)}}" alt="{{$product->name}}">
                                         </a>
-                                        @endforeach
                                     </div>
+                                         @endforeach
                                 </div>
                                 <div class="ltn__shop-details-small-img slick-arrow-2">
                                     @foreach ($product->images as $image)

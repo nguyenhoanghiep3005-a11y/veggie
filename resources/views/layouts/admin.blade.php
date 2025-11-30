@@ -11,7 +11,6 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <title>@yield('title')</title>
-
   <!-- Bootstrap -->
   <link href="{{asset('assets/admin/vendors/bootstrap/dist/css/bootstrap.min.css')}}" rel="stylesheet">
   <!-- Font Awesome -->
@@ -125,7 +124,7 @@
   <script src="{{asset('assets/admin/vendors/pdfmake/build/vfs_fonts.js')}}"></script>
   @endif
   <!-- Custom Theme Scripts -->
-  <script src="{{asset('assets/admin/build/js/custom.min.js')}}"></script>
+  <script src="{{asset('assets/admin/build/js/custom.js')}}"></script>
   <!-- Custom Theme Scripts -->
   <script src="{{asset('assets/admin/js/custom.js')}}"></script>
 
