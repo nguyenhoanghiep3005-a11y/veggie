@@ -27,7 +27,8 @@
                                             từ những nông trại Việt Nam chất lượng cao.</p>
                                     </div>
                                     <div class="btn-wrapper animated">
-                                        <a href="{{route('products.index')}}" class="theme-btn-1 btn btn-effect-1 text-uppercase">
+                                        <a href="{{route('products.index')}}"
+                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">
                                             Mua Ngay
                                         </a>
                                     </div>
@@ -55,7 +56,8 @@
                                             đảm bảo hương vị tự nhiên và dinh dưỡng tốt nhất.</p>
                                     </div>
                                     <div class="btn-wrapper animated">
-                                        <a href="{{route('about')}}" class="theme-btn-1 btn btn-effect-1 text-uppercase">
+                                        <a href="{{route('about')}}"
+                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">
                                             Khám Phá Ngay
                                         </a>
                                         <a href="{{route('service')}}" class="btn btn-transparent btn-effect-3">
@@ -91,16 +93,16 @@
                     <div class="col-lg-12">
                         <div class="ltn__banner-item">
                             <div class="ltn__banner-img">
-                                <a href="{{route('products.index')}}"><img src="{{asset('assets/clients/img/banner/14.png')}}"
-                                        alt="Banner Image"></a>
+                                <a href="{{route('products.index')}}"><img
+                                        src="{{asset('assets/clients/img/banner/14.png')}}" alt="Banner Image"></a>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-12">
                         <div class="ltn__banner-item">
                             <div class="ltn__banner-img">
-                                <a href="{{route('products.index')}}"><img src="{{asset('assets/clients/img/banner/15.png')}}"
-                                        alt="Banner Image"></a>
+                                <a href="{{route('products.index')}}"><img
+                                        src="{{asset('assets/clients/img/banner/15.png')}}" alt="Banner Image"></a>
                             </div>
                         </div>
                     </div>
@@ -131,7 +133,7 @@
                         </a>
                     </div>
                     <div class="ltn__category-item-name">
-                        <h5><a href="{{route('products.index')}}" >{{$category->name}}</a></h5>
+                        <h5><a href="{{route('products.index')}}">{{$category->name}}</a></h5>
                         <h6>{{$category->products->count()}} Sản phẩm</h6>
                     </div>
                 </div>
@@ -185,9 +187,11 @@
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a href="#" title="Yêu thích" data-bs-toggle="modal"
-                                                            data-bs-target="#liton_wishlist_modal-{{$product->id}}">
-                                                            <i class="far fa-heart"></i></a>
+                                                        <a href="javascript:void(0)" class="add-to-wishlist"
+                                                            data-id="{{ $product->id }}">
+                                                            <i class="far fa-heart"></i>
+                                                        </a>
+
                                                     </li>
                                                 </ul>
                                             </div>
@@ -214,7 +218,8 @@
                                                 </ul>
                                             </div>
                                             <h2 class="product-title"><a
-                                                    href="{{route('product.detail',$product->slug)}}">{{$product->name}}</a></h2>
+                                                    href="{{route('product.detail',$product->slug)}}">{{$product->name}}</a>
+                                            </h2>
                                             <div class="product-price">
                                                 <span>{{number_format($product->price,0,',','.')}} VNĐ</span>
                                             </div>
