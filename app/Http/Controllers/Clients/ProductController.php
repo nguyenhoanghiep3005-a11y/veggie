@@ -12,30 +12,41 @@ class ProductController extends Controller
 {
     public function index()
     {
+        // Lấy danh mục và sản phẩm của từng danh mục
         $categories = Category::with('products')->get();
-        $products = Product::with('firstImage')->where('status', 'int_stock')->paginate(9);
-        /** @var \App\Models\Product $product */
+
+        // Lấy danh sách sản phẩm còn hàng  kèm ảnh đầu tiên
+        $products = Product::with('firstImage')
+            ->where('status', 'int_stock')
+            ->paginate(9);
+
+        // Gán URL ảnh cho từng sản phẩm
         foreach ($products as $product) {
             $product->image_url = $product->firstImage?->image
                 ? asset('storage/uploads/products/' . $product->firstImage->image)
                 : asset('storage/uploads/products/product_default.png');
         }
 
-
+        // Trả về giao diện danh sách sản phẩm
         return view('clients.pages.products', compact('categories', 'products'));
     }
+
     public function filter(Request $request)
     {
+        // Tạo query filter sản phẩm
         $query = Product::query();
-        if (
-            $request->has('category_id') && $request->category_id != ''
-        ) {
+
+        // Lọc theo danh mục
+        if ($request->has('category_id') && $request->category_id != '') {
             $query->where('category_id', $request->category_id);
         }
+
+        // Lọc theo giá
         if ($request->has('minPrice') && $request->has('maxPrice')) {
             $query->whereBetween('price', [$request->minPrice, $request->maxPrice]);
         }
 
+        // Sắp xếp sản phẩm
         if ($request->has('sort_by')) {
             switch ($request->sort_by) {
                 case 'price_asc':
@@ -56,31 +67,43 @@ class ProductController extends Controller
             }
         }
 
+        // Lấy danh sách sau khi lọc
         $products = $query->paginate(9);
-        /** @var \App\Models\Product $product */
+
+        // Gán hình ảnh cho từng sản phẩm
         foreach ($products as $product) {
             $product->image_url = $product->firstImage?->image
                 ? asset('storage/uploads/products/' . $product->firstImage->image)
                 : asset('storage/uploads/products/product_default.png');
         }
+
+        // Trả HTML sản phẩm + phân trang qua AJAX
         return Response()->json([
             'products' => view('clients.components.products_grid', compact('products'))->render(),
             'pagination' => $products->links('clients.components.pagination.pagination_custom')->toHtml()
         ]);
     }
-    public function detail($slug){
-        $product = Product::with(['category', 'images', 'reviews.user'])->where('slug', $slug)->firstOrFail();
 
+    public function detail($slug)
+    {
+        // Chi tiết sản phẩm + ảnh + đánh giá
+        $product = Product::with(['category', 'images', 'reviews.user'])
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        // Sản phẩm liên quan cùng danh mục
         $relatedProducts = Product::where('category_id', $product->category_id)
-        ->where('id', '!=', $product->id)
-        ->limit(6)
-        ->get();
-        return view('clients.pages.product-detail', compact('product','relatedProducts'));
-    
+            ->where('id', '!=', $product->id)
+            ->limit(6)
+            ->get();
+
+        // Trả về giao diện chi tiết sản phẩm
+        return view('clients.pages.product-detail', compact('product', 'relatedProducts'));
     }
+
     public function ViewCart()
     {
+        // Giao diện giỏ hàng
         return view('clients.pages.cart');
     }
-    
 }

@@ -5,7 +5,6 @@
 @section('content')
 <div class="container pb-70">
     <h2>Quên mật khẩu</h2>
-
     <div class="ltn__myaccount-tab-content-inner ">
         <div class="ltn__form-box">
             <form action="{{route('password.email')}}" method="POST">

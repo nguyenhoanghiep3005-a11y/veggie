@@ -81,9 +81,7 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif',
         ]);
-
         $product = Product::find($request->product_id);
-
         $product->update([
             'name' => $request->name,
             'category_id' => $request->category_id,
@@ -92,7 +90,6 @@ class ProductController extends Controller
             'stock' => $request->stock,
             'unit' => $request->unit
         ]);
-
         // Cập nhật hình ảnh
         if ($request->hasFile('images')) {
 
@@ -101,14 +98,11 @@ class ProductController extends Controller
                 Storage::disk('public')->delete($image->image);
             }
             ProductImage::where('product_id', $product->id)->delete();
-
             // Thêm ảnh mới
             foreach ($request->file('images') as $image) {
                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
                 $path = 'uploads/products/' . $imageName;
-
                 Storage::disk('public')->put($path, file_get_contents($image));
-
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image' => $path,
@@ -137,7 +131,6 @@ class ProductController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);
-
         $product = Product::find($request->product_id);
 
         // Xóa ảnh sản phẩm khỏi storage

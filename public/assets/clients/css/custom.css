@@ -52,3 +52,9 @@
     margin: 10px 0;
     
 }
+#voice-search{
+    position: absolute;
+    right: 50px;
+    text-align: center;
+    top: 20px;
+}

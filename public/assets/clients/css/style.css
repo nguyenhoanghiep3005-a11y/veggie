@@ -7873,6 +7873,23 @@ ul.wp-block-latest-posts.is-grid.alignwide {
 
 .ltn__category-item-img img {
   display: inline-block; }
+  /* Ép ảnh danh mục bằng nhau 103x99 */
+.ltn__category-item-img {
+    width: 130px;       /* khung to hơn một chút cho đẹp */
+    height: 130px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ltn__category-item-img img {
+    width: 103px !important;
+    height: 99px !important;
+    object-fit: contain !important;
+    display: block;
+}
+
 
 .ltn__category-item-name {
   padding: 15px 20px 5px; }

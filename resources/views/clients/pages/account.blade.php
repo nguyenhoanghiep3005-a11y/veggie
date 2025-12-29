@@ -20,7 +20,6 @@
                                             khiển <i class="fas fa-home"></i></a>
                                         <a data-bs-toggle="tab" href="#liton_tab_orders">Đơn hàng <i
                                                 class="fas fa-file-alt"></i></a>
-
                                         <a data-bs-toggle="tab" href="#liton_tab_address">Địa chỉ <i
                                                 class="fas fa-map-marker-alt"></i></a>
                                         <a data-bs-toggle="tab" href="#liton_tab_account">Chi tiết tài khoản <i
@@ -45,7 +44,8 @@
                                     </div>
                                     <div class="tab-pane fade" id="liton_tab_orders">
                                         <div class="ltn__myaccount-tab-content-inner">
-                                            <div class="table-responsive" style="overflow-x: auto; overflow-y: scroll; max-height: 400px;">
+                                            <div class="table-responsive"
+                                                style="overflow-x: auto; overflow-y: scroll; max-height: 400px;">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
@@ -73,11 +73,12 @@
                                                                 @elseif($order->status == 'canceled')
                                                                 <span class="badge bg-danger">Đã hủy</span>
 
-
                                                                 @endif
                                                             </td>
-                                                            <td>{{number_format($order->total_price, 0, ',', '.')}} đ</td>
-                                                            <td><a href="{{ route('order.show', $order->id) }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                                            <td>{{number_format($order->total_price, 0, ',', '.')}} đ
+                                                            </td>
+                                                            <td><a href="{{ route('order.show', $order->id) }}"
+                                                                    class="btn btn-sm btn-info">Xem chi tiết</a>
                                                             </td>
                                                         </tr>
                                                         @endforeach
@@ -143,8 +144,6 @@
                                                 data-bs-target="#addAddressModal">Thêm địa chỉ mới</button>
                                         </div>
                                     </div>
-
-
                                     <!-- Modal -->
                                     <div class="modal fade" id="addAddressModal" tabindex="-1"
                                         aria-labelledby="addAddressModalLabel" aria-hidden="true">
@@ -202,9 +201,7 @@
                                             <div class="ltn__form-box">
                                                 <form action="{{route('account.update')}}" method="POST"
                                                     id="update-account" enctype="multipart/form-data">
-
                                                     @method('PUT')
-
                                                     <div class="row mb-50">
                                                         <div class="col-md-12 text-center mb-3">
                                                             <div class="profile-pic-container">

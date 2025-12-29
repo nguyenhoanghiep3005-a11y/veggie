@@ -23,10 +23,11 @@ class CheckoutController extends Controller
         $user = Auth::user();
         $addresses = ShippingAddress::where('user_id', $user->id)->get();
         $defaultAddress = $addresses->where('default', 1)->first();
-        if (is_null($addresses) || is_null($defaultAddress)) {
-            toastr()->error('Vui lòng thêm địa chỉ giao hàng');
-            return redirect()->route('account');
-        }
+      if ($addresses->isEmpty()) {
+    toastr()->error('Vui lòng thêm địa chỉ giao hàng');
+    return redirect()->route('account');
+}
+
         $cartItems = CartItem::where('user_id', $user->id)->with('product')->get();
         $totalPrice = $cartItems->sum(fn($item) => $item->product->price * $item->quantity);
         return view('clients.pages.checkout', compact('addresses', 'defaultAddress', 'cartItems', 'totalPrice'));

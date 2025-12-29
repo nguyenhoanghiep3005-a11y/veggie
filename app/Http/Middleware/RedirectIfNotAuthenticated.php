@@ -18,7 +18,7 @@ class RedirectIfNotAuthenticated
                 return redirect()->route('admin.login');
             }
         } 
-        // Nếu là người dùng thường (client)
+        // Nếu là người dùng  (client)
         else {
             if (!Auth::guard('web')->check()) {
                 toastr()->error('Vui lòng đăng nhập để thực hiện chức năng này.');

@@ -24,7 +24,6 @@ class AccountController extends Controller
 
     public function update(Request $request)
     {
-        // Xác thực dữ liệu đầu vào
         $request->validate([
             'ltn__name'        => 'required|string|max:255',
             'ltn__phone_number' => 'nullable|string|max:15',
@@ -40,21 +39,17 @@ class AccountController extends Controller
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
-
             // Lấy file mới
             $file = $request->file('avatar');
-
-            // Tạo tên file mới có timestamp
+            // Tạo tên file mới 
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-
             // Lưu file vào thư mục storage/app/public/uploads/users
             $avatarPath = $file->storeAs('uploads/users', $filename, 'public');
-
             // Cập nhật đường dẫn avatar trong DB
             $user->avatar = $avatarPath;
         }
 
-        // Cập nhật các thông tin khác
+        
         $user->name = $request->input('ltn__name');
         $user->phone_number = $request->input('ltn__phone_number');
         $user->address = $request->input('ltn__address');
@@ -120,8 +115,6 @@ class AccountController extends Controller
             'address' => $request->address,
             'city' => $request->city,
             'default' => $request->has('default') ? 1 : 0
-
-
         ]);
         return back()->with('success', 'Địa chỉ đã được thêm');
     }

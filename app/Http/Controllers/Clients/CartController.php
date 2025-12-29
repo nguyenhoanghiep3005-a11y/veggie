@@ -45,7 +45,7 @@ class CartController extends Controller
             ]);
         }
 
-        // Nếu chưa login → lưu SESSION (chỉ lưu id + quantity)
+        // Nếu chưa login lưu SESSION (chỉ lưu id + quantity)
         $cart = session()->get('cart', []);
 
         if (isset($cart[$product_id])) {
@@ -238,7 +238,7 @@ class CartController extends Controller
             session()->put('cart', $cart);
         }
 
-        // Tính toán lại
+        // Tính tiền
         $subtotal   = $quantity * $product->price;
         $total      = $this->caculateCartTotal();
         $grandTotal = $total + 25000;

@@ -13,6 +13,5 @@
         Kích hoạt tài khoản
     </a>
     <p>Trân trọng,</p>
-    <p>Đội ngũ hỗ trợ khách hàng</p>
 </body>
 </html>

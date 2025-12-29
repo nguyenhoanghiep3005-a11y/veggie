@@ -1,8 +1,6 @@
 $(document).ready(function () {
 
-    // ===================================================================
     // =============== QUẢN LÝ NGƯỜI DÙNG (MANAGEMENT USER) ===============
-    // ===================================================================
 
     //   User sang Staff
     $(document).on('click', '.upgradeStaff', function (e) {
@@ -55,7 +53,6 @@ $(document).ready(function () {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
-
         $.ajax({
             type: 'POST',
             url: 'user/updateStatus',
@@ -87,9 +84,7 @@ $(document).ready(function () {
         });
     });
 
-    // ===================================================================
     // =============== QUẢN LÝ DANH MỤC (MANAGEMENT CATEGORY) ============
-    // ===================================================================
 
     //  Xem trước ảnh khi thêm danh mục mới
     $("#category-image").change(function () {
@@ -236,9 +231,7 @@ $(document).ready(function () {
         }
     });
 
-    // ===================================================================
     // =============== QUẢN LÝ SẢN PHẨM (MANAGEMENT PRODUCT) =============
-    // ===================================================================
 
     //  Xem trước ảnh khi thêm sản phẩm mới
     $("#product-images").change(function (e) {
@@ -417,9 +410,7 @@ $(document).ready(function () {
         }
     });
 
-    // ===================================================================
     // =============== QUẢN LÝ ĐƠN HÀNG (MANAGEMENT ORDER) ===============
-    // ===================================================================
 
     //  Xác nhận đơn hàng
     $(document).on('click', '.confirm-order', function (e) {

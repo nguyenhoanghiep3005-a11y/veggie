@@ -1,13 +1,8 @@
-// ============================== CUSTOM.JS ==============================
 $(document).ready(function () {
 
-  // ---------------------------------------------------------------------
-  //  PHẦN 1 – LOGIN & REGISTER (ĐĂNG NHẬP / ĐĂNG KÝ)
-  // ---------------------------------------------------------------------
-
+  //  ĐĂNG NHẬP / ĐĂNG KÝ
   // Validate form ĐĂNG KÝ
   $('#register-form').submit(function (e) {
-
     // Lấy giá trị từ các input
     let name = $('input[name="name"]').val();
     let email = $('input[name="email"]').val();
@@ -17,41 +12,34 @@ $(document).ready(function () {
     let checkbox2 = $('input[name="checkbox2"]').is(':checked');
 
     let errorMessage = "";
-
     // Kiểm tra tên >= 3 ký tự
     if (name.length < 3) {
       errorMessage += "Họ và tên phải có ít nhất 3 ký tự. <br>";
     }
-
     // Regex kiểm tra email đúng format
     let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       errorMessage += "Email không hợp lệ. <br>";
     }
-
     // Mật khẩu tối thiểu 6 ký tự
     if (password.length < 6) {
       errorMessage += "Mật khẩu phải có ít nhất 6 ký tự. <br>";
     }
-
     // Kiểm tra hai mật khẩu khớp nhau
     if (password != confirmPassword) {
       errorMessage += "Mật khẩu nhập lại không khớp. <br>";
     }
-
     // Người dùng có tick điều khoản chưa?
     if (!checkbox1 || !checkbox2) {
       errorMessage += "Bạn phải đồng ý với các điều khoản trước khi tạo tài khoản. <br>";
     }
-
-    // Nếu có lỗi → chặn submit
+    // Nếu có lỗi chặn submit
     if (errorMessage != "") {
       toastr.error(errorMessage, "Lỗi");
       e.preventDefault();
       return;
     }
   });
-
   // Validate form ĐĂNG NHẬP
   $('#login-form').submit(function (e) {
     toastr.clear(); // Xóa thông báo cũ
@@ -59,34 +47,28 @@ $(document).ready(function () {
     let email = $('input[name="email"]').val();
     let password = $('input[name="password"]').val();
     let errorMessage = "";
-
     // Regex email
     let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     // Kiểm tra email
     if (!emailRegex.test(email)) {
       errorMessage += "Email không hợp lệ. <br>";
     }
-
     // Kiểm tra mật khẩu
     if (password.length < 6) {
       errorMessage += "Mật khẩu phải có ít nhất 6 ký tự. <br>";
     }
-
-    // Nếu lỗi → chặn submit
+    // Nếu lỗi  chặn submit
     if (errorMessage != "") {
       toastr.error(errorMessage, "Lỗi");
       e.preventDefault();
     }
   });
-
   // Validate form RESET PASSWORD
   $('#reset-pasword-form').submit(function (e) {
     let email = $('input[name="email"]').val();
     let password = $('input[name="password"]').val();
     let confirmPassword = $('input[name="password_confirmation"]').val();
     let errorMessage = "";
-
     // Regex email
     let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -104,18 +86,14 @@ $(document).ready(function () {
       errorMessage += "Mật khẩu nhập lại không khớp. <br>";
     }
 
-    // Nếu có lỗi → chặn submit
+    // Nếu có lỗi  chặn submit
     if (errorMessage != "") {
       toastr.error(errorMessage, "Lỗi");
       e.preventDefault();
     }
   });
-
-  // ---------------------------------------------------------------------
-  //  PHẦN 2 – ACCOUNT (TRANG TÀI KHOẢN)
-  // ---------------------------------------------------------------------
-
-  // Click ảnh đại diện → mở input chọn file
+  // ACCOUNT 
+  // Click ảnh đại diện  mở input chọn file
   $('.profile-pic').click(function () {
     $("#avatar").click();
   })
@@ -132,13 +110,12 @@ $(document).ready(function () {
     }
   })
 
-  // AJAX cập nhật thông tin tài khoản
+  // cập nhật thông tin tài khoản
   $("#update-account").on("submit", function (e) {
     e.preventDefault();
 
     let formData = new FormData(this);
     let urlUpdate = $(this).attr('action');
-
     // Thiết lập CSRF token
     $.ajaxSetup({
       headers: {
@@ -178,11 +155,7 @@ $(document).ready(function () {
       },
     })
   })
-
-  // ---------------------------------------------------------------------
-  //  PHẦN 3 – ĐỔI MẬT KHẨU
-  // ---------------------------------------------------------------------
-
+  //   ĐỔI MẬT KHẨU
   $('#change-password-form').submit(function (e) {
     e.preventDefault();
 
@@ -250,10 +223,7 @@ $(document).ready(function () {
     })
   });
 
-  // ---------------------------------------------------------------------
-  //  PHẦN 4 – FORM ĐỊA CHỈ
-  // ---------------------------------------------------------------------
-
+  //   FORM ĐỊA CHỈ
   $('#addAddressForm').submit(function (e) {
     e.preventDefault();
 
@@ -281,9 +251,7 @@ $(document).ready(function () {
     }
   });
 
-  // ---------------------------------------------------------------------
-  //  PHẦN 5 – PAGE PRODUCT (LỌC, PHÂN TRANG, SẮP XẾP, ADD TO CART)
-  // ---------------------------------------------------------------------
+  //  PAGE PRODUCT (LỌC, PHÂN TRANG, SẮP XẾP, ADD TO CART)
 
   let currentPage = 1; // Trang hiện tại khi phân trang
 
@@ -295,7 +263,7 @@ $(document).ready(function () {
         $inc = $('<span class="inc qtybutton">+</span>'),
         $dec = $('<span class="dec qtybutton">-</span>');
 
-      // Nếu chưa có nút tăng giảm → thêm vào
+
       if ($this.find(".qtybutton").length === 0) {
         $this.prepend($dec);
         $this.append($inc);
@@ -456,9 +424,7 @@ $(document).ready(function () {
 
   activateCartPlusMinus();
 
-  // ---------------------------------------------------------------------
-  //  PHẦN 6 – MINI CART (GIỎ HÀNG NHANH)
-  // ---------------------------------------------------------------------
+  //  – MINI CART (GIỎ HÀNG NHANH)
 
   // Mở mini cart
   $('.mini-cart-icon').on('click', function () {
@@ -535,8 +501,7 @@ $(document).ready(function () {
     });
   });
 
-  // ---------------------------------------------------------------------
-  //  PHẦN 7 – CART PAGE (TRANG GIỎ HÀNG CHÍNH)
+  //   CART PAGE (TRANG GIỎ HÀNG CHÍNH)
   // ---------------------------------------------------------------------
 
   if (window.location.pathname === '/cart') {
@@ -632,9 +597,7 @@ $(document).ready(function () {
     });
   });
 
-  // ---------------------------------------------------------------------
-  //  PHẦN 8 – CHECKOUT (THANH TOÁN)
-  // ---------------------------------------------------------------------
+  // – CHECKOUT (THANH TOÁN)
 
   $('#list_address').change(function () {
     var addressId = $(this).val();
@@ -662,9 +625,7 @@ $(document).ready(function () {
     });
   });
 
-  // ---------------------------------------------------------------------
-  //  PHẦN 9 – PAYPAL PAYMENT
-  // ---------------------------------------------------------------------
+  //  – PAYPAL PAYMENT
 
   // Ẩn/hiện nút thanh toán PayPal
   function togglePayment() {
@@ -687,49 +648,47 @@ $(document).ready(function () {
   $('input[name="payment_method"]').on('change', togglePayment);
 
   // Cài đặt Paypal Buttons
-if (document.querySelector('#paypal-button-container')) {
+  if (document.querySelector('#paypal-button-container')) {
     paypal.Buttons({
-        createOrder: function (data, actions) {
-            return actions.order.create({
-                purchase_units: [{
-                    amount: { value: (totalPriceNumber / 25000).toFixed(2) }
-                }]
-            })
-        },
+      createOrder: function (data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: { value: (totalPriceNumber / 25000).toFixed(2) }
+          }]
+        })
+      },
 
-        onApprove: function (data, actions) {
-            return actions.order.capture().then(function (details) {
-                fetch("/checkout/paypal", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-                    },
-                    body: JSON.stringify({
-                        orderID: data.orderID,
-                        payerID: data.payerID,
-                        transactionID: details.id,
-                        amount: details.purchase_units[0].amount.value,
-                        address_id: $('#list_address').val(),
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        toastr.success('Thanh toán thành công');
-                        window.location.href = "/account";
-                    } else {
-                        alert('Có lỗi xảy ra, vui lòng thử lại');
-                    }
-                })
+      onApprove: function (data, actions) {
+        return actions.order.capture().then(function (details) {
+          fetch("/checkout/paypal", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+            },
+            body: JSON.stringify({
+              orderID: data.orderID,
+              payerID: data.payerID,
+              transactionID: details.id,
+              amount: details.purchase_units[0].amount.value,
+              address_id: $('#list_address').val(),
             })
-        }
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                toastr.success('Thanh toán thành công');
+                window.location.href = "/account";
+              } else {
+                alert('Có lỗi xảy ra, vui lòng thử lại');
+              }
+            })
+        })
+      }
     }).render('#paypal-button-container');
-}
+  }
 
-  // ---------------------------------------------------------------------
-  //  PHẦN 10 – REVIEW PRODUCT (ĐÁNH GIÁ SẢN PHẨM)
-  // ---------------------------------------------------------------------
+  // – REVIEW PRODUCT (ĐÁNH GIÁ SẢN PHẨM)
 
   if (window.location.pathname.startsWith("/product")) {
 
@@ -774,7 +733,6 @@ if (document.querySelector('#paypal-button-container')) {
         alert("Vui lòng chọn số sao");
         return;
       }
-
       $.ajaxSetup({
         headers: { "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content") }
       });
@@ -817,9 +775,7 @@ if (document.querySelector('#paypal-button-container')) {
     }
   }
 
-  // ---------------------------------------------------------------------
-  //  PHẦN 11 – WISHLIST (YÊU THÍCH)
-  // ---------------------------------------------------------------------
+  // – WISHLIST (YÊU THÍCH)
 
   // Thêm sản phẩm vào wishlist
   $(document).on('click', '.add-to-wishlist', function (e) {
@@ -877,9 +833,7 @@ if (document.querySelector('#paypal-button-container')) {
     });
   });
 
-  // ---------------------------------------------------------------------
-  //  PHẦN 12 – CONTACT PAGE (LIÊN HỆ)
-  // ---------------------------------------------------------------------
+  //  – CONTACT PAGE (LIÊN HỆ)
 
   $("#contact-form").on("submit", function (e) {
     let name = $('input[name="name"]').val().trim();
@@ -911,5 +865,60 @@ if (document.querySelector('#paypal-button-container')) {
       e.preventDefault();
     }
   });
+  //tim kiem bang giong noi
+if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'vi-VN';
+    recognition.interimResults = true;
+
+    let isRecognizing = false;
+    const mic = $("#voice-search");
+    const input = $('input[name="keyword"]');
+
+    // Click micro
+    mic.on('click', function () {
+        if (isRecognizing) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    });
+
+    // Bắt đầu nghe
+    recognition.onstart = function () {
+        isRecognizing = true;
+        mic.removeClass('fa-microphone').addClass('fa-microphone-slash');
+        console.log('Speech recognition started');
+    };
+
+    // Có kết quả
+    recognition.onresult = function (event) {
+        let transcript = event.results[0][0].transcript.trim();
+
+        // ❗ Xóa dấu . , ! ? ở cuối
+        transcript = transcript.replace(/[.,!?]+$/, '');
+
+        input.val(transcript);
+    };
+
+    // Lỗi
+    recognition.onerror = function (event) {
+        console.log('Speech recognition error:', event.error);
+        toastr.error('Có lỗi xảy ra khi nhận diện giọng nói: ' + event.error);
+    };
+
+    // Kết thúc
+    recognition.onend = function () {
+        isRecognizing = false;
+        mic.removeClass('fa-microphone-slash').addClass('fa-microphone');
+        console.log('Speech recognition ended');
+    };
+
+} else {
+    console.log("Trình duyệt không hỗ trợ");
+    toastr.error("Trình duyệt của bạn không hỗ trợ giọng nói");
+}
+
 
 });

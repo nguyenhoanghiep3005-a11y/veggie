@@ -63,11 +63,6 @@
                     <div class="row">
                         <div class="col-xl-3 col-md-6 col-sm-6 col-12">
                             <div class="footer-widget footer-about-widget">
-                                <div class="footer-logo">
-                                    <div class="site-logo">
-                                        <img src="{{asset('assets/clients/img/logohiep.png')}}" alt="Logo">
-                                    </div>
-                                </div>
                           <p>Chúng tôi chuyên cung cấp rau củ quả tươi sạch, có nguồn gốc rõ ràng, an toàn cho sức khỏe và
                             thân thiện với môi trường.</p>
                                 <div class="footer-address">

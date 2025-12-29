@@ -17,12 +17,8 @@ use App\Http\Controllers\Clients\WishlistController;
 
 
 Route::prefix('/')->group(function () {
-
-    // ========================
-    //  TRANG CHỦ
-    // ========================
     Route::get('/', [HomeController::class, 'index'])
-        ->name('home');  // Trang chủ website
+        ->name('home');  
     Route::get('/about', function () {
         return view('clients.pages.about');
     })->name('about');
@@ -38,23 +34,17 @@ Route::prefix('/')->group(function () {
     Route::get('/faq', function () {
         return view('clients.pages.faq');
     })->name('faq');
-
-
-    // =======================================================
-    //  USER CHƯA ĐĂNG NHẬP (middleware: guest)
     //  Không cho phép vào các trang này nếu đã đăng nhập
-    // =======================================================
     Route::middleware('guest')->group(function () {
 
         // --- Đăng ký tài khoản ---
         Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
         Route::post('/register', [AuthController::class, 'register'])->name('post-register');
-
         // --- Đăng nhập ---
         Route::get('/login', [AuthController::class, 'showloginForm'])->name('login');
         Route::post('/login', [AuthController::class, 'login'])->name('post-login');
 
-        // --- Quên mật khẩu ---
+        // --- Quên mật khẩu---
         Route::get('/forgot-password', [ForgotPasswordController::class, 'showForgotPasswordForm'])->name('password.request');
         Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetlink'])->name('password.email');
 
@@ -62,26 +52,12 @@ Route::prefix('/')->group(function () {
         Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
         Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword'])->name('password.update');
     });
-
-    // ========================
-    //  ĐĂNG XUẤT
-    // ========================
-    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-
-    // ========================
     //  KÍCH HOẠT TÀI KHOẢN QUA EMAIL
-    // ========================
     Route::get('/activate/{token}', [AuthController::class, 'activate'])->name('activate');
 
-
-    // =======================================================
-    //  ROUTE CHỈ DÀNH CHO USER ĐÃ ĐĂNG NHẬP (auth.custom)
-    // =======================================================
     Route::middleware(['auth.custom'])->group(function () {
-
-        // ========================
-        //  THÔNG TIN TÀI KHOẢN
-        // ========================
+        //  ĐĂNG XUẤT
+        Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::prefix('account')->group(function () {
 
             // Trang tài khoản
@@ -188,7 +164,6 @@ Route::prefix('/')->group(function () {
     // =======================================================
     Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
     Route::post('/contact', [ContactController::class, 'sendContact'])->name('contact.send');
-
 });  // END PREFIX /
 
 /*
@@ -196,4 +171,4 @@ Route::prefix('/')->group(function () {
 | Nhúng route admin (tách file riêng)
 |--------------------------------------------------------------------------
 */
-require __DIR__.'/admin.php';
+require __DIR__ . '/admin.php';

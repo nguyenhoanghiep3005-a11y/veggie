@@ -52,13 +52,10 @@
                                             @foreach ($orders as $order)
                                             <tr>
                                                 <td>{{$order->id}}</td>
-                                                <td>{{$order->user->name}}</td>
+                                                <td>{{ optional($order->user)->name ?? '—' }}</td>
                                                 <td>
-                                                    {{-- <a href="">{{optional($order->shippingAddress)->address ??
-                                                        'Không có
-                                                        địa chỉ' }}</a> --}}
                                                     <a href="" data-toggle="modal"
-                                                        data-target="#addressShippingModal-{{$order->id}}">{{($order->shippingAddress->address)}}</a>
+                                                        data-target="#addressShippingModal-{{$order->id}}">{{ optional($order->shippingAddress)->address ?? 'Không có địa chỉ' }}</a>
                                                 </td>
                                                 <td>{{number_format($order->total_price, 0, ',', '.')}} VND</td>
                                                 <td class="order-status">
@@ -73,7 +70,7 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    @if($order->payment->status == 'pending')
+                                                    @if(optional($order->payment)->status == 'pending')
                                                     <span class="custom-badge badge badge-danger">Chưa thanh toán</span>
                                                     @else
                                                     <span class="custom-badge badge badge-success">Đã thanh toán</span>
@@ -124,11 +121,11 @@
                                                 </div>
                                                 <div class="modal-body">
                                                     <p><strong>Người nhận:</strong>
-                                                        {{$order->shippingAddress->full_name}}</p>
-                                                    <p><strong>Địa chỉ:</strong> {{$order->shippingAddress->address}}
+                                                        {{ optional($order->shippingAddress)->full_name ?? '—' }}</p>
+                                                    <p><strong>Địa chỉ:</strong> {{ optional($order->shippingAddress)->address ?? '—' }}
                                                     </p>
-                                                    <p><strong>Thành phố:</strong>{{$order->shippingAddress->city}}</p>
-                                                    <p><strong>Điện thoại:</strong> {{$order->shippingAddress->phone}}
+                                                    <p><strong>Thành phố:</strong>{{ optional($order->shippingAddress)->city ?? '—' }}</p>
+                                                    <p><strong>Điện thoại:</strong> {{ optional($order->shippingAddress)->phone ?? '—' }}
                                                     </p>
                                                 </div>
 

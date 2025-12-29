@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 
-
+use function Flasher\Toastr\Prime\toastr;
 
 class AuthController extends Controller
 {
@@ -21,7 +21,6 @@ class AuthController extends Controller
   }
   public function register(Request $request)
   {
-    //validate backend
     $request->validate([
       'name' => 'required|string|max:255',
       'email' => 'required|email|max:255|unique:users',
@@ -37,7 +36,7 @@ class AuthController extends Controller
     //check email 
     $existingUser = User::where('email', $request->email)->first();
     if ($existingUser) {
-      if ($existingUser->isPendung()) {
+      if ($existingUser->isPending()) {
         toastr()->error('Email đã được đăng ký và đang đợi kích hoạt');
         return redirect()->route('register');
       }
@@ -87,12 +86,11 @@ class AuthController extends Controller
       'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
     ]);
 
-    //check login
+    //kt login
     if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'status' => 'active'])) {
       if (in_array(Auth::user()->role->name, ['customer'])) {
         $request->session()->regenerate();
         toastr()->success('Đăng nhập thành công');
-
         return redirect()->route('home');
       } else {
         Auth::logout();
@@ -105,11 +103,10 @@ class AuthController extends Controller
   }
   public function logout()
   {
-    Auth::logout(); // đăng xuất user hiện tại
+    Auth::logout(); 
     session()->invalidate(); // hủy session
     session()->regenerateToken(); // tạo CSRF token mới
-
+    toastr()->success('Đăng xuất thành công');
     return redirect()->route('login');
-    // quay về trang chủ hoặc login
   }
 }

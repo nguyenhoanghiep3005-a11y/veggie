@@ -49,7 +49,6 @@
                         <div class="col-lg-12 align-self-center">
                             <div class="slide-item-info">
                                 <div class="slide-item-info-inner ltn__slide-animation">
-
                                     <h1 class="slide-title animated">Thực Phẩm Hữu Cơ <br> Vì Sức Khỏe Gia Đình Bạn</h1>
                                     <div class="slide-brief animated">
                                         <p>Chọn lựa kỹ càng từ nguồn nông sản sạch, không chất bảo quản,
@@ -73,7 +72,6 @@
         </div>
     </div>
 </div>
-
 <!-- SLIDER AREA END -->
 
 <!-- BANNER AREA START -->
@@ -150,7 +148,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-title-area ltn__section-title-2 text-center">
-                    <h1 class="section-title">Sản Phẩm Bán Chạy</h1>
+                    <h1 class="section-title">Sản Phẩm </h1>
                 </div>
                 <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
                     <div class="nav">
@@ -171,7 +169,6 @@
                                     <div class="ltn__product-item ltn__product-item-3 text-center">
                                         <div class="product-img">
                                             <a href="#"><img src="{{$product->image_url}}" alt="{{$product->name}}"></a>
-
                                             <div class="product-hover-action">
                                                 <ul>
                                                     <li>
@@ -203,7 +200,6 @@
                                                     $avgRating = $product->reviews->avg('rating') ?? 0;
                                                     $totalReviews = $product->reviews->count();
                                                     @endphp
-
                                                     @for ($i = 1; $i <= 5; $i++) <li>
                                                         <a href="javascript:void(0)">
                                                             <i
@@ -231,7 +227,6 @@
                             </div>
                             @foreach ($category->products as $product)
                             @include('clients.components.modals.includes.include-modals')
-
                             @endforeach
                         </div>
                     </div>
@@ -249,7 +244,6 @@
     data-bg="{{ asset('assets/clients/img/bg/5.jpg') }}">
     <div class="container">
         <div class="row">
-            <!-- Khách hàng hài lòng -->
             <div class="col-md-3 col-sm-6 align-self-center">
                 <div class="ltn__counterup-item-3 text-color-white text-center">
                     <div class="counter-icon">
@@ -259,8 +253,6 @@
                     <h6>Khách hàng hài lòng</h6>
                 </div>
             </div>
-
-            <!-- Cốc cà phê tượng trưng cho sự phục vụ tận tâm -->
             <div class="col-md-3 col-sm-6 align-self-center">
                 <div class="ltn__counterup-item-3 text-color-white text-center">
                     <div class="counter-icon">
@@ -271,8 +263,6 @@
                     <h6>Đơn hàng đã giao</h6>
                 </div>
             </div>
-
-            <!-- Giải thưởng hoặc chứng nhận -->
             <div class="col-md-3 col-sm-6 align-self-center">
                 <div class="ltn__counterup-item-3 text-color-white text-center">
                     <div class="counter-icon">
@@ -282,8 +272,6 @@
                     <h6>Giải thưởng & chứng nhận</h6>
                 </div>
             </div>
-
-            <!-- Khu vực phân phối -->
             <div class="col-md-3 col-sm-6 align-self-center">
                 <div class="ltn__counterup-item-3 text-color-white text-center">
                     <div class="counter-icon">
@@ -308,16 +296,13 @@
 
                         <h1 class="section-title white-color">Liên hệ ngay: 0388536385</h1>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
-
     <div class="ltn__call-to-4-img-1">
         <img src="{{asset('assets/clients/img/bg/12.png')}}" alt="#">
     </div>
-
 </div>
 <!-- CALL TO ACTION END -->
 @endsection

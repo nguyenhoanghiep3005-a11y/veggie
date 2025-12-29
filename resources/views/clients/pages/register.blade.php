@@ -17,7 +17,7 @@
         <div class="row">
             <div class="col-lg-6 offset-lg-3">
                 <div class="account-login-inner">
-                    <form action="{{route ('post-register') }}" class="ltn__form-box contact-form-box" method="POST" id="register-form">
+                    <form action="{{route('post-register') }}" class="ltn__form-box contact-form-box" method="POST" id="register-form">
                         @csrf
                         <input type="text" name="name" placeholder="Họ và Tên" value="{{old('name')}}" required>
                         @error('name')

@@ -20,7 +20,6 @@ class ResetPasswordController extends Controller
             'email' => 'required|email|exists:users,email',
             'password' => 'required|min:6|confirmed',
             'token' => 'required'
-
         ], [
             'name.required' => 'Tên là bắt buộc',
             'email.email' => 'Email không hợp lệ',
@@ -29,10 +28,8 @@ class ResetPasswordController extends Controller
             'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
             'password.confirmed' => 'Mật khẩu xác nhận không khớp',
             'token.required' => 'Mã token không hợp lẹ hoặc đã hết hạn',
-
         ]);
         $status = Password::reset(
-
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill([
@@ -40,9 +37,8 @@ class ResetPasswordController extends Controller
                 ])->save();
             }
         );
-        if($status === Password::PASSWORD_RESET)
-        {
-        toastr()->success('Mật khẩu đã được đặt lại thành công');
+        if ($status === Password::PASSWORD_RESET) {
+            toastr()->success('Mật khẩu đã được đặt lại thành công');
             return redirect()->route('login');
         }
         toastr()->error('Đặt lại mật khẩu không thành công');

@@ -1,10 +1,4 @@
-<!-- HEADER AREA START (header-5) -->
 <header class="ltn__header-area ltn__header-5 ltn__header-transparent-- gradient-color-4---">
-    <!-- ltn__header-top-area start -->
-
-    <!-- ltn__header-top-area end -->
-
-    <!-- ltn__header-middle-area start -->
     <div
         class="ltn__header-middle-area ltn__header-sticky ltn__sticky-bg-white sticky-active-into-mobile ltn__logo-right-menu-option plr--9---">
         <div class="container">
@@ -52,6 +46,8 @@
                         <div class="header-search-1-form">
                             <form id="#" method="get" action="{{route('search')}}">
                                 <input type="text" name="keyword" value="" placeholder="Tìm kiếm..." />
+                                <i class="fas fa-microphone" aria-hidden="true" id="voice-search"></i>
+
                                 <button type="submit">
                                     <span><i class="icon-search"></i></span>
                                 </button>
@@ -68,7 +64,6 @@
                                     <li><a href="{{route('account')}}">Tài khoản</a></li>
                                     <li><a href="{{route('wishlist')}}">Yêu thích</a></li>
                                     <li><a href="{{route('logout')}}">Đăng xuất</a></li>
-
                                     @else
                                     <li><a href="{{route('login')}}">Đăng nhập</a></li>
                                     @endif

@@ -138,7 +138,7 @@ Route::prefix('admin')->group(function () {
 
         // Danh sách đơn hàng
         Route::get('/orders', [OrderController::class, 'index'])
-            ->name('admin.order.index');
+            ->name('admin.orders.index');
 
         // Admin xác nhận đơn hàng  chuyển sang trạng thái "Đang giao"
         Route::post('/order/confirm', [AdminProductController::class, 'confirmOrder']);

@@ -54,10 +54,10 @@
                 <div class="col-sm-4 invoice-col">
                   Từ
                   <address>
-                    <strong>{{$order->shippingAddress->full_name}}</strong>
-                    <br>{{$order->shippingAddress->address}}
-                    <br>{{$order->shippingAddress->city}}
-                    <br>{{$order->shippingAddress->phone}}
+                    <strong>{{ optional($order->shippingAddress)->full_name ?? '—' }}</strong>
+                    <br>{{ optional($order->shippingAddress)->address ?? '—' }}
+                    <br>{{ optional($order->shippingAddress)->city ?? '—' }}
+                    <br>{{ optional($order->shippingAddress)->phone ?? '—' }}
                   </address>
                 </div>
                 <!-- /.col -->
@@ -75,9 +75,9 @@
                 <div class="col-sm-4 invoice-col">
                   <b>Order ID {{$order->id}}</b>
                   <br>
-                  <b>Email: {{$order->user->email}}</b>
+                  <b>Email: {{ optional($order->user)->email ?? '—' }}</b>
                   <br>
-                  <b>Tài khoản:</b> {{$order->user->name}}
+                  <b>Tài khoản:</b> {{ optional($order->user)->name ?? '—' }}
                 </div>
                 <!-- /.col -->
               </div>
@@ -101,10 +101,10 @@
                       <tr>
                         <td>
                           <img
-                            src="{{ asset('storage/' . ($item->product->images[0]->image ?? 'products/product_default.png')) }}"
+                            src="{{ asset('storage/' . (optional(optional($item->product)->images->first())->image ?? 'products/product_default.png')) }}"
                             width="50px">
                         </td>
-                        <td>{{$item->product->name}}</td>
+                        <td>{{ optional($item->product)->name ?? '—' }}</td>
                         <td>{{number_format($item->price, 0, ',', '.')}} VND</td>
                         <td>{{$item->quantity}}</td>
                         <td>{{number_format($item->quantity * $item->price, 0,
@@ -123,7 +123,7 @@
                 <div class="col-md-6">
 
                   <p class="lead">Phương thức thanh toán</p>
-                  @if($order->payment->payment_method == 'paypal')
+                  @if(optional($order->payment)->payment_method == 'paypal')
                   <img src="{{asset('assets/admin/images/paypal.png')}}" alt="Paypal">
                   @else
                   <img src="{{asset('assets/admin/images/cod.png')}}" width="80px" height="70px"

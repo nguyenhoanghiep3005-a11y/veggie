@@ -5,7 +5,6 @@
 @section('content')
 <div class="container pb-70">
     <h2>Đặt lại mật khẩu</h2>
-
     <div class="ltn__myaccount-tab-content-inner ">
         <div class="ltn__form-box">
             <form action="{{route('password.update')}}" method="POST" id="reset-pasword-form">
@@ -25,7 +24,6 @@
                             @enderror
 
                             <input type="password" name="password_confirmation" placeholder="Xác nhận mật khẩu mới" required>
-
                         </div>
                     </div>
                 </fieldset>
