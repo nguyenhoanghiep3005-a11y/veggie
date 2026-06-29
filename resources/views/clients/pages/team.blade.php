@@ -1,9 +1,9 @@
 @extends('layouts.client')
 
-@section('title','Team')
-@section('breadcrumb','Team')
+@section('title','Đội ngũ')
+@section('breadcrumb','Đội ngũ')
 @section('content')
-       <!-- TEAM AREA START (Team - 3) -->
+       <!-- TEAM AREA START (Đội ngũ - 3) -->
         <div class="ltn__team-area pt-110--- pb-90">
     <div class="container">
         <div class="row justify-content-center">
@@ -51,7 +51,7 @@
                         <img src="{{asset('assets/clients/img/team/3.jpg')}}" alt="Image">
                     </div>
                     <div class="team-info">
-                        <h6 class="ltn__secondary-color">Nông dân hữu cơ</h6>
+                        <h6 class="ltn__secondary-color">Nhà cung cấp nông sản khô</h6>
                         <h4><a href="#">Miranda H. Halim</a></h4>
                         <div class="ltn__social-media">
                             <ul>
@@ -70,7 +70,7 @@
                         <img src="{{asset('assets/clients/img/team/4.jpg')}}" alt="Image">
                     </div>
                     <div class="team-info">
-                        <h6 class="ltn__secondary-color">Nông dân hữu cơ</h6>
+                        <h6 class="ltn__secondary-color">Nhà cung cấp nông sản khô</h6>
                         <h4><a href="#">Damble D. Browni</a></h4>
                         <div class="ltn__social-media">
                             <ul>
@@ -89,7 +89,7 @@
                         <img src="{{asset('assets/clients/img/team/5.jpg')}}" alt="Image">
                     </div>
                     <div class="team-info">
-                        <h6 class="ltn__secondary-color">Nông dân hữu cơ</h6>
+                        <h6 class="ltn__secondary-color">Nhà cung cấp nông sản khô</h6>
                         <h4><a href="#">Aiden Benjamin</a></h4>
                         <div class="ltn__social-media">
                             <ul>
@@ -108,7 +108,7 @@
                         <img src="{{asset('assets/clients/img/team/6.jpg')}}" alt="Image">
                     </div>
                     <div class="team-info">
-                        <h6 class="ltn__secondary-color">Nông dân hữu cơ</h6>
+                        <h6 class="ltn__secondary-color">Nhà cung cấp nông sản khô</h6>
                         <h4><a href="#">James Carter</a></h4>
                         <div class="ltn__social-media">
                             <ul>
@@ -127,7 +127,7 @@
                         <img src="{{asset('assets/clients/img/team/7.jpg')}}" alt="Image">
                     </div>
                     <div class="team-info">
-                        <h6 class="ltn__secondary-color">Nông dân hữu cơ</h6>
+                        <h6 class="ltn__secondary-color">Nhà cung cấp nông sản khô</h6>
                         <h4><a href="#">William Gabriel</a></h4>
                         <div class="ltn__social-media">
                             <ul>
@@ -146,7 +146,7 @@
                         <img src="{{asset('assets/clients/img/team/8.jpg')}}" alt="Image">
                     </div>
                     <div class="team-info">
-                        <h6 class="ltn__secondary-color">Nông dân hữu cơ</h6>
+                        <h6 class="ltn__secondary-color">Nhà cung cấp nông sản khô</h6>
                         <h4><a href="#">Adam Joseph</a></h4>
                         <div class="ltn__social-media">
                             <ul>
@@ -195,7 +195,7 @@
                             </div>
                         </div>
                         <div class="ltn__progress-bar-item">
-                            <p>Trồng rau sạch</p>
+                            <p>Sơ chế nông sản khô</p>
                             <div class="progress">
                                 <div class="progress-bar wow fadeInLeft" data-wow-duration="0.5s"
                                     data-wow-delay=".5s" role="progressbar" style="width: 81%">

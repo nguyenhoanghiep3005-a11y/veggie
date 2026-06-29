@@ -16,7 +16,18 @@ class CartController extends Controller
     public function add(Request $request)
     {
         $product_id = $request->product_id;
-        $quantity   = $request->quantity ?? 1;
+        $quantity = (int)$request->quantity;
+        if ($quantity < 1) {
+            $quantity = 1;
+        }
+
+        $product = Product::find($product_id);
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sản phẩm không tồn tại',
+            ], 404);
+        }
 
         // Nếu đã đăng nhập → lưu DB
         if (Auth::check()) {
@@ -24,6 +35,18 @@ class CartController extends Controller
             $cartItem = CartItem::where('user_id', $user_id)
                 ->where('product_id', $product_id)
                 ->first();
+
+            $currentQuantity = 0;
+            if ($cartItem) {
+                $currentQuantity = $cartItem->quantity;
+            }
+
+            if (($currentQuantity + $quantity) > $product->stock) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Số lượng vượt quá tồn kho',
+                ], 400);
+            }
 
             if ($cartItem) {
                 $cartItem->quantity += $quantity;
@@ -47,6 +70,17 @@ class CartController extends Controller
 
         // Nếu chưa login lưu SESSION (chỉ lưu id + quantity)
         $cart = session()->get('cart', []);
+        $currentQuantity = 0;
+        if (isset($cart[$product_id])) {
+            $currentQuantity = $cart[$product_id]['quantity'];
+        }
+
+        if (($currentQuantity + $quantity) > $product->stock) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Số lượng vượt quá tồn kho',
+            ], 400);
+        }
 
         if (isset($cart[$product_id])) {
             $cart[$product_id]['quantity'] += $quantity;
@@ -93,7 +127,12 @@ class CartController extends Controller
             }
         }
 
-        $subtotal = $cartItems->sum(fn($item) => $item->product->price * $item->quantity);
+        $subtotal = 0;
+        foreach ($cartItems as $item) {
+            if ($item->product) {
+                $subtotal += $item->product->calculatePriceByQuantity($item->quantity);
+            }
+        }
 
         return response()->json([
             'status' => true,
@@ -154,14 +193,17 @@ class CartController extends Controller
                 ->with('product.images')
                 ->get()
                 ->map(function ($item) {
+                    $subtotal = $item->product->calculatePriceByQuantity($item->quantity);
+
                     return [
                         'product_id' => $item->product->id,
                         'name'       => $item->product->name,
-                        'price'      => $item->product->price,
+                        'price'      => $item->product->current_price,
                         'quantity'   => $item->quantity,
                         'stock'      => $item->product->stock,
+                        'subtotal'   => $subtotal,
                         'image'      => optional($item->product->images->first())->image
-                            ?? 'uploads/products/product_default.png',
+                            ?? 'uploads/products/default.png',
                     ];
                 })
                 ->toArray();
@@ -186,11 +228,12 @@ class CartController extends Controller
                 $cartItems[] = [
                     'product_id' => $product->id,
                     'name'       => $product->name,
-                    'price'      => $product->price,
+                    'price'      => $product->current_price,
                     'quantity'   => $item['quantity'],
                     'stock'      => $product->stock,
+                    'subtotal'   => $product->calculatePriceByQuantity($item['quantity']),
                     'image'      => optional($product->images->first())->image
-                        ?? 'uploads/products/product_default.png',
+                        ?? 'uploads/products/default.png',
                 ];
             }
         }
@@ -205,6 +248,9 @@ class CartController extends Controller
     {
         $productId = $request->product_id;
         $quantity  = (int)$request->quantity;
+        if ($quantity < 1) {
+            $quantity = 1;
+        }
 
         $product = Product::find($productId);
         if (!$product) {
@@ -239,7 +285,7 @@ class CartController extends Controller
         }
 
         // Tính tiền
-        $subtotal   = $quantity * $product->price;
+        $subtotal   = $product->calculatePriceByQuantity($quantity);
         $total      = $this->caculateCartTotal();
         $grandTotal = $total + 25000;
 
@@ -260,7 +306,7 @@ class CartController extends Controller
             return CartItem::where('user_id', Auth::id())
                 ->with('product')
                 ->get()
-                ->sum(fn($item) => $item->quantity * $item->product->price);
+                ->sum(fn($item) => $item->product->calculatePriceByQuantity($item->quantity));
         }
 
         // Guest: đọc session, join với products
@@ -278,7 +324,7 @@ class CartController extends Controller
             if (!isset($products[$pid])) {
                 continue;
             }
-            $total += $item['quantity'] * $products[$pid]->price;
+            $total += $products[$pid]->calculatePriceByQuantity($item['quantity']);
         }
 
         return $total;

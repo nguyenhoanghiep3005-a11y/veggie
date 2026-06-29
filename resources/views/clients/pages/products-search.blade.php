@@ -91,7 +91,7 @@
                                             </h2>
 
                                             <div class="product-price">
-                                                <span>{{ number_format($product->price, 0, ',', '.') }} VND</span>
+                                                <span>{{ number_format($product->current_price, 0, ',', '.') }} VND</span>
                                             </div>
 
                                         </div>

@@ -14,6 +14,7 @@ use App\Http\Controllers\Clients\OrderController;
 use App\Http\Controllers\Clients\ReviewController;
 use App\Http\Controllers\Clients\SearchController;
 use App\Http\Controllers\Clients\WishlistController;
+use App\Http\Controllers\Clients\GhnLocationController;
 
 
 Route::prefix('/')->group(function () {
@@ -92,6 +93,7 @@ Route::prefix('/')->group(function () {
 
         // Thanh toán PayPal
         Route::post('/checkout/paypal', [CheckoutController::class, 'placeOrderPayPal'])->name('checkout.placeOrderPayPal');
+        Route::get('/Checkout/shipping-free', [CheckoutController::class, 'ShippingFree'])->name('checkout.shippingFree');
 
         // Chi tiết đơn hàng của user
         Route::get('/order/{id}', [OrderController::class, 'showOrder'])->name('order.show');
@@ -113,7 +115,14 @@ Route::prefix('/')->group(function () {
         Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
         Route::post('/wishlist/add', [WishlistController::class, 'addToWishList']);
         Route::post('/wishlist/remove', [WishlistController::class, 'removeWishListItem']);
-    });
+        
+        // ========================
+        //  Giao hang nhanh
+        // ========================
+        Route::get('/ghn/provinces', [GhnLocationController::class, 'provinces'])->name('ghn.provinces');
+        Route::get('/ghn/districts', [GhnLocationController::class, 'districts'])->name('ghn.districts');
+        Route::get('/ghn/wards', [GhnLocationController::class, 'wards'])->name('ghn.wards');
+        });
 
 
     // =======================================================

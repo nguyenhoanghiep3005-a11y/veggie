@@ -101,7 +101,7 @@
                       <tr>
                         <td>
                           <img
-                            src="{{ asset('storage/' . (optional(optional($item->product)->images->first())->image ?? 'products/product_default.png')) }}"
+                            src="{{ asset('storage/' . (optional(optional($item->product)->images->first())->image ?? 'uploads/products/default.png')) }}"
                             width="50px">
                         </td>
                         <td>{{ optional($item->product)->name ?? '—' }}</td>

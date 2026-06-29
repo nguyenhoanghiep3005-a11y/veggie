@@ -18,19 +18,20 @@
 
         @if($product)
         @php
-        $price = $product->price ?? 0;
+        $price = 0;
+        if ($product->current_price) {
+            $price = $product->current_price;
+        }
         $name = $product->name ?? 'Sản phẩm';
-        $image = $product->image_url
-        ? asset( $product->image_url)
-        : asset('storage/uploads/products/product_default.png');
-        $subtotal = $price * $quantity;
+        $image = $product->image_url ?: asset('storage/uploads/products/default.png');
+        $subtotal = $product->calculatePriceByQuantity($quantity);
         $total += $subtotal;
         @endphp
         <li class="mini-cart-item d-flex mb-2 align-items-center">
             <img src="{{ $image }}" style="width:60px;height:60px;object-fit:cover;margin-right:10px;">
             <div class="flex-grow-1">
                 <h6>{{ $name }}</h6>
-                <span>{{ number_format($price, 0, ',', '.') }}đ x {{ $quantity }}</span>
+                <span>{{ number_format($subtotal, 0, ',', '.') }}đ / {{ $quantity }}</span>
             </div>
             {{-- NÚT XÓA SẢN PHẨM --}}
             <button class="remove-from-cart-btn" data-product-id="{{ $product->id }}"

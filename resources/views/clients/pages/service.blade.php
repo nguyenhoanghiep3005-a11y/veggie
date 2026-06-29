@@ -15,18 +15,17 @@
                         <div class="col-lg-7 align-self-center">
                             <div class="about-us-info-wrap">
                                 <div class="section-title-area ltn__section-title-2">
-                                    <h1 class="section-title">Chúng Tôi Là Đội Ngũ
-                                        Chuyên Nghiệp & Giàu Kinh Nghiệm<span>.</span></h1>
-                                    <p>Chúng tôi cam kết mang đến những sản phẩm và dịch vụ chất lượng, đặt uy tín và sự hài lòng của khách hàng lên hàng đầu.</p>
+                                    <h1 class="section-title">Nông Sản Khô Chọn Lọc Cho Gia Đình Việt<span>.</span></h1>
+                                    <p>Chúng tôi cung cấp nông sản khô, gia vị, gạo và hạt dinh dưỡng chất lượng, đặt uy tín và sự hài lòng của khách hàng lên hàng đầu.</p>
                                 </div>
                                 <div class="about-us-info-wrap-inner about-us-info-devide">
-                                    <p>Với nhiều năm kinh nghiệm trong lĩnh vực cung cấp thực phẩm sạch và dịch vụ uy tín, chúng tôi không ngừng cải tiến để phục vụ khách hàng tốt hơn mỗi ngày. Sự tin tưởng của bạn chính là động lực phát triển của chúng tôi.</p>
+                                    <p>Với định hướng mang đến sản phẩm khô tiện lợi và an toàn, chúng tôi không ngừng cải tiến để phục vụ khách hàng tốt hơn mỗi ngày. Sự tin tưởng của bạn là động lực phát triển của chúng tôi.</p>
                                     <div class="list-item-with-icon">
                                         <ul>
-                                            <li><a href="contact.html">Giao hàng miễn phí 24/7</a></li>
-                                            <li><a href="team.html">Đội ngũ chuyên gia</a></li>
-                                            <li><a href="service-details.html">Trang thiết bị hiện đại</a></li>
-                                            <li><a href="shop.html">Sản phẩm đa dạng</a></li>
+                                            <li><a href="contact.html">Giao hàng nhanh chóng</a></li>
+                                            <li><a href="team.html">Tư vấn tận tâm</a></li>
+                                            <li><a href="service-details.html">Bảo quản đúng chuẩn</a></li>
+                                            <li><a href="shop.html">Danh mục đa dạng</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -44,7 +43,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="section-title-area ltn__section-title-2 text-center">
-                            <h1 class="section-title white-color---">Dịch Vụ Của Chúng Tôi</h1>
+                            <h1 class="section-title white-color---">Sản Phẩm Và Dịch Vụ</h1>
                         </div>
                     </div>
                 </div>
@@ -55,8 +54,8 @@
                                 <a href="service-details.html"><img src="{{asset('assets/clients/img/service/1.jpg')}}" alt="#"></a>
                             </div>
                             <div class="service-item-brief">
-                                <h3><a href="service-details.html">Rau Củ Hữu Cơ</a></h3>
-                                <p>Cung cấp rau củ tươi sạch, được trồng hoàn toàn tự nhiên, đảm bảo an toàn cho sức khỏe người tiêu dùng.</p>
+                                <h3><a href="service-details.html">Thực phẩm Khô</a></h3>
+                                <p>Cung cấp các loại thực phẩm khô được chọn lọc, tiện lợi trong chế biến và bảo quản.</p>
                             </div>
                         </div>
                     </div>
@@ -67,8 +66,8 @@
                                 <a href="service-details.html"><img src="{{asset('assets/clients/img/service/2.jpg')}}" alt="#"></a>
                             </div>
                             <div class="service-item-brief">
-                                <h3><a href="service-details.html">Trái Cây Sạch</a></h3>
-                                <p>Những loại trái cây tươi ngon được tuyển chọn kỹ lưỡng từ các nông trại đạt chuẩn chất lượng cao.</p>
+                                <h3><a href="service-details.html">Gia vị</a></h3>
+                                <p>Cung cấp các loại gia vị khô giúp món ăn đậm đà, thơm ngon và dễ sử dụng.</p>
                             </div>
                         </div>
                     </div>
@@ -79,8 +78,8 @@
                                 <a href="service-details.html"><img src="{{asset('assets/clients/img/service/3.jpg')}}" alt="#"></a>
                             </div>
                             <div class="service-item-brief">
-                                <h3><a href="service-details.html">Thực Phẩm Tươi Sống</a></h3>
-                                <p>Phân phối các loại thịt, cá, trứng và hải sản tươi sống, đảm bảo nguồn gốc rõ ràng và an toàn thực phẩm.</p>
+                                <h3><a href="service-details.html">Hạt dinh dưỡng và Gạo</a></h3>
+                                <p>Cung cấp hạt dinh dưỡng và gạo chất lượng, đáp ứng nhu cầu sử dụng hằng ngày.</p>
                             </div>
                         </div>
                     </div>
@@ -92,7 +91,7 @@
                             </div>
                             <div class="service-item-brief">
                                 <h3><a href="service-details.html">Giao Hàng Tận Nơi</a></h3>
-                                <p>Dịch vụ giao hàng nhanh chóng, tận nhà, giúp khách hàng nhận được sản phẩm tươi ngon mọi lúc, mọi nơi.</p>
+                                <p>Dịch vụ giao hàng nhanh chóng, giúp khách hàng nhận được sản phẩm khô an toàn và tiện lợi.</p>
                             </div>
                         </div>
                     </div>
@@ -104,7 +103,7 @@
                             </div>
                             <div class="service-item-brief">
                                 <h3><a href="service-details.html">Sản Phẩm Chất Lượng Cao</a></h3>
-                                <p>Tất cả sản phẩm đều trải qua quy trình kiểm định nghiêm ngặt, mang đến chất lượng tốt nhất cho người dùng.</p>
+                                <p>Tất cả sản phẩm được chọn lọc và kiểm tra trước khi cung cấp đến khách hàng.</p>
                             </div>
                         </div>
                     </div>

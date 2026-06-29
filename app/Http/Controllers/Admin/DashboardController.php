@@ -15,7 +15,11 @@ class DashboardController extends Controller
    {
     $user = User::where('role_id',3)->latest()->get();
     $categories = Category::with('products')->get();
-    $products = Product::where('stock', '>', 0)->get();
+    $products = Product::whereHas('inventories', function ($query) {
+        $query->where('quantity_remaining', '>', 0)
+            ->whereDate('expired_at', '>=', now()->toDateString())
+            ->whereNotIn('condition', ['expired', 'damaged', 'sold_out']);
+    })->get();
     $orders = Order::with('shippingAddress')->latest()->limit(20)->get();
     return view('admin.pages.dashboard',compact('user','categories','products','orders'));
    }

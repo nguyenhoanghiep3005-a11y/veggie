@@ -19,7 +19,7 @@ class CategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-
+          
         ]);
         $imagePath = null;
         if ($request->hasFile("image")) {

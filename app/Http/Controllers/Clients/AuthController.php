@@ -88,7 +88,9 @@ class AuthController extends Controller
 
     //kt login
     if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'status' => 'active'])) {
-      if (in_array(Auth::user()->role->name, ['customer'])) {
+      $user = Auth::user();
+
+      if ($user->role?->name === 'customer') {
         $request->session()->regenerate();
         toastr()->success('Đăng nhập thành công');
         return redirect()->route('home');

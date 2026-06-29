@@ -18,13 +18,12 @@
                                 <div class="slide-item-info-inner ltn__slide-animation">
                                     <h6 class="slide-sub-title animated">
                                         <img src="{{ asset('assets/clients/img/icons/icon-img/1.png')}}" alt="#">
-                                        100% Rau Củ Quả Tươi Sạch
+                                        100% Nông Sản Khô Chọn Lọc
                                     </h6>
-                                    <h1 class="slide-title animated">Trải nghiệm <br> hương vị tự nhiên <br> từ nông
-                                        trại</h1>
+                                    <h1 class="slide-title animated">Khám phá <br> hương vị mộc mạc <br> từ Nông Sản Khô</h1>
                                     <div class="slide-brief animated">
-                                        <p>Cam kết cung cấp nông sản tươi ngon, an toàn, được thu hoạch mỗi ngày
-                                            từ những nông trại Việt Nam chất lượng cao.</p>
+                                        <p>Cam kết cung cấp nông sản khô chất lượng, được chọn lọc kỹ
+                                            từ nguồn cung uy tín tại Việt Nam.</p>
                                     </div>
                                     <div class="btn-wrapper animated">
                                         <a href="{{route('products.index')}}"
@@ -49,14 +48,14 @@
                         <div class="col-lg-12 align-self-center">
                             <div class="slide-item-info">
                                 <div class="slide-item-info-inner ltn__slide-animation">
-                                    <h1 class="slide-title animated">Thực Phẩm Hữu Cơ <br> Vì Sức Khỏe Gia Đình Bạn</h1>
+                                    <h1 class="slide-title animated">Nông Sản Khô Chất Lượng <br> Cho Bữa Ăn Gia Đình</h1>
                                     <div class="slide-brief animated">
-                                        <p>Chọn lựa kỹ càng từ nguồn nông sản sạch, không chất bảo quản,
-                                            đảm bảo hương vị tự nhiên và dinh dưỡng tốt nhất.</p>
+                                        <p>Tuyển chọn các loại thực phẩm khô, gia vị, gạo và hạt dinh dưỡng,
+                                            đảm bảo an toàn, tiện lợi và dễ bảo quản.</p>
                                     </div>
                                     <div class="btn-wrapper animated">
-                                        <a href="{{route('about')}}"
-                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">
+                                        <!-- <a href="{{route('about')}}"
+                                            class="theme-btn-1 btn btn-effect-1 text-uppercase"> -->
                                             Khám Phá Ngay
                                         </a>
                                         <a href="{{route('service')}}" class="btn btn-transparent btn-effect-3">
@@ -148,7 +147,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-title-area ltn__section-title-2 text-center">
-                    <h1 class="section-title">Sản Phẩm </h1>
+                    <h1 class="section-title">Sản Phẩm Bán Chạy </h1>
                 </div>
                 <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
                     <div class="nav">
@@ -217,7 +216,7 @@
                                                     href="{{route('product.detail',$product->slug)}}">{{$product->name}}</a>
                                             </h2>
                                             <div class="product-price">
-                                                <span>{{number_format($product->price,0,',','.')}} VNĐ</span>
+                                                <span>{{number_format($product->current_price,0,',','.')}} VNĐ</span>
                                             </div>
                                         </div>
                                     </div>
@@ -238,6 +237,100 @@
     </div>
 </div>
 <!-- PRODUCT TAB AREA END -->
+
+@if($promotionProducts->count() > 0)
+<!-- PROMOTION PRODUCT AREA START -->
+<div class="ltn__product-slider-area ltn__product-gutter pt-115 pb-70">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title-area ltn__section-title-2 text-center">
+                    <h1 class="section-title">Sản Phẩm Khuyến Mãi</h1>
+                </div>
+            </div>
+        </div>
+        <div class="row ltn__tab-product-slider-one-active slick-arrow-1">
+            @foreach ($promotionProducts as $product)
+            @php
+                $salePrice = $product->promotion_price ?? $product->current_price;
+                $discountPercent = 0;
+                if ($product->price > 0 && $salePrice < $product->price) {
+                    $discountPercent = round((($product->price - $salePrice) / $product->price) * 100);
+                }
+            @endphp
+            <div class="col-lg-12">
+                <div class="ltn__product-item ltn__product-item-3 text-center">
+                    <div class="product-img">
+                        <a href="{{route('product.detail',$product->slug)}}">
+                            <img src="{{$product->image_url}}" alt="{{$product->name}}">
+                        </a>
+                        @if($discountPercent > 0)
+                        <div class="product-badge">
+                            <ul>
+                                <li>-{{$discountPercent}}%</li>
+                            </ul>
+                        </div>
+                        @endif
+                        <div class="product-hover-action">
+                            <ul>
+                                <li>
+                                    <a href="#" title="Xem nhanh" data-bs-toggle="modal"
+                                        data-bs-target="#quick_view_modal-{{$product->id}}">
+                                        <i class="far fa-eye"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" title="Thêm vào giỏ hàng" class="add-to-cart-btn"
+                                        data-id="{{$product->id}}">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)" class="add-to-wishlist"
+                                        data-id="{{ $product->id }}">
+                                        <i class="far fa-heart"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-ratting">
+                            <ul>
+                                @php
+                                    $avgRating = $product->reviews->avg('rating') ?? 0;
+                                    $totalReviews = $product->reviews->count();
+                                @endphp
+                                @for ($i = 1; $i <= 5; $i++)
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <i class="{{ $i <= $avgRating ? 'fas fa-star' : 'far fa-star' }}"></i>
+                                    </a>
+                                </li>
+                                @endfor
+                                <li class="review-total">
+                                    ({{ $totalReviews }} Đánh giá)
+                                </li>
+                            </ul>
+                        </div>
+                        <h2 class="product-title">
+                            <a href="{{route('product.detail',$product->slug)}}">{{$product->name}}</a>
+                        </h2>
+                        <div class="product-price">
+                            <span>{{number_format($salePrice,0,',','.')}} VNĐ</span>
+                            @if($salePrice < $product->price)
+                            <del>{{number_format($product->price,0,',','.')}} VNĐ</del>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+<!-- PROMOTION PRODUCT AREA END -->
+@endif
 
 <!-- COUNTER UP AREA START -->
 <div class="ltn__counterup-area bg-image bg-overlay-theme-black-80 pt-115 pb-70"

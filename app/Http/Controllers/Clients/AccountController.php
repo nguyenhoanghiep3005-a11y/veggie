@@ -100,7 +100,10 @@ class AccountController extends Controller
             'full_name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
+            // 'city' => 'required|string|max:100',
+            'province_id' => 'required|integer',
+            'district_id' => 'required|integer',
+            'ward_id' => 'required|string',
         ]);
 
         //neu dia chi moi set mac dinh thi update
@@ -112,8 +115,11 @@ class AccountController extends Controller
             'user_id' => Auth::id(),
             'full_name' => $request->full_name,
             'phone' => $request->phone,
-            'address' => $request->address,
-            'city' => $request->city,
+            'address' => $request->address . ', ' . $request->ward_name . ', ' . $request->district_name,
+            'city' => $request->province_name,
+            'province_id'=> $request->province_id,
+            'district_id'=> $request->district_id,
+            'ward_id'=> $request->ward_id,
             'default' => $request->has('default') ? 1 : 0
         ]);
         return back()->with('success', 'Địa chỉ đã được thêm');

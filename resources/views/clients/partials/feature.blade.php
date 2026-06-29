@@ -11,8 +11,8 @@
                                         <img src="{{asset('assets/clients/img/icons/icon-img/11.png')}}" alt="#">
                                         </div>
                                         <div class="ltn__feature-info">
-                                            <h4>Sản phẩm được tuyển chọn</h4>
-                                            <p>Cung cấp sản phẩm được tuyển chọn cho tất cả sản phẩm trên 100 đô la.</p>
+                                            <h4>Nông sản khô chọn lọc</h4>
+                                            <p>Cung cấp nông sản khô được chọn lọc kỹ, phù hợp cho nhu cầu gia đình.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -22,9 +22,8 @@
                                         <img src="{{asset('assets/clients/img/icons/icon-img/12.png')}}" alt="#">
                                         </div>
                                         <div class="ltn__feature-info">
-                                            <h4>Làm thủ công</h4>
-                                            <p>Chúng tôi đảm bảo chất lượng sản phẩm 
-                                                đó là mục tiêu chính của chúng tôi.</p>
+                                            <h4>Sơ chế cẩn thận</h4>
+                                            <p>Sản phẩm được đóng gói và bảo quản cẩn thận trước khi giao đến khách hàng.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -34,8 +33,8 @@
                                         <img src="{{asset('assets/clients/img/icons/icon-img/13.png')}}" alt="#">
                                         </div>
                                         <div class="ltn__feature-info">
-                                            <h4>Thực phẩm tự nhiên</h4>
-                                            <p>Hoàn trả sản phẩm trong vòng 3 ngày cho bất kỳ mặt hàng nào bạn mua.</p>
+                                            <h4>Nguồn gốc rõ ràng</h4>
+                                            <p>Sản phẩm có nguồn gốc rõ ràng, thông tin minh bạch và dễ kiểm tra.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -46,7 +45,7 @@
                                         </div>
                                         <div class="ltn__feature-info">
                                             <h4>Giao hàng tận nhà miễn phí</h4>
-                                            <p>Chúng tôi đảm bảo chất lượng sản phẩm mà bạn có thể dễ dàng tin tưởng.</p>
+                                            <p>Giao hàng nhanh, bảo quản tốt và hỗ trợ khách hàng khi cần thiết.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -63,8 +62,7 @@
                     <div class="row">
                         <div class="col-xl-3 col-md-6 col-sm-6 col-12">
                             <div class="footer-widget footer-about-widget">
-                          <p>Chúng tôi chuyên cung cấp rau củ quả tươi sạch, có nguồn gốc rõ ràng, an toàn cho sức khỏe và
-                            thân thiện với môi trường.</p>
+                          <p>Chúng tôi chuyên cung cấp nông sản khô, gia vị, gạo và hạt dinh dưỡng có nguồn gốc rõ ràng, an toàn và tiện lợi cho gia đình.</p>
                                 <div class="footer-address">
                                  <ul>
                                 <li>
@@ -106,10 +104,10 @@
                         </div>
                         <div class="col-xl-2 col-md-6 col-sm-6 col-12">
                             <div class="footer-widget footer-menu-widget clearfix">
-                                <h4 class="footer-title">Công ty</h4>
+                                <h4 class="footer-title">Thông tin</h4>
                                      <div class="footer-menu">
                             <ul>
-                                <li><a href="{{route('about')}}">Về chúng tôi</a></li>
+                                <li><a href="{{route('about')}}">Về Nông Sản Khô</a></li>
                                 <li><a href="{{route('products.index')}}">Sản phẩm</a></li>
                                 <li><a href="{{route('faq')}}">FAQ</a></li>
                                 <li><a href="{{route('contact.send')}}">Liên hệ</a></li>
@@ -147,7 +145,7 @@
                         </div>
                         <div class="col-xl-3 col-md-6 col-sm-12 col-12">
                             <div class="footer-widget footer-newsletter-widget">
-                                <h4 class="footer-title">Bảng tin</h4>
+                                <h4 class="footer-title">Tin tức</h4>
                                 <p>Đăng ký nhận Bản tin hàng tuần của chúng tôi và nhận thông tin cập nhật qua email.
                                 </p>
                                 <div class="footer-newsletter">

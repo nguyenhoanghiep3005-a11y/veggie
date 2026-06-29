@@ -5,8 +5,7 @@
             <div class="row">
                 <div class="col-xl-3 col-md-6 col-sm-6 col-12">
                     <div class="footer-widget footer-about-widget">
-                        <p>Chúng tôi chuyên cung cấp rau củ quả tươi sạch, có nguồn gốc rõ ràng, an toàn cho sức khỏe và
-                            thân thiện với môi trường.</p>
+                        <p>Chúng tôi chuyên cung cấp nông sản khô, gia vị, gạo và hạt dinh dưỡng có nguồn gốc rõ ràng, an toàn và tiện lợi cho gia đình.</p>
 
                         <div class="footer-address">
                             <ul>
@@ -50,10 +49,10 @@
                 </div>
                 <div class="col-xl-2 col-md-6 col-sm-6 col-12">
                     <div class="footer-widget footer-menu-widget clearfix">
-                        <h4 class="footer-title">Công ty</h4>
+                        <h4 class="footer-title">Thông tin</h4>
                         <div class="footer-menu">
                             <ul>
-                                <li><a href="{{route('about')}}">Về chúng tôi</a></li>
+                                <li><a href="{{route('about')}}">Về Nông Sản Khô</a></li>
                                 <li><a href="{{route('products.index')}}">Sản phẩm</a></li>
                                 <li><a href="{{route('faq')}}">FAQ</a></li>
                                 <li><a href="{{route('contact.send')}}">Liên hệ</a></li>
@@ -91,7 +90,7 @@
                 </div>
                 <div class="col-xl-3 col-md-6 col-sm-12 col-12">
                     <div class="footer-widget footer-newsletter-widget">
-                        <h4 class="footer-title">Bảng tin</h4>
+                        <h4 class="footer-title">Tin tức</h4>
                         <p>Đăng ký nhận Bản tin hàng tuần của chúng tôi và nhận thông tin cập nhật qua email.
                         </p>
                         <div class="footer-newsletter">

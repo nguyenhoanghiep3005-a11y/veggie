@@ -27,7 +27,7 @@
                                         </div>
                                         <h3>{{$product->name}}</h3>
                                         <div class="product-price">
-                                            <span>{{number_format($product->price , 0 , ',',".")}}VND</span>
+                                            <span>{{number_format($product->current_price , 0 , ',',".")}}VND</span>
                                         </div>
                                         <div class="modal-product-meta ltn__product-details-menu-1">
                                             <ul>

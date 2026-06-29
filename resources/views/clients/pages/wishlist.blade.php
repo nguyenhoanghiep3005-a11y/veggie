@@ -26,9 +26,9 @@
                                     </td>
                                     </td>
                                     <td class="{{route('product.detail', $item->product->slug)}}">
-                                        {{number_format($item->product->price , 0 , ',',".")}}đ</td>
+                                        {{number_format($item->product->current_price , 0 , ',',".")}}đ</td>
                                     <td class="wishlist-product-stock">
-                                        {{$item->product->status == 'int_stock' ? "Còn hàng" : "Hết hàng"}}
+                                        {{$item->product->stock > 0 ? "Còn hàng" : "Hết hàng"}}
                                     </td>
                                     <td>
                                         <a href="{{route('product.detail', $item->product->slug)}}" class="submit-button-1 " title="Thêm vào giỏ hàng">

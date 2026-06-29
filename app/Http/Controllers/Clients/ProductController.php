@@ -16,15 +16,20 @@ class ProductController extends Controller
         $categories = Category::with('products')->get();
 
         // Lấy danh sách sản phẩm còn hàng  kèm ảnh đầu tiên
-        $products = Product::with('firstImage')
+        $products = Product::with('firstImage', 'inventories')
             ->where('status', 'int_stock')
+            ->whereHas('inventories', function ($query) {
+                $query->where('quantity_remaining', '>', 0)
+                    ->whereDate('expired_at', '>=', now()->toDateString())
+                    ->whereNotIn('condition', ['expired', 'damaged', 'sold_out']);
+            })
             ->paginate(9);
 
         // Gán URL ảnh cho từng sản phẩm
         foreach ($products as $product) {
             $product->image_url = $product->firstImage?->image
                 ? asset('storage/uploads/products/' . $product->firstImage->image)
-                : asset('storage/uploads/products/product_default.png');
+                : asset('storage/uploads/products/default.png');
         }
 
         // Trả về giao diện danh sách sản phẩm
@@ -34,7 +39,13 @@ class ProductController extends Controller
     public function filter(Request $request)
     {
         // Tạo query filter sản phẩm
-        $query = Product::query();
+        $query = Product::with('firstImage', 'inventories')
+            ->where('status', 'int_stock')
+            ->whereHas('inventories', function ($query) {
+                $query->where('quantity_remaining', '>', 0)
+                    ->whereDate('expired_at', '>=', now()->toDateString())
+                    ->whereNotIn('condition', ['expired', 'damaged', 'sold_out']);
+            });
 
         // Lọc theo danh mục
         if ($request->has('category_id') && $request->category_id != '') {
@@ -74,7 +85,7 @@ class ProductController extends Controller
         foreach ($products as $product) {
             $product->image_url = $product->firstImage?->image
                 ? asset('storage/uploads/products/' . $product->firstImage->image)
-                : asset('storage/uploads/products/product_default.png');
+                : asset('storage/uploads/products/default.png');
         }
 
         // Trả HTML sản phẩm + phân trang qua AJAX
@@ -94,6 +105,12 @@ class ProductController extends Controller
         // Sản phẩm liên quan cùng danh mục
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
+            ->where('status', 'int_stock')
+            ->whereHas('inventories', function ($query) {
+                $query->where('quantity_remaining', '>', 0)
+                    ->whereDate('expired_at', '>=', now()->toDateString())
+                    ->whereNotIn('condition', ['expired', 'damaged', 'sold_out']);
+            })
             ->limit(6)
             ->get();
 

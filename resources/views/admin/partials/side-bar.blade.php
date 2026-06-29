@@ -42,12 +42,13 @@
           </li>
           @endif
           @if($adminUser->role->permissions->contains('name','manage_products'))
-          <li><a href="#"><i class="fa fa-desktop"></i> Quản sản phẩm <span class="fa fa-chevron-down"></span></a>
+          <li><a href="#"><i class="fa fa-desktop"></i> Quản Lý sản phẩm <span class="fa fa-chevron-down"></span></a>
             <ul class="nav child_menu">
               <li><a href="{{route('admin.product.add')}}">Thêm sản phẩm</a></li>
               <li><a href="{{route('admin.products.index')}}">Danh sách sản phẩm</a></li>
             </ul>
           </li>
+          <li><a href="{{route('admin.inventories.index')}}"><i class="fa fa-archive"></i> Quản lý kho</a></li>
           @endif
           @if($adminUser->role->permissions->contains('name','manage_order'))
           <li><a href="{{route('admin.orders.index')}}"><i class="fa fa-edit"></i> Quản lý đơn hàng </a></li>

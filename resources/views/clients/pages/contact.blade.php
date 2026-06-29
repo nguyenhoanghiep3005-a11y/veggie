@@ -47,7 +47,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="ltn__form-box contact-form-box box-shadow white-bg">
-                    <h4 class="title-2">Nhận báo giá</h4>
+                    <h4 class="title-2">Tư vấn mua hàng</h4>
                     <form id="contact-form" action="{{route('contact.send')}}" method="post">
                         @csrf
                         <div class="row">

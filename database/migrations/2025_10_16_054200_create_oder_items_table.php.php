@@ -13,9 +13,11 @@ return new class extends Migration
     {
        Schema::create( 'order_items',function(Blueprint $table)
        {
+        $table->engine = 'InnoDB';
         $table->id();
         $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
-        $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+        $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+        $table->foreignId('inventory_id')->nullable()->constrained('inventories')->nullOnDelete();
         $table->integer('quantity');
         $table->decimal('price',10,2);
         $table->timestamps();

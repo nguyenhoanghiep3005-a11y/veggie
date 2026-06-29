@@ -16,15 +16,15 @@
         <div class="ltn__utilize-menu">
             <ul>
                 <li><a href="\">Trang chủ</a> </li>
-                <li><a href="javascript:void(0)">Về chúng tôi</a>
+                <li><a href="javascript:void(0)">Về Nông Sản Khô</a>
                     <ul class="sub-menu">
-                        <li><a href="{{route('about')}}">Về chúng tôi</a></li>
-                        <li><a href="{{route('service')}}">Dịch vụ</a></li>
-                        <li><a href="{{route('team')}}">Team</a></li>
-                        <li><a href="{{route('faq')}}">FAQ</a></li>
+                        <li><a href="javascript:void(0)">Về Nông Sản Khô</a></li>
+                        <li><a href="javascript:void(0)">Dịch vụ</a></li>
+                        <li><a href="javascript:void(0)">Đội ngũ</a></li>
+                        <li><a href="javascript:void(0)">FAQ</a></li>
                     </ul>
                 </li>
-                <li><a href="{{route('about')}}">Cửa hàng</a></li>
+                <li><a href="{{route('about')}}">Sản phẩm</a></li>
                 <li><a href="{{route('about')}}">Liên hệ</a></li>
             </ul>
         </div>

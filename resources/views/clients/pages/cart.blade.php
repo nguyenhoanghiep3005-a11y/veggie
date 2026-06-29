@@ -18,7 +18,7 @@
                                 @endphp
                                 @forelse ($cartItems as $item)
                                 @php
-                                $subtotal = $item['price'] * $item['quantity'];
+                                $subtotal = $item['subtotal'];
                                 $cartTotal += $subtotal;
                                 @endphp
                                 <tr>
@@ -27,7 +27,7 @@
                                     </td>
                                     <td class="cart-product-image">
                                         <a href="javascript:void(0)">
-                                            <img src="{{asset('storage/'. ($item['image'] ?? 'uploads/products/product_default.png'))}}"
+                                            <img src="{{asset('storage/'. ($item['image'] ?? 'uploads/products/default.png'))}}"
                                                 alt="Sản phẩm"></a>
                                     </td>
                                     <td class="cart-product-info">

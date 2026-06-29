@@ -20,6 +20,10 @@ class RolePermissionsTableSeeder extends Seeder
         // Lấy toàn bộ quyền
         $permissions = Permission::all();
 
+        if (!$adminRole || !$staffRole) {
+            return;
+        }
+
         // Gán tất cả quyền cho admin (nếu tồn tại)
        
             $adminRole->permissions()->sync($permissions);

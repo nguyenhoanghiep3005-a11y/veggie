@@ -2,12 +2,11 @@
 
 @section('title','Quản Sản Phẩm')
 @section('content')
-<!-- page content -->
 <div class="right_col" role="main">
     <div class="">
         <div class="page-title">
             <div class="title_left">
-                <h3>Danh sách tất cả Sản Phẩm</h3>
+                <h3>Danh sách sản phẩm</h3>
             </div>
         </div>
         <div class="clearfix"></div>
@@ -15,12 +14,10 @@
             <div class="col-md-12 col-sm-12 ">
                 <div class="x_panel">
                     <div class="x_title">
-                        <h2>Danh Sách Sản Phẩm</h2>
+                        <h2>Danh sách sản phẩm</h2>
                         <ul class="nav navbar-right panel_toolbox">
-                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                            </li>
-                            <li><a class="close-link"><i class="fa fa-close"></i></a>
-                            </li>
+                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                            <li><a class="close-link"><i class="fa fa-close"></i></a></li>
                         </ul>
                         <div class="clearfix"></div>
                     </div>
@@ -29,7 +26,7 @@
                             <div class="col-sm-12">
                                 <div class="card-box table-responsive">
                                     <p class="text-muted font-13 m-b-30">
-                                        Trang quản lý danh mục cho phép Admin tạo mới, sửa và xóa các danh mục sản phẩm.
+                                        Sản phẩm quản lý thông tin trưng bày; tồn kho và giá bán điều chỉnh cập nhật trong phần quản lý kho.
                                     </p>
                                     <table id="datatable-buttons" class="table table-striped table-bordered"
                                         style="width:100%; text-align: center;">
@@ -40,22 +37,21 @@
                                                 <th>Danh mục</th>
                                                 <th>Slug</th>
                                                 <th>Mô tả</th>
-                                                <th>Số lượng</th>
-                                                <th>Giá</th>
+                                                <th>Tồn kho bán được</th>
+                                                <th>Giá niêm yết</th>
                                                 <th>Đơn vị</th>
                                                 <th>Trạng thái</th>
-                                                <th ></th>
+                                                <th></th>
                                                 <th></th>
                                             </tr>
                                         </thead>
-
-
                                         <tbody>
-
                                             @foreach ($products as $product)
                                             <tr id="product-row-{{$product->id}}">
-                                                <td><img src="{{ $product->firstImage ? asset('storage/' . $product->firstImage->image) : asset('storage/uploads/products/product_default.png') }}"
-                                                        alt="{{ $product->name }}" class="image-product"></td>
+                                                <td>
+                                                    <img src="{{ $product->firstImage ? asset('storage/' . $product->firstImage->image) : asset('storage/uploads/products/default.png') }}"
+                                                        alt="{{ $product->name }}" class="image-product">
+                                                </td>
                                                 <td>{{$product->name}}</td>
                                                 <td>{{$product->category->name}}</td>
                                                 <td>{{$product->slug}}</td>
@@ -63,16 +59,17 @@
                                                 <td>{{$product->stock}}</td>
                                                 <td>{{number_format($product->price, 0, ',', '.')}} VND</td>
                                                 <td>{{$product->unit}}</td>
-                                                <td>{{$product->status =='int_stock' ? 'Còn hàng' : 'Hết hàng'}}</td>
-
+                                                <td>{{$product->stock > 0 ? 'Còn hàng' : 'Hết hàng'}}</td>
                                                 <td>
                                                     <a class="btn btn-app btn-update-product" data-toggle="modal"
-                                                        data-target="#modalupdate-{{$product->id}}"> <i
-                                                            class="fa fa-edit"></i>Chỉnh
-                                                        sữa</a>
+                                                        data-target="#modalupdate-{{$product->id}}">
+                                                        <i class="fa fa-edit"></i>Chỉnh sửa
+                                                    </a>
                                                 </td>
-                                                <td> <a class="btn btn-app btn-delete-product"
-                                                        data-id="{{$product->id}}"> <i class="fa fa-close"></i>Xóa</a>
+                                                <td>
+                                                    <a class="btn btn-app btn-delete-product" data-id="{{$product->id}}">
+                                                        <i class="fa fa-close"></i>Xóa
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -81,8 +78,7 @@
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title" id="productModalLabel">Chỉnh sửa
-                                                            </h5>
+                                                            <h5 class="modal-title" id="productModalLabel">Chỉnh sửa sản phẩm</h5>
                                                             <button type="button" class="btn-close" data-dismiss="modal"
                                                                 aria-label="Close">
                                                                 <span aria-hidden="true">&times;</span>
@@ -95,22 +91,20 @@
                                                                 @csrf
 
                                                                 <div class="item form-group">
-                                                                    <label
-                                                                        class="col-form-label col-md-3 col-sm-3 label-align"
-                                                                        for="product-name">Tên Sản Phẩm
+                                                                    <label class="col-form-label col-md-3 col-sm-3 label-align"
+                                                                        for="product-name">Tên sản phẩm
                                                                         <span class="required">*</span>
                                                                     </label>
                                                                     <div class="col-md-6 col-sm-6 ">
                                                                         <input type="text" id="product-name" name="name"
-                                                                            required class="form-control "
+                                                                            required class="form-control"
                                                                             value="{{$product->name}}">
                                                                     </div>
                                                                 </div>
 
                                                                 <div class="item form-group">
-                                                                    <label
-                                                                        class="col-form-label col-md-3 col-sm-3 label-align"
-                                                                        for="product-name">Danh Mục
+                                                                    <label class="col-form-label col-md-3 col-sm-3 label-align"
+                                                                        for="category_id">Danh mục
                                                                         <span class="required">*</span>
                                                                     </label>
                                                                     <div class="col-md-6 col-sm-6 ">
@@ -118,19 +112,18 @@
                                                                             class="form-control">
                                                                             <option value="">Chọn danh mục</option>
                                                                             @foreach($categories as $category)
-                                                                            <option value="{{ $category->id }}" {{
-                                                                                $product->category_id == $category->id ?
-                                                                                'selected' : '' }}>
+                                                                            <option value="{{ $category->id }}"
+                                                                                {{ $product->category_id == $category->id ? 'selected' : '' }}>
                                                                                 {{ $category->name }}
                                                                             </option>
                                                                             @endforeach
                                                                         </select>
                                                                     </div>
                                                                 </div>
+
                                                                 <div class="item form-group">
-                                                                    <label
-                                                                        class="col-form-label col-md-3 col-sm-3 label-align"
-                                                                        for="product-description">Mô Tả
+                                                                    <label class="col-form-label col-md-3 col-sm-3 label-align"
+                                                                        for="product-description">Mô tả
                                                                         <span class="required">*</span>
                                                                     </label>
                                                                     <div class="col-md-6 col-sm-6 ">
@@ -140,10 +133,10 @@
                                                                             value="{{$product->description}}">
                                                                     </div>
                                                                 </div>
+
                                                                 <div class="item form-group">
-                                                                    <label
-                                                                        class="col-form-label col-md-3 col-sm-3 label-align"
-                                                                        for="product-description">Giá
+                                                                    <label class="col-form-label col-md-3 col-sm-3 label-align"
+                                                                        for="product-price">Giá niêm yết
                                                                         <span class="required">*</span>
                                                                     </label>
                                                                     <div class="col-md-6 col-sm-6 ">
@@ -152,22 +145,21 @@
                                                                             value="{{$product->price}}">
                                                                     </div>
                                                                 </div>
+
                                                                 <div class="item form-group">
-                                                                    <label
-                                                                        class="col-form-label col-md-3 col-sm-3 label-align"
-                                                                        for="product-description">Số lượng
-                                                                        <span class="required">*</span>
+                                                                    <label class="col-form-label col-md-3 col-sm-3 label-align"
+                                                                        for="product-stock">Tồn kho bán được
                                                                     </label>
                                                                     <div class="col-md-6 col-sm-6 ">
                                                                         <input type="number" id="product-stock"
-                                                                            name="stock" required class="form-control"
+                                                                            class="form-control" readonly
                                                                             value="{{$product->stock}}">
                                                                     </div>
                                                                 </div>
+
                                                                 <div class="item form-group">
-                                                                    <label
-                                                                        class="col-form-label col-md-3 col-sm-3 label-align"
-                                                                        for="product-description">Đơn vị
+                                                                    <label class="col-form-label col-md-3 col-sm-3 label-align"
+                                                                        for="product-unit">Đơn vị
                                                                         <span class="required">*</span>
                                                                     </label>
                                                                     <div class="col-md-6 col-sm-6 ">
@@ -176,22 +168,19 @@
                                                                             value="{{$product->unit}}">
                                                                     </div>
                                                                 </div>
-                                                                <div class="item form-group">
-                                                                    <label
-                                                                        class="col-form-label col-md-3 col-sm-3 label-align"
-                                                                        for="product-images">Hình
-                                                                        ảnh</label>
-                                                                    <div class="col-md-6 col-sm-6 ">
 
+                                                                <div class="item form-group">
+                                                                    <label class="col-form-label col-md-3 col-sm-3 label-align"
+                                                                        for="product-images-{{$product->id}}">Hình ảnh</label>
+                                                                    <div class="col-md-6 col-sm-6 ">
                                                                         <label class="custom-file-upload"
                                                                             for="product-images-{{$product->id}}">
-                                                                            Chọn
-                                                                            Ảnh</label>
+                                                                            Chọn ảnh</label>
                                                                         <input type="file" name="images[]"
                                                                             class="product-images"
                                                                             id="product-images-{{$product->id}}"
                                                                             data-id="{{$product->id}}" accept="image/*"
-                                                                            multiple >
+                                                                            multiple>
                                                                         <div id="image-preview-container-{{$product->id}}"
                                                                             class="image-preview-container image-preview-listproduct"
                                                                             data-id="{{$product->id}}">
@@ -199,10 +188,8 @@
                                                                             <img src="{{asset('storage/'. $image->image)}}"
                                                                                 alt="Ảnh sản phẩm"
                                                                                 style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px; margin-top:10px;">
-
                                                                             @endforeach
                                                                         </div>
-
                                                                     </div>
                                                                 </div>
                                                             </form>
@@ -229,5 +216,4 @@
         </div>
     </div>
 </div>
-<!-- /page content -->
 @endsection

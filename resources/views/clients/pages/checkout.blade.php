@@ -113,13 +113,16 @@
                     <table class="table">
                         <tbody>
                             @foreach ($cartItems as $item)
+                            @php
+                            $itemSubtotal = $item->product->calculatePriceByQuantity($item->quantity);
+                            @endphp
                             <tr>
                                 <td>
                                     {{$item->product->name}}
                                     <strong>× {{$item->quantity}}</strong>
                                 </td>
 
-                                <td>{{number_format($item->product->price * $item->quantity, 0, ',', '.')}} đ</td>
+                                <td>{{number_format($itemSubtotal, 0, ',', '.')}} đ</td>
                             </tr>
                             @endforeach
                             <td>Vận chuyển và xử lý</td>

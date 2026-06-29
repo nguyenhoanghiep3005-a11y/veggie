@@ -6,15 +6,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
-    protected $fillable =['order_id', 'product_id', 'quantity', 'price'];
+    protected $fillable = ['order_id', 'product_id', 'inventory_id', 'quantity', 'price'];
 
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
 
-      public function oder()
+    public function inventory()
+    {
+        return $this->belongsTo(Inventory::class);
+    }
+
+    public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function oder()
+    {
+        return $this->order();
     }
 }

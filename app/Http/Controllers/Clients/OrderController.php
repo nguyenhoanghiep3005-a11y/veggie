@@ -20,13 +20,49 @@ class OrderController extends Controller
         $order = Order::where('id', $id)
         ->where('user_id', Auth::id())
         ->where('status','pending')
+        ->with('orderItems.inventory.product', 'orderItems.product')
         ->firstOrfail();
-        foreach($order->orderItems as $item)
-        {
-            $item->product->increment('stock', $item->quantity);
-        }
+        $this->restoreInventoryFromOrder($order);
         // update order status cancel
         $order->update(['status'=> 'canceled']);
         return redirect()->back()->with('success', 'Đơn hàng đã được hủy thành công và sản phẩm được hoàn kho');
+    }
+    private function restoreInventoryFromOrder($order)
+    {
+        foreach ($order->orderItems as $item) {
+            $inventory = $item->inventory;
+
+            if (!$inventory && $item->product) {
+                $inventory = $item->product->inventories()->orderBy('expired_at')->first();
+            }
+
+            if ($inventory) {
+                $inventory->quantity_remaining = $inventory->quantity_remaining + $item->quantity;
+                if ($inventory->quantity_remaining > $inventory->quantity_imported) {
+                    $inventory->quantity_remaining = $inventory->quantity_imported;
+                }
+                $inventory->refreshCondition();
+                $inventory->save();
+
+                if ($item->product) {
+                    $this->updateProductStatus($item->product);
+                } elseif ($inventory->product) {
+                    $this->updateProductStatus($inventory->product);
+                }
+            }
+        }
+    }
+
+    private function updateProductStatus($product)
+    {
+        $availableQuantity = $product->availableInventories()->sum('quantity_remaining');
+
+        if ($availableQuantity > 0) {
+            $product->status = 'int_stock';
+        } else {
+            $product->status = 'out_of_stock';
+        }
+
+        $product->save();
     }
 }

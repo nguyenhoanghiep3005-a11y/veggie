@@ -1,7 +1,7 @@
 @extends('layouts.client')
 
-@section('title','Về chúng tôi')
-@section('breadcrumb','Về chúng tôi')
+@section('title','Về Nông Sản Khô')
+@section('breadcrumb','Về Nông Sản Khô')
 
 @section('content')
 <!-- ABOUT US AREA START -->
@@ -16,10 +16,10 @@
                     <div class="col-lg-6 align-self-center">
                         <div class="about-us-info-wrap">
                             <div class="section-title-area ltn__section-title-2">
-                                <h1 class="section-title">Cửa hàng thực phẩm Hữu cơ uy tính</h1>
-                                <p>Chúng tôi cam kết mang đến những sản phẩm chất lượng, an toàn và tốt cho sức khỏe</p>
+                                <h1 class="section-title">Cửa hàng Nông Sản Khô uy tín</h1>
+                                <p>Chúng tôi cam kết mang đến các sản phẩm nông sản khô chất lượng, an toàn và dễ sử dụng.</p>
                             </div>
-                            <p>Những người bán hàng khao khát trở thành người tốt, làm điều tốt và lan tỏa lòng tốt. Chúng tôi là một thị trường dân chủ, tự chủ, hai chiều, phát triển mạnh mẽ dựa trên niềm tin và được xây dựng dựa trên cộng đồng và nội dung chất lượng.</p>
+                            <p>Nông Sản Khô tập trung cung cấp thực phẩm khô, gia vị, gạo và hạt dinh dưỡng được chọn lọc từ nguồn cung uy tín, giúp khách hàng mua sắm thuận tiện và an tâm hơn.</p>
                             <div class="about-author-info d-flex">
                                 <div class="author-name-designation  align-self-center">
                                 </div>  
@@ -37,7 +37,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="section-title-area ltn__section-title-2 text-center">
-                            <h1 class="section-title">Tại Sao Chọn Chúng Tôi<span>.</span></h1>
+                            <h1 class="section-title">Tại Sao Chọn Nông Sản Khô<span>.</span></h1>
                         </div>
                     </div>
                 </div>
@@ -48,10 +48,10 @@
                                 <div class="ltn__feature-icon">
                                     <span><img src="{{asset('assets/clients/img/icons/icon-img/21.png')}}" alt="#"></span>
                                 </div>
-                                <h3><a href="service-details.html">Đa Dạng Thương Hiệu</a></h3>
+                                <h3><a href="service-details.html">Danh Mục Đa Dạng</a></h3>
                             </div>
                             <div class="ltn__feature-info">
-                                <p>Chúng tôi chung cấp nhiều thương hiệu uy tín, đảm bảo chất lượng và nguồn gốc rõ ràng.</p>
+                                <p>Cung cấp nhiều nhóm sản phẩm như thực phẩm khô, gia vị, gạo và hạt dinh dưỡng.</p>
                             </div>
                         </div>
                     </div>
@@ -61,10 +61,10 @@
                                 <div class="ltn__feature-icon">
                                     <span><img src="{{asset('assets/clients/img/icons/icon-img/22.png')}}" alt="#"></span>
                                 </div>
-                                <h3><a href="service-details.html">Sản Phẩm Tuyển Chọn</a></h3>
+                                <h3><a href="service-details.html">Sản Phẩm Chọn Lọc</a></h3>
                             </div>
                             <div class="ltn__feature-info">
-                                <p>Mỗi sản phẩm đều được chọn lọc kỹ lưỡng, mang đến sự an tâm và hài lòng cho khác hàng.</p>
+                                <p>Mỗi sản phẩm được chọn lọc kỹ, đóng gói cẩn thận và phù hợp với nhu cầu sử dụng hằng ngày.</p>
                             </div>
                         </div>
                     </div>
@@ -74,10 +74,10 @@
                                 <div class="ltn__feature-icon">
                                     <span><img src="{{asset('assets/clients/img/icons/icon-img/23.png')}}" alt="#"></span>
                                 </div>
-                                <h3><a href="service-details.html">Không Chứa Thuốc Trừ Sâu</a></h3>
+                                <h3><a href="service-details.html">Bảo Quản An Toàn</a></h3>
                             </div>
                             <div class="ltn__feature-info">
-                                <p>Cam kết cung cấp thực phẩm sạch, an toàn, không chứa hóa chất độc hại hay thuốc trừ sâu.</p>
+                                <p>Cam kết sản phẩm rõ nguồn gốc, bảo quản đúng cách và thông tin minh bạch.</p>
                             </div>
                         </div>
                     </div>

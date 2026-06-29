@@ -23,7 +23,7 @@ class AdminAuthController extends Controller
         ]);
         if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::guard('admin')->user();
-            if (in_array($user->role->name, ['admin', 'staff'])) {
+            if (in_array($user->role?->name, ['admin', 'staff'], true)) {
                 $request->session()->regenerate();
                 toastr()->success('Đăng nhập admin thành công');
                 return redirect()->route('admin.dashboard');

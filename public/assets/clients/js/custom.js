@@ -155,6 +155,111 @@ $(document).ready(function () {
       },
     })
   })
+
+  function populateOptions($select, items, valuekey, labelkey, placeholder) {
+    $select.empty();
+    $select.append(new Option(placeholder, ""));
+    items.forEach(function (item) {
+      $select.append(new Option(item[labelkey], item[valuekey]));
+    })
+    refreshNiceSelect($select);
+  }
+  function refreshNiceSelect($select) {
+    if ($.fn.niceSelect) {
+      $select.niceSelect('destroy');
+      $select.niceSelect();
+    }
+  }
+
+  $("#addAddressModal").on("show.bs.modal", function () {
+    loadProvinces();
+  });
+  function loadProvinces() {
+    var $province = $("#province_id");
+    $province.empty().append(new Option("Đang tải dữ liệu...", "")).prop("disabled", true);
+    refreshNiceSelect($province);
+
+    $.get("/ghn/provinces", function (res) {
+      if (res.status && res.data) {
+        // Xử lý dữ liệu tỉnh thành
+        populateOptions($province, res.data, "ProvinceID", "ProvinceName", "--Chọn tỉnh thành--");
+        $province.prop("disabled", false);
+        refreshNiceSelect($province);
+      } else {
+        $province.empty().append(new Option("Lỗi tải dữ liệu", "")).prop("disabled", true);
+        refreshNiceSelect($province);
+      }
+    }).fail(function() {
+        $province.empty().append(new Option("Lỗi kết nối", "")).prop("disabled", true);
+        refreshNiceSelect($province);
+    });
+  }
+  function loadDistrict(provinceId) {
+    if (!provinceId) return;
+    var $district = $("#district_id");
+    var $ward = $("#ward_id");
+    $district.empty().append(new Option("Đang tải dữ liệu...", "")).prop("disabled", true);
+    $ward.empty().append(new Option("--Chọn phường xã--", "")).prop("disabled", true);
+    refreshNiceSelect($district);
+    refreshNiceSelect($ward);
+
+    $.get("/ghn/districts", { province_id: provinceId }, function (res) {
+      if (res.status && res.data) {
+        // Xử lý dữ liệu tỉnh thành
+        var $province = $("#province_id");
+        populateOptions($district, res.data, "DistrictID", "DistrictName", "--Chọn quận huyện--");
+        $district.prop("disabled", false);
+        refreshNiceSelect($district);
+        refreshNiceSelect($ward);
+
+      }
+    });
+  }
+  function loadWard(districtId) {
+    if (!districtId) return;
+    var $ward = $("#ward_id");
+    $ward.empty().append(new Option("Đang tải dữ liệu...", "")).prop("disabled", true);
+    refreshNiceSelect($ward);
+
+    $.get("/ghn/wards", { district_id: districtId }, function (res) {
+      if (res.status && res.data) {
+        // Xử lý dữ liệu tỉnh thành
+        populateOptions($ward, res.data, "WardCode", "WardName", "--Chọn phường xã--");
+        $ward.prop("disabled", false);
+        refreshNiceSelect($ward);
+
+      }
+    });
+  }
+  $("#province_id").on("change", function () {
+    var provinceId = $(this).val();
+    $("#province_name").val($(this).find("option:selected").text());
+    var $district = $("#district_id");
+    var $ward = $("#ward_id");
+    $district.empty().append(new Option("--Chọn quận huyện--")).prop("disabled", true);
+    $ward.empty().append(new Option("--Chọn phường xã--")).prop("disabled", true);
+    refreshNiceSelect($district);
+    refreshNiceSelect($ward);
+    if (provinceId) {
+      loadDistrict(provinceId);
+    }
+  })
+    $("#district_id").on("change", function () {
+    var districtId = $(this).val();
+    $("#district_name").val($(this).find("option:selected").text());
+    var $ward = $("#ward_id");
+    $ward.empty().append(new Option("--Chọn phường xã--")).prop("disabled", true);
+    refreshNiceSelect($ward);
+    if (districtId) {
+      loadWard(districtId);
+    }
+  });
+  
+  $("#ward_id").on("change", function () {
+    $("#ward_name").val($(this).find("option:selected").text());
+  });
+
+  //  PAGE CART
   //   ĐỔI MẬT KHẨU
   $('#change-password-form').submit(function (e) {
     e.preventDefault();
@@ -232,7 +337,9 @@ $(document).ready(function () {
 
     let fullName = $('#full_name').val().trim();
     let phone = $('#phone').val().trim();
-
+    let province = $("#province_id").val();
+    let district = $("#district_id").val();
+    let ward = $("#ward_id").val();
     // Validate tên
     if (fullName.length < 3) {
       isValid = false;
@@ -245,7 +352,18 @@ $(document).ready(function () {
       isValid = false;
       $('#phone').after('<p class="error-message text-danger">Số điện thoại không hợp lệ.</p>');
     }
-
+    if (!province) {
+      isValid = false;
+      $('#province_id').closest('.mb-3').append('<p class="error-message text-danger">Vui lòng chọn tỉnh thành.</p>');
+    }
+     if (!district) {
+      isValid = false;
+      $('#district_id').closest('.mb-3').append('<p class="error-message text-danger">Vui lòng chọn quận huyện.</p>');
+    }
+     if (!ward) {
+      isValid = false;
+      $('#ward_id').closest('.mb-3').append('<p class="error-message text-danger">Vui lòng chọn phường xã.</p>');
+    }
     if (isValid) {
       this.submit();
     }
@@ -361,8 +479,8 @@ $(document).ready(function () {
   $(".slider-range").slider({
     range: true,
     min: 0,
-    max: 300000,
-    values: [0, 300000],
+    max: 500000,
+    values: [0, 500000],
     slide: function (event, ui) {
       $(".amount").val(ui.values[0] + " - " + ui.values[1] + "vnđ");
     },
@@ -411,8 +529,12 @@ $(document).ready(function () {
         $('#add_to_cart_modal-' + productId).modal('show');
       },
 
-      error: function () {
-        alert('Lỗi thêm vào giỏ hàng!');
+      error: function (xhr) {
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          toastr.error(xhr.responseJSON.message);
+        } else {
+          alert('Lỗi thêm vào giỏ hàng!');
+        }
       }
     });
   });
@@ -866,7 +988,7 @@ $(document).ready(function () {
     }
   });
   //tim kiem bang giong noi
-if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+  if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
 
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'vi-VN';
@@ -878,47 +1000,48 @@ if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
 
     // Click micro
     mic.on('click', function () {
-        if (isRecognizing) {
-            recognition.stop();
-        } else {
-            recognition.start();
-        }
+      if (isRecognizing) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
     });
 
     // Bắt đầu nghe
     recognition.onstart = function () {
-        isRecognizing = true;
-        mic.removeClass('fa-microphone').addClass('fa-microphone-slash');
-        console.log('Speech recognition started');
+      isRecognizing = true;
+      mic.removeClass('fa-microphone').addClass('fa-microphone-slash');
+      console.log('Speech recognition started');
     };
 
     // Có kết quả
     recognition.onresult = function (event) {
-        let transcript = event.results[0][0].transcript.trim();
+      let transcript = event.results[0][0].transcript.trim();
 
-        // ❗ Xóa dấu . , ! ? ở cuối
-        transcript = transcript.replace(/[.,!?]+$/, '');
+      // ❗ Xóa dấu . , ! ? ở cuối
+      transcript = transcript.replace(/[.,!?]+$/, '');
 
-        input.val(transcript);
+      input.val(transcript);
     };
 
     // Lỗi
     recognition.onerror = function (event) {
-        console.log('Speech recognition error:', event.error);
-        toastr.error('Có lỗi xảy ra khi nhận diện giọng nói: ' + event.error);
+      console.log('Speech recognition error:', event.error);
+      toastr.error('Có lỗi xảy ra khi nhận diện giọng nói: ' + event.error);
     };
 
     // Kết thúc
     recognition.onend = function () {
-        isRecognizing = false;
-        mic.removeClass('fa-microphone-slash').addClass('fa-microphone');
-        console.log('Speech recognition ended');
+      isRecognizing = false;
+      mic.removeClass('fa-microphone-slash').addClass('fa-microphone');
+      console.log('Speech recognition ended');
     };
 
-} else {
+  } else {
     console.log("Trình duyệt không hỗ trợ");
     toastr.error("Trình duyệt của bạn không hỗ trợ giọng nói");
-}
+  }
+  //giao hang nhanh
 
 
 });

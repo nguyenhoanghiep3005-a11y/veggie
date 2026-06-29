@@ -53,8 +53,7 @@ class ProductFactory extends Factory
             'category_id' => Category::inRandomOrder()->first()->id,
             'description' =>  $this->faker->sentence(10),
             'price' => $this->faker->randomFloat(2, 10000, 200000),
-            'stock' => $this->faker->numberBetween(0, 100),
-            'status' => $this->faker->randomElement(['int_stock', 'out_of_stock']),
+            'status' => 'int_stock',
             'unit' => $this->faker->randomElement(['kb', 'bó', 'túi', 'hộp'])
 
         ];

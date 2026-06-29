@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\UserController;
@@ -126,6 +127,15 @@ Route::prefix('admin')->group(function () {
 
         // Xoá sản phẩm
         Route::post('/product/delete', [AdminProductController::class, 'deleteProduct']);
+
+        Route::get('/inventories', [InventoryController::class, 'index'])
+            ->name('admin.inventories.index');
+
+        Route::post('/inventories/add', [InventoryController::class, 'store'])
+            ->name('admin.inventories.store');
+
+        Route::post('/inventories/update', [InventoryController::class, 'update'])
+            ->name('admin.inventories.update');
     });
 
     /*

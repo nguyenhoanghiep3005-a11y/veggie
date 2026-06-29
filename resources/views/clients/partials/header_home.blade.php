@@ -6,7 +6,7 @@
                 <div class="col">
                     <div class="site-logo-wrap">
                         <div class="site-logo">
-                            <a href="\{{route('about')}}"><img src="{{asset('assets/clients/img/logohiep.png')}}"
+                            <a href="{{ url('/') }}"><img src="{{asset('assets/clients/img/logohiep.png')}}"
                                     alt="Logo"></a>
                         </div>
                     </div>
@@ -17,18 +17,18 @@
                             <div class="ltn__main-menu">
                                 <ul>
                                     <li class="menu-icon"><a href="\">Trang chủ</a> </li>
-                                    <li class="menu-icon"><a href="javascript:void(0)">Về chúng tôi</a>
+                                    <li class="menu-icon"><a href="javascript:void(0)">Về Nông Sản Khô</a>
                                         <ul>
-                                            <li><a href="{{route('about')}}">Về chúng tôi</a></li>
-                                            <li><a href="{{route('service')}}">Dịch vụ</a></li>
-                                            <li><a href="{{route('team')}}">Team</a></li>
-                                            <li><a href="{{route('faq')}}">FAQ</a></li>
+                                            <li><a href="javascript:void(0)">Về Nông Sản Khô</a></li>
+                                            <li><a href="javascript:void(0)">Dịch vụ</a></li>
+                                            <li><a href="javascript:void(0)">Đội ngũ</a></li>
+                                            <li><a href="javascript:void(0)">FAQ</a></li>
                                         </ul>
                                     </li>
-                                    <li class="menu-icon"><a href="{{route('products.index')}}">Cửa hàng</a>
+                                    <li class="menu-icon"><a href="{{route('products.index')}}">Sản phẩm</a>
                                     </li>
                                     <li><a href="{{route('contact.index')}}">Liên hệ</a></li>
-                                    <li class="special-link"><a href="{{route('contact.index')}}">Nhận báo giá</a></li>
+                                    <li class="special-link"><a href="{{route('contact.index')}}">Tư vấn mua hàng</a></li>
                                 </ul>
                             </div>
                         </nav>

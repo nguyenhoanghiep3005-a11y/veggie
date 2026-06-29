@@ -27,19 +27,20 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:50',
             'images.*' => 'required|image|mimes:jpeg,png,jpg,gif',
         ]);
 
         $slug = Str::slug($request->name) . '-' . time();
+
         $product = Product::create([
             'name' => $request->name,
             'slug' => $slug,
             'category_id' => $request->category_id,
             'description' => $request->description,
             'price' => $request->price,
-            'stock' => $request->stock ?? 0,
-            'unit' => $request->unit ?? 'kg',
-            'status' => 'int_stock',
+            'unit' => $request->unit,
+            'status' => 'out_of_stock',
         ]);
 
         if ($request->hasFile('images')) {
@@ -67,7 +68,9 @@ class ProductController extends Controller
     public function index()
     {
 
-        $products = Product::with('category', 'images')->get();
+        $products = Product::with('category', 'images', 'firstImage', 'inventories')
+            ->orderByDesc('id')
+            ->get();
         $categories = Category::all();
         return view('admin.pages.product', compact('products', 'categories'));
     }
@@ -79,6 +82,7 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:50',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif',
         ]);
         $product = Product::find($request->product_id);
@@ -87,7 +91,6 @@ class ProductController extends Controller
             'category_id' => $request->category_id,
             'description' => $request->description,
             'price' => $request->price,
-            'stock' => $request->stock,
             'unit' => $request->unit
         ]);
         // Cập nhật hình ảnh
@@ -109,6 +112,8 @@ class ProductController extends Controller
                 ]);
             }
         }
+        $product->load('category', 'images', 'inventories');
+
         return response()->json([
             'status' => true,
             'message' => 'Cập nhật sản phẩm thành công!',
@@ -121,7 +126,7 @@ class ProductController extends Controller
                 'price' => $product->price,
                 'stock' => $product->stock,
                 'unit' => $product->unit,
-                'status' => $product->status == 'int_stock' ? 'Còn hàng' : 'Hết hàng',
+                'status' => $product->stock > 0 ? 'Còn hàng' : 'Hết hàng',
                 'images' => $product->images->map(fn($img) => asset('storage/' . $img->image))
             ]
         ]);
