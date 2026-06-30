@@ -2,9 +2,6 @@
     @foreach ($product->reviews as $review)
     <li>
         <div class="ltn__comment-item clearfix">
-            <div class="ltn__commenter-img">
-                <img src="{{$review->user->avatar_url}}" alt="{{$review->user->name}}">
-            </div>
             <div class="ltn__commenter-comment">
                 <h6>{{$review->user->name}}</h6>
                 <div class="product-ratting">
