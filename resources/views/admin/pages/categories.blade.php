@@ -31,7 +31,7 @@
                                     <p class="text-muted font-13 m-b-30">
                                         Trang quản lý danh mục cho phép Admin tạo mới, sửa và xóa các danh mục sản phẩm.
                                     </p>
-                                    <table id="datatable-buttons" class="table table-striped table-bordered"
+                                    <table id="datatable-responsive" class="table table-striped table-bordered"
                                         style="width:100%; text-align: center;">
                                         <thead>
                                             <tr>

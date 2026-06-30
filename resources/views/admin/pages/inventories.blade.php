@@ -2,50 +2,6 @@
 
 @section('title','Quản lý kho')
 @section('content')
-@php
-    $conditionLabels = [
-        'fresh' => 'Tươi mới',
-        'near_expiry' => 'Cận hạn',
-        'expired' => 'Hết hạn',
-        'damaged' => 'Hư hỏng',
-        'sold_out' => 'Đã bán hết',
-    ];
-
-    $conditionClasses = [
-        'fresh' => 'badge badge-success',
-        'near_expiry' => 'badge badge-warning',
-        'expired' => 'badge badge-danger',
-        'damaged' => 'badge badge-danger',
-        'sold_out' => 'badge badge-secondary',
-    ];
-@endphp
-<style>
-    .inventory-code-label {
-        border: 1px solid #ddd;
-        margin: 3px;
-        padding: 5px 8px;
-        cursor: pointer;
-        background: #fff;
-        color: #333;
-    }
-
-    .inventory-code-label input {
-        display: none;
-    }
-
-    .inventory-code-label.is-damaged {
-        background: #dc3545;
-        border-color: #dc3545;
-        color: #fff;
-    }
-
-    .inventory-code-label.is-sold {
-        background: #eee;
-        color: #999;
-        cursor: not-allowed;
-        text-decoration: line-through;
-    }
-</style>
 <div class="right_col" role="main">
     <div class="">
         <div class="page-title">
@@ -105,9 +61,6 @@
                                 </thead>
                                 <tbody>
                                     @foreach($inventories as $inventory)
-                                    @php
-                                        $conditionClass = $conditionClasses[$inventory->condition] ?? 'badge badge-secondary';
-                                    @endphp
                                     <tr>
                                         <td><strong>{{$inventory->lotCode()}}</strong></td>
                                         <td>{{$inventory->product->name}}</td>
@@ -117,8 +70,8 @@
                                         <td>{{$inventory->quantity_remaining}} / {{$inventory->quantity_imported}}</td>
                                         <td>{{$inventory->quantity_damaged}}</td>
                                         <td>
-                                            <span class="{{$conditionClass}}">
-                                                {{$conditionLabels[$inventory->condition] ?? $inventory->condition}}
+                                            <span class="{{$inventory->conditionClass()}}">
+                                                {{$inventory->conditionLabel()}}
                                             </span>
                                         </td>
                                         <td>
@@ -129,7 +82,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                            <button type="button" class="btn btn-success btn-sm" data-toggle="modal"
                                                 data-target="#modal-inventory-{{$inventory->id}}">
                                                 Chi tiết / Điều chỉnh
                                             </button>
@@ -219,17 +172,12 @@
 </div>
 
 @foreach($inventories as $inventory)
-@php
-    $maxUnsoldQuantity = $inventory->quantity_imported - $inventory->soldQuantity();
-    $damagedItemNumbers = $inventory->damagedItemNumbers();
-    $soldItemNumbers = $inventory->soldItemNumbers();
-@endphp
 <div class="modal fade" id="modal-inventory-{{$inventory->id}}" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form action="{{route('admin.inventories.update')}}" method="POST"
                 class="form-horizontal form-label-left inventory-adjust-form"
-                data-max-unsold="{{$maxUnsoldQuantity}}">
+                data-max-unsold="{{$inventory->maxUnsoldQuantity()}}">
                 @csrf
                 <input type="hidden" name="inventory_id" value="{{$inventory->id}}">
                 <div class="modal-header">
@@ -259,25 +207,21 @@
                     <div class="row">
                         <div class="col-md-12">
                             <p><strong>Chọn mã hàng bị hư:</strong></p>
-                            <div style="line-height: 34px;">
+                            <div class="inventory-code-list">
                                 @for($i = 1; $i <= $inventory->quantity_imported; $i++)
-                                @php
-                                    $isDamaged = in_array($i, $damagedItemNumbers);
-                                    $isSold = in_array($i, $soldItemNumbers);
-                                @endphp
-                                <label class="badge inventory-code-label {{$isDamaged ? 'is-damaged' : ''}} {{$isSold ? 'is-sold' : ''}}">
+                                <label class="badge inventory-code-label {{$inventory->isDamagedItem($i) ? 'is-damaged' : ''}} {{$inventory->isSoldItem($i) ? 'is-sold' : ''}}">
                                     <input type="checkbox" name="damaged_item_numbers[]" value="{{$i}}"
                                         class="inventory-damaged-code"
-                                        {{$isDamaged ? 'checked' : ''}}
-                                        {{$isSold ? 'disabled' : ''}}>
+                                        {{$inventory->isDamagedItem($i) ? 'checked' : ''}}
+                                        {{$inventory->isSoldItem($i) ? 'disabled' : ''}}>
                                     {{$inventory->itemCode($i)}}
-                                    @if($isSold)
+                                    @if($inventory->isSoldItem($i))
                                     <small>(đã bán)</small>
                                     @endif
                                 </label>
                                 @endfor
                             </div>
-                            <small class="text-danger inventory-damaged-error" style="display:none;"></small>
+                            <small class="text-danger inventory-damaged-error"></small>
                             <small class="form-text text-muted">
                                 Click vào mã hàng bị hư. Hệ thống tự giảm số lượng còn và tăng số lượng hư.
                             </small>
@@ -312,68 +256,4 @@
     </div>
 </div>
 @endforeach
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var forms = document.querySelectorAll('.inventory-adjust-form');
-
-    forms.forEach(function (form) {
-        var damagedCodes = form.querySelectorAll('.inventory-damaged-code');
-        var damagedCount = form.querySelector('.inventory-damaged-count');
-        var remainingCount = form.querySelector('.inventory-remaining-count');
-        var damagedError = form.querySelector('.inventory-damaged-error');
-        var saveButton = form.querySelector('.inventory-save-button');
-        var maxUnsold = parseInt(form.getAttribute('data-max-unsold'), 10);
-
-        if (isNaN(maxUnsold)) {
-            maxUnsold = 0;
-        }
-
-        function updateSummary()
-        {
-            var checkedCount = 0;
-
-            damagedCodes.forEach(function (checkbox) {
-                var label = checkbox.closest('.inventory-code-label');
-
-                if (checkbox.checked) {
-                    checkedCount++;
-
-                    if (label) {
-                        label.classList.add('is-damaged');
-                    }
-                } else if (label) {
-                    label.classList.remove('is-damaged');
-                }
-            });
-
-            damagedCount.textContent = checkedCount;
-            remainingCount.textContent = maxUnsold - checkedCount;
-            damagedError.textContent = '';
-            damagedError.style.display = 'none';
-
-            if (checkedCount > maxUnsold) {
-                damagedError.textContent = 'Số lượng mã hư không được lớn hơn số lượng chưa bán.';
-                damagedError.style.display = 'block';
-                saveButton.disabled = true;
-                return false;
-            }
-
-            saveButton.disabled = false;
-            return true;
-        }
-
-        damagedCodes.forEach(function (checkbox) {
-            checkbox.addEventListener('change', updateSummary);
-        });
-
-        form.addEventListener('submit', function (event) {
-            if (!updateSummary()) {
-                event.preventDefault();
-            }
-        });
-
-        updateSummary();
-    });
-});
-</script>
 @endsection

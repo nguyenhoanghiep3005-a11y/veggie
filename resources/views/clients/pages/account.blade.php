@@ -238,15 +238,6 @@
                                                         id="update-account" enctype="multipart/form-data">
                                                         @method('PUT')
                                                         <div class="row mb-50">
-                                                            <div class="col-md-12 text-center mb-3">
-                                                                <div class="profile-pic-container">
-                                                                    <img src="{{ asset('storage/' . $user->avatar) }}"
-                                                                        alt="Avata" id="preview-image"
-                                                                        class="profile-pic">
-                                                                    <input type="file" name="avatar" id="avatar"
-                                                                        accept="image/*" class="d-none">
-                                                                </div>
-                                                            </div>
 
                                                             <div class="col-md-6">
                                                                 <label for="ltn__name">Họ và tên:</label>

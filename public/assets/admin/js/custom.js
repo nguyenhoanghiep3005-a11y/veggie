@@ -151,25 +151,12 @@ $(document).ready(function () {
 
                     let id = response.data.id;
 
-                    // Cập nhật lại dòng danh mục
-                    let newRow = `
-                <tr id="category-row-${id}">
-                    <td><img src="${response.data.image}" width="50"></td>
-                    <td>${response.data.name}</td>
-                    <td>${response.data.slug}</td>
-                    <td>${response.data.description}</td>
-                    <td>
-                        <a class="btn btn-app btn-update-category" data-toggle="modal"
-                        data-target="#modalupdate-${id}">
-                        <i class="fa fa-edit"></i>Chỉnh sửa</a>
-                    </td>
-                    <td>
-                        <a class="btn btn-app btn-delete-category" data-id="${id}">
-                        <i class="fa fa-close"></i>Xóa</a>
-                    </td>
-                </tr>`;
+                    let row = $('#category-row-' + id);
 
-                    $('#category-row-' + id).replaceWith(newRow);
+                    row.find('td:eq(0) img').attr('src', response.data.image);
+                    row.find('td:eq(1)').text(response.data.name);
+                    row.find('td:eq(2)').text(response.data.slug);
+                    row.find('td:eq(3)').text(response.data.description);
 
                     // Đóng modal
                     $('#modalupdate-' + id).modal('hide');
@@ -325,30 +312,18 @@ $(document).ready(function () {
                         ? product.images[0]
                         : "storage/products/product_default.png";
 
-                    // Render dòng mới
-                    let newRow = `
-                <tr id="product-row-${product.id}">
-                    <td><img src="${imageSrc}" width="50"></td>
-                    <td>${product.name}</td>
-                    <td>${product.category_name}</td>
-                    <td>${product.slug}</td>
-                    <td>${product.description}</td>
-                    <td>${product.stock}</td>
-                    <td>${new Intl.NumberFormat("vi-VN").format(product.price)} VND</td>
-                    <td>${product.unit}</td>
-                    <td>${product.status}</td>
-                    <td>
-                        <a class="btn btn-app btn-update-product" data-toggle="modal"
-                        data-target="#modalupdate-${product.id}">
-                        <i class="fa fa-edit"></i>Chỉnh sửa</a>
-                    </td>
-                    <td>
-                        <a class="btn btn-app btn-delete-product" data-id="${product.id}">
-                        <i class="fa fa-close"></i>Xóa</a>
-                    </td>
-                </tr>`;
+                    let row = $('#product-row-' + product.id);
+                    let statusText = product.stock > 0 ? 'Còn hàng' : 'Hết hàng';
 
-                    $('#product-row-' + product.id).replaceWith(newRow);
+                    row.find('td:eq(0) img').attr('src', imageSrc);
+                    row.find('td:eq(1)').text(product.name);
+                    row.find('td:eq(2)').text(product.category_name);
+                    row.find('td:eq(3)').text(product.slug);
+                    row.find('td:eq(4)').text(product.description);
+                    row.find('td:eq(5)').text(product.stock);
+                    row.find('td:eq(6)').text(new Intl.NumberFormat('vi-VN').format(product.price) + ' VND');
+                    row.find('td:eq(7)').text(product.unit);
+                    row.find('td:eq(8)').text(statusText);
 
                     toastr.success(response.message);
                     $('#modalupdate-' + product.id).modal('hide');
@@ -484,6 +459,61 @@ $(document).ready(function () {
                 alert('AJAX error: ' + error);
             }
         });
+    });
+
+    // =============== QUẢN LÝ KHO (INVENTORY) ===============
+
+    function updateInventorySummary(form) {
+        let damagedCodes = form.find('.inventory-damaged-code');
+        let damagedCount = form.find('.inventory-damaged-count');
+        let remainingCount = form.find('.inventory-remaining-count');
+        let damagedError = form.find('.inventory-damaged-error');
+        let saveButton = form.find('.inventory-save-button');
+        let maxUnsold = parseInt(form.data('max-unsold'), 10);
+        let checkedCount = 0;
+
+        if (isNaN(maxUnsold)) {
+            maxUnsold = 0;
+        }
+
+        damagedCodes.each(function () {
+            let checkbox = $(this);
+            let label = checkbox.closest('.inventory-code-label');
+
+            if (checkbox.is(':checked')) {
+                checkedCount++;
+                label.addClass('is-damaged');
+            } else {
+                label.removeClass('is-damaged');
+            }
+        });
+
+        damagedCount.text(checkedCount);
+        remainingCount.text(maxUnsold - checkedCount);
+        damagedError.text('').hide();
+
+        if (checkedCount > maxUnsold) {
+            damagedError.text('Số lượng mã hư không được lớn hơn số lượng chưa bán.').show();
+            saveButton.prop('disabled', true);
+            return false;
+        }
+
+        saveButton.prop('disabled', false);
+        return true;
+    }
+
+    $('.inventory-adjust-form').each(function () {
+        updateInventorySummary($(this));
+    });
+
+    $(document).on('change', '.inventory-damaged-code', function () {
+        updateInventorySummary($(this).closest('.inventory-adjust-form'));
+    });
+
+    $(document).on('submit', '.inventory-adjust-form', function (e) {
+        if (!updateInventorySummary($(this))) {
+            e.preventDefault();
+        }
     });
 
 });

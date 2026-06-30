@@ -16,10 +16,10 @@
                                 <h6>Chọn địa chỉ khác:</h6>
                             </div>
                             <div>
-                                <select name="address_id" id="list_address" class="input-item">
+                                <select name="address_id" id="list_address" class="input-item checkout-address-select">
                                     @foreach ($addresses as $address)
-                                    <option value="{{$address->id}}" {{$address->default ? 'selected' : ''}}>
-                                        {{$address->full_name}} - {{$address->address}}
+                                    <option value="{{$address->id}}" data-ship-ready="{{$address->hasGhnLocation() ? 1 : 0}}" {{$address->id == $defaultAddress->id ? 'selected' : ''}}>
+                                        {{$address->full_name}} - {{$address->address}}, {{$address->city}}
                                     </option>
                                     @endforeach
                                 </select>
@@ -67,9 +67,9 @@
             </div>
             <div class="col-lg-6">
                 <div class="ltn__checkout-payment-method mt-50">
-                    <form action="{{route('checkout.placeOrder')}}" method="POST">
+                    <form action="{{route('checkout.placeOrder')}}" method="POST" id="checkout-order-form">
                         @csrf
-                        <input type="hidden" name="address_id" value="{{$defaultAddress->id}}">
+                        <input type="hidden" name="address_id" id="checkout_address_id" value="{{$defaultAddress->id}}">
 
                         <h4 class="title-2">Phương thức thanh toán</h4>
                         <div id="checkout_payment">
@@ -108,7 +108,12 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="shoping-cart-total mt-50">
+                <div class="shoping-cart-total mt-50" id="checkout-summary"
+                    data-subtotal="{{ $subtotal ?? 0 }}" 
+                    data-shipping-fee="{{ $shippingFee ?? 0 }}" 
+                    data-discount="0"
+                    data-total="{{ $totalPrice ?? 0 }}"
+                    data-shipping-url="{{ route('checkout.shippingFee') }}">
                     <h4 class="title-2">Tổng sản phẩm</h4>
                     <table class="table">
                         <tbody>
@@ -125,13 +130,16 @@
                                 <td>{{number_format($itemSubtotal, 0, ',', '.')}} đ</td>
                             </tr>
                             @endforeach
-                            <td>Vận chuyển và xử lý</td>
-                            <td>{{number_format(25000, 0, ',', '.')}} đ</td>
+                            <tr>
+                                <td>Phí vận chuyển</td>
+                                <td class="shippingFee_Checkout">{{number_format($shippingFee, 0, ',', '.')}} đ</td>
+                            </tr>
+                            <tr class="checkout-shipping-message d-none">
+                                <td colspan="2"></td>
                             </tr>
                             <tr>
                                 <td><strong>Tổng tiền</strong></td>
-                                <td><strong class="totalPrice_Checkout">{{number_format($totalPrice + 25000, 0, ',',
-                                        '.')}} đ</strong></td>
+                                <td><strong class="totalPrice_Checkout">{{number_format($totalPrice, 0, ',', '.')}} đ</strong></td>
                             </tr>
                         </tbody>
                     </table>

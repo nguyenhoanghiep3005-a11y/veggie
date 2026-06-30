@@ -93,22 +93,7 @@ $(document).ready(function () {
     }
   });
   // ACCOUNT 
-  // Click ảnh đại diện  mở input chọn file
-  $('.profile-pic').click(function () {
-    $("#avatar").click();
-  })
 
-  // Hiển thị ảnh xem trước khi đổi avatar
-  $("#avatar").change(function () {
-    let input = this;
-    if (input.files && input.files[0]) {
-      let reader = new FileReader();
-      reader.onload = function (e) {
-        $('#preview-image').attr('src', e.target.result);
-      }
-      reader.readAsDataURL(input.files[0]);
-    }
-  })
 
   // cập nhật thông tin tài khoản
   $("#update-account").on("submit", function (e) {
@@ -136,10 +121,6 @@ $(document).ready(function () {
       success: function (response) {
         if (response.success) {
           toastr.success(response.message);
-
-          if (response.avatar) {
-            $('#preview-image').attr('src', response.avatar);
-          }
         }
       },
 
@@ -155,111 +136,143 @@ $(document).ready(function () {
       },
     })
   })
+  // ─── ĐỊA CHỈ GHN: load tỉnh/quận/phường theo cascade ───────────────────
 
-  function populateOptions($select, items, valuekey, labelkey, placeholder) {
-    $select.empty();
-    $select.append(new Option(placeholder, ""));
-    items.forEach(function (item) {
-      $select.append(new Option(item[labelkey], item[valuekey]));
-    })
-    refreshNiceSelect($select);
-  }
-  function refreshNiceSelect($select) {
-    if ($.fn.niceSelect) {
-      $select.niceSelect('destroy');
-      $select.niceSelect();
+  var baseUrl = $('meta[name="base-url"]').attr('content') || '';
+  var ghnProvinceLoaded = false;
+  var ghnProvinceLoading = false;
+
+  function loadProvinces(forceReload) {
+    var $province = $('#province_id');
+
+    if ($province.length === 0) {
+      return;
     }
+
+    if (ghnProvinceLoading) {
+      return;
+    }
+
+    if (!forceReload && ghnProvinceLoaded && $province.find('option').length > 1) {
+      return;
+    }
+
+    ghnProvinceLoading = true;
+    $province.html('<option value="">--Đang tải--</option>').prop('disabled', true).niceSelect('update');
+    $('#district_id').html('<option value="">--Chọn quận/huyện--</option>').prop('disabled', true).niceSelect('update');
+    $('#ward_id').html('<option value="">--Chọn phường/xã--</option>').prop('disabled', true).niceSelect('update');
+
+    $.get(baseUrl + '/ghn/provinces', function (res) {
+      $province.prop('disabled', false);
+      if (res.status && res.data) {
+        var options = '<option value="">--Chọn tỉnh/thành--</option>';
+        $.each(res.data, function (i, p) {
+          options += '<option value="' + p.ProvinceID + '">' + p.ProvinceName + '</option>';
+        });
+        $province.html(options).niceSelect('update');
+        ghnProvinceLoaded = true;
+      } else {
+        $province.html('<option value="">--Lỗi tải tỉnh/thành--</option>').niceSelect('update');
+        toastr.error('Không thể tải danh sách tỉnh/thành. Kiểm tra cấu hình GHN.');
+      }
+    }).fail(function () {
+      $province.prop('disabled', false).html('<option value="">--Lỗi kết nối--</option>').niceSelect('update');
+      toastr.error('Lỗi kết nối khi tải tỉnh/thành.');
+    }).always(function () {
+      ghnProvinceLoading = false;
+    });
   }
 
-  $("#addAddressModal").on("show.bs.modal", function () {
+  $(document).on('change', '#province_id', function () {
+    var provinceId = $(this).val();
+    var provinceName = $(this).find(':selected').text();
+    var $district = $('#district_id');
+    var $ward = $('#ward_id');
+
+    // Lưu tên tỉnh vào hidden input
+    $('#province_name').val(provinceId ? provinceName : '');
+    $('#district_name').val('');
+    $('#ward_name').val('');
+
+    $district.html('<option value="">--Đang tải--</option>').prop('disabled', true).niceSelect('update');
+    $ward.html('<option value="">--Chọn phường/xã--</option>').prop('disabled', true).niceSelect('update');
+
+    if (!provinceId) {
+      $district.html('<option value="">--Chọn quận/huyện--</option>').niceSelect('update');
+      return;
+    }
+
+    $.get(baseUrl + '/ghn/districts', { province_id: provinceId }, function (res) {
+      $district.prop('disabled', false);
+      if (res.status && res.data) {
+        var options = '<option value="">--Chọn quận/huyện--</option>';
+        $.each(res.data, function (i, d) {
+          options += '<option value="' + d.DistrictID + '">' + d.DistrictName + '</option>';
+        });
+        $district.html(options).niceSelect('update');
+      } else {
+        $district.html('<option value="">--Lỗi tải quận/huyện--</option>').niceSelect('update');
+        toastr.error('Không thể tải danh sách quận/huyện.');
+      }
+    }).fail(function () {
+      $district.prop('disabled', false).html('<option value="">--Lỗi kết nối--</option>').niceSelect('update');
+    });
+  });
+
+  $(document).on('change', '#district_id', function () {
+    var districtId = $(this).val();
+    var districtName = $(this).find(':selected').text();
+    var $ward = $('#ward_id');
+
+    // Lưu tên quận vào hidden input
+    $('#district_name').val(districtId ? districtName : '');
+    $('#ward_name').val('');
+
+    $ward.html('<option value="">--Đang tải--</option>').prop('disabled', true).niceSelect('update');
+
+    if (!districtId) {
+      $ward.html('<option value="">--Chọn phường/xã--</option>').niceSelect('update');
+      return;
+    }
+
+    $.get(baseUrl + '/ghn/wards', { district_id: districtId }, function (res) {
+      $ward.prop('disabled', false);
+      if (res.status && res.data) {
+        var options = '<option value="">--Chọn phường/xã--</option>';
+        $.each(res.data, function (i, w) {
+          options += '<option value="' + w.WardCode + '" data-district="' + districtId + '">' + w.WardName + '</option>';
+        });
+        $ward.html(options).niceSelect('update');
+      } else {
+        $ward.html('<option value="">--Lỗi tải phường/xã--</option>').niceSelect('update');
+        toastr.error('Không thể tải danh sách phường/xã.');
+      }
+    }).fail(function () {
+      $ward.prop('disabled', false).html('<option value="">--Lỗi kết nối--</option>').niceSelect('update');
+    });
+  });
+
+  // Khi chọn phường/xã xong => cập nhật tên phường/xã
+  $(document).on('change', '#ward_id', function () {
+    var wardName = $(this).find(':selected').text();
+
+    $('#ward_name').val($(this).val() ? wardName : '');
+  });
+
+  if ($('#addAddressForm').length > 0) {
+    loadProvinces();
+  }
+
+  // Mở modal thêm địa chỉ => load tỉnh
+  $(document).on('show.bs.modal shown.bs.modal', '#addAddressModal', function () {
     loadProvinces();
   });
-  function loadProvinces() {
-    var $province = $("#province_id");
-    $province.empty().append(new Option("Đang tải dữ liệu...", "")).prop("disabled", true);
-    refreshNiceSelect($province);
 
-    $.get("/ghn/provinces", function (res) {
-      if (res.status && res.data) {
-        // Xử lý dữ liệu tỉnh thành
-        populateOptions($province, res.data, "ProvinceID", "ProvinceName", "--Chọn tỉnh thành--");
-        $province.prop("disabled", false);
-        refreshNiceSelect($province);
-      } else {
-        $province.empty().append(new Option("Lỗi tải dữ liệu", "")).prop("disabled", true);
-        refreshNiceSelect($province);
-      }
-    }).fail(function() {
-        $province.empty().append(new Option("Lỗi kết nối", "")).prop("disabled", true);
-        refreshNiceSelect($province);
-    });
-  }
-  function loadDistrict(provinceId) {
-    if (!provinceId) return;
-    var $district = $("#district_id");
-    var $ward = $("#ward_id");
-    $district.empty().append(new Option("Đang tải dữ liệu...", "")).prop("disabled", true);
-    $ward.empty().append(new Option("--Chọn phường xã--", "")).prop("disabled", true);
-    refreshNiceSelect($district);
-    refreshNiceSelect($ward);
-
-    $.get("/ghn/districts", { province_id: provinceId }, function (res) {
-      if (res.status && res.data) {
-        // Xử lý dữ liệu tỉnh thành
-        var $province = $("#province_id");
-        populateOptions($district, res.data, "DistrictID", "DistrictName", "--Chọn quận huyện--");
-        $district.prop("disabled", false);
-        refreshNiceSelect($district);
-        refreshNiceSelect($ward);
-
-      }
-    });
-  }
-  function loadWard(districtId) {
-    if (!districtId) return;
-    var $ward = $("#ward_id");
-    $ward.empty().append(new Option("Đang tải dữ liệu...", "")).prop("disabled", true);
-    refreshNiceSelect($ward);
-
-    $.get("/ghn/wards", { district_id: districtId }, function (res) {
-      if (res.status && res.data) {
-        // Xử lý dữ liệu tỉnh thành
-        populateOptions($ward, res.data, "WardCode", "WardName", "--Chọn phường xã--");
-        $ward.prop("disabled", false);
-        refreshNiceSelect($ward);
-
-      }
-    });
-  }
-  $("#province_id").on("change", function () {
-    var provinceId = $(this).val();
-    $("#province_name").val($(this).find("option:selected").text());
-    var $district = $("#district_id");
-    var $ward = $("#ward_id");
-    $district.empty().append(new Option("--Chọn quận huyện--")).prop("disabled", true);
-    $ward.empty().append(new Option("--Chọn phường xã--")).prop("disabled", true);
-    refreshNiceSelect($district);
-    refreshNiceSelect($ward);
-    if (provinceId) {
-      loadDistrict(provinceId);
-    }
-  })
-    $("#district_id").on("change", function () {
-    var districtId = $(this).val();
-    $("#district_name").val($(this).find("option:selected").text());
-    var $ward = $("#ward_id");
-    $ward.empty().append(new Option("--Chọn phường xã--")).prop("disabled", true);
-    refreshNiceSelect($ward);
-    if (districtId) {
-      loadWard(districtId);
+  $(document).on('focus click', '#province_id', function () {
+    if ($(this).find('option').length <= 1) {
+      loadProvinces(true);
     }
   });
-  
-  $("#ward_id").on("change", function () {
-    $("#ward_name").val($(this).find("option:selected").text());
-  });
-
-  //  PAGE CART
   //   ĐỔI MẬT KHẨU
   $('#change-password-form').submit(function (e) {
     e.preventDefault();
@@ -336,14 +349,21 @@ $(document).ready(function () {
     $('.error-message').remove();
 
     let fullName = $('#full_name').val().trim();
+    let address = $('#address').val().trim();
     let phone = $('#phone').val().trim();
-    let province = $("#province_id").val();
-    let district = $("#district_id").val();
-    let ward = $("#ward_id").val();
+    let provinceId = $('#province_id').val();
+    let districtId = $('#district_id').val();
+    let wardId = $('#ward_id').val();
+
     // Validate tên
     if (fullName.length < 3) {
       isValid = false;
       $('#full_name').after('<p class="error-message text-danger">Họ và tên không được ít hơn 3 ký tự</p>');
+    }
+
+    if (address.length < 5) {
+      isValid = false;
+      $('#address').after('<p class="error-message text-danger">Vui lòng nhập địa chỉ cụ thể.</p>');
     }
 
     // Validate số điện thoại 10–11 số
@@ -352,18 +372,22 @@ $(document).ready(function () {
       isValid = false;
       $('#phone').after('<p class="error-message text-danger">Số điện thoại không hợp lệ.</p>');
     }
-    if (!province) {
+
+    if (!provinceId) {
       isValid = false;
-      $('#province_id').closest('.mb-3').append('<p class="error-message text-danger">Vui lòng chọn tỉnh thành.</p>');
+      $('#province_id').after('<p class="error-message text-danger">Vui lòng chọn tỉnh/thành.</p>');
     }
-     if (!district) {
+
+    if (!districtId) {
       isValid = false;
-      $('#district_id').closest('.mb-3').append('<p class="error-message text-danger">Vui lòng chọn quận huyện.</p>');
+      $('#district_id').after('<p class="error-message text-danger">Vui lòng chọn quận/huyện.</p>');
     }
-     if (!ward) {
+
+    if (!wardId) {
       isValid = false;
-      $('#ward_id').closest('.mb-3').append('<p class="error-message text-danger">Vui lòng chọn phường xã.</p>');
+      $('#ward_id').after('<p class="error-message text-danger">Vui lòng chọn phường/xã.</p>');
     }
+
     if (isValid) {
       this.submit();
     }
@@ -677,7 +701,6 @@ $(document).ready(function () {
         $('.cart-total').text(response.total + 'đ');
 
         // Update tổng thanh toán
-        $('.cart-grand-total').text(response.grandTotal + 'đ');
       },
 
       error: function (xhr) {
@@ -705,7 +728,6 @@ $(document).ready(function () {
 
         row.remove();
         $('.cart-total').text(response.total + 'đ');
-        $('.cart-grand-total').text(response.grandTotal + 'đ');
 
         // Nếu không còn sản phẩm → reload
         if ($('.cart-product-remove').length == 0) {
@@ -721,93 +743,200 @@ $(document).ready(function () {
 
   // – CHECKOUT (THANH TOÁN)
 
-  $('#list_address').change(function () {
-    var addressId = $(this).val();
+  if (window.location.pathname === "/checkout") {
+    $('#list_address').change(function () {
+      var addressId = $(this).val();
 
-    $.ajax({
-      url: '/checkout/get-address',
-      type: 'GET',
-      data: { address_id: addressId },
+      $.ajax({
+        url: '/checkout/get-address',
+        type: 'GET',
+        data: { address_id: addressId },
 
-      success: function (response) {
-        if (response.success) {
+        success: function (response) {
+          if (response.success) {
+            $('input[name="ltn__name"]').val(response.data.full_name);
+            $('input[name="ltn__phone"]').val(response.data.phone);
+            $('input[name="ltn__address"]').val(response.data.address);
+            $('input[name="ltn__city"]').val(response.data.city);
+            $('#checkout_address_id').val(response.data.id);
 
-          // Tự động fill thông tin địa chỉ
-          $('input[name="ltn__name"]').val(response.data.full_name);
-          $('input[name="ltn__phone"]').val(response.data.phone);
-          $('input[name="ltn__address"]').val(response.data.address);
-          $('input[name="ltn__city"]').val(response.data.city);
-          $('input[name="address_id"]').val(response.data.id);
+            if (!response.data.has_ghn_location) {
+              setCheckoutReady(false, 'Địa chỉ này chưa có đủ tỉnh/quận/phường GHN. Vui lòng thêm địa chỉ giao hàng mới.');
+              $('.shippingFee_Checkout').text('Chưa tính');
+              return;
+            }
+
+            refreshShippingFee(addressId);
+          }
+        },
+
+        error: function (xhr) {
+          setCheckoutReady(false, 'Không lấy được địa chỉ giao hàng.');
+          toastr.error(xhr.responseJSON?.message ?? "Lỗi không xác định");
         }
-      },
+      });
+    });
 
-      error: function (xhr) {
-        alert(xhr.responseJSON?.message ?? "Lỗi không xác định");
+    var summaryEl = $("#checkout-summary");
+    var shippingUrl = summaryEl.data("shipping-url");
+    var currencyFormatter = new Intl.NumberFormat("vi-VN");
+    var totalPriceNumber = parseFloat(summaryEl.data("total")) || 0;
+    var shippingReady = true;
+    var $shippingMessage = $('.checkout-shipping-message');
+    var $orderButton = $('#order_button_cash');
+
+    function setSummaryData(key, value) {
+      summaryEl.data(key, value);
+    }
+
+    function setCheckoutReady(isReady, message) {
+      shippingReady = isReady;
+      $orderButton.prop('disabled', !isReady);
+      $('#payment_paypal').prop('disabled', !isReady);
+
+      if (!isReady && $('#payment_paypal').is(':checked')) {
+        $('#payment_cod').prop('checked', true).trigger('change');
+      }
+
+      if (message) {
+        $shippingMessage.removeClass('d-none').find('td').text(message);
+      } else {
+        $shippingMessage.addClass('d-none').find('td').text('');
+      }
+    }
+
+    function updateSummaryValues(data) {
+      $('.shippingFee_Checkout').text(currencyFormatter.format(data.shipping_fee) + ' đ');
+      $('.totalPrice_Checkout').text(currencyFormatter.format(data.total) + ' đ');
+      
+      setSummaryData('subtotal', data.subtotal);
+      setSummaryData('shipping-fee', data.shipping_fee);
+      setSummaryData('total', data.total);
+      
+      totalPriceNumber = data.total;
+      setCheckoutReady(true, '');
+    }
+
+    function refreshShippingFee(addressId) {
+      if (!shippingUrl || !addressId) {
+        setCheckoutReady(false, 'Vui lòng chọn địa chỉ giao hàng.');
+        return;
+      }
+
+      setCheckoutReady(false, '');
+      $('.shippingFee_Checkout').text('Đang tính...');
+
+      $.ajax({
+        url: shippingUrl,
+        type: "GET",
+        data: {
+          address_id: addressId,
+        },
+        success: function (response) {
+          if (response.status) {
+            updateSummaryValues(response.data);
+          } else {
+            setCheckoutReady(false, response.message || 'Không tính được phí vận chuyển.');
+            toastr.error(response.message || 'Không tính được phí vận chuyển.');
+          }
+        },
+        error: function (xhr) {
+          var message = xhr.responseJSON?.message || "Không tìm thấy đơn vị vận chuyển";
+          setCheckoutReady(false, message);
+          toastr.error(message);
+        }
+      });
+    }
+
+    $('#checkout-order-form').on('submit', function (e) {
+      if (!$('#checkout_address_id').val()) {
+        e.preventDefault();
+        toastr.error('Vui lòng chọn địa chỉ giao hàng.');
+        return;
+      }
+
+      if (!shippingReady) {
+        e.preventDefault();
+        toastr.error('Vui lòng kiểm tra lại phí vận chuyển trước khi đặt hàng.');
       }
     });
-  });
 
-  //  – PAYPAL PAYMENT
+    //  – PAYPAL PAYMENT
 
-  // Ẩn/hiện nút thanh toán PayPal
-  function togglePayment() {
-    if ($('#payment_paypal').is(":checked")) {
-      $('#order_button_cash').hide();
-      $('#paypal-button-container').show();
-    } else {
-      $('#order_button_cash').show();
-      $('#paypal-button-container').hide();
-    }
-  }
-  togglePayment();
-
-  // Lấy tổng tiền dạng số để convert qua USD
-  var totalPriceText = $('.totalPrice_Checkout').text().trim();
-  var totalPriceNumber = parseFloat(
-    totalPriceText.replace(/\./g, "").replace(" đ", "")
-  );
-
-  $('input[name="payment_method"]').on('change', togglePayment);
-
-  // Cài đặt Paypal Buttons
-  if (document.querySelector('#paypal-button-container')) {
-    paypal.Buttons({
-      createOrder: function (data, actions) {
-        return actions.order.create({
-          purchase_units: [{
-            amount: { value: (totalPriceNumber / 25000).toFixed(2) }
-          }]
-        })
-      },
-
-      onApprove: function (data, actions) {
-        return actions.order.capture().then(function (details) {
-          fetch("/checkout/paypal", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-            },
-            body: JSON.stringify({
-              orderID: data.orderID,
-              payerID: data.payerID,
-              transactionID: details.id,
-              amount: details.purchase_units[0].amount.value,
-              address_id: $('#list_address').val(),
-            })
-          })
-            .then(res => res.json())
-            .then(data => {
-              if (data.success) {
-                toastr.success('Thanh toán thành công');
-                window.location.href = "/account";
-              } else {
-                alert('Có lỗi xảy ra, vui lòng thử lại');
-              }
-            })
-        })
+    function togglePayment() {
+      if ($('#payment_paypal').is(":checked")) {
+        $('#order_button_cash').hide();
+        $('#paypal-button-container').show();
+      } else {
+        $('#order_button_cash').show();
+        $('#paypal-button-container').hide();
       }
-    }).render('#paypal-button-container');
+    }
+    togglePayment();
+
+    $('input[name="payment_method"]').on('change', togglePayment);
+
+    function renderPaypalButtons(waitCount) {
+      if (!document.querySelector('#paypal-button-container')) {
+        return;
+      }
+
+      if (!window.paypal) {
+        if (waitCount < 20) {
+          setTimeout(function () {
+            renderPaypalButtons(waitCount + 1);
+          }, 300);
+        } else {
+          $('#payment_paypal').prop('disabled', true);
+        }
+        return;
+      }
+
+      paypal.Buttons({
+        createOrder: function (data, actions) {
+          if (!shippingReady) {
+            toastr.error('Vui lòng kiểm tra lại phí vận chuyển trước khi thanh toán.');
+            return Promise.reject();
+          }
+
+          return actions.order.create({
+            purchase_units: [{
+              amount: { value: (totalPriceNumber / 25000).toFixed(2) }
+            }]
+          })
+        },
+
+        onApprove: function (data, actions) {
+          return actions.order.capture().then(function (details) {
+            fetch("/checkout/paypal", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+              },
+              body: JSON.stringify({
+                orderID: data.orderID,
+                payerID: data.payerID,
+                transactionID: details.id,
+                amount: details.purchase_units[0].amount.value,
+                address_id: $('#list_address').val(),
+              })
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  toastr.success('Thanh toán thành công');
+                  window.location.href = "/account";
+                } else {
+                  alert('Có lỗi xảy ra, vui lòng thử lại');
+                }
+              })
+          })
+        }
+      }).render('#paypal-button-container');
+    }
+
+    renderPaypalButtons(0);
   }
 
   // – REVIEW PRODUCT (ĐÁNH GIÁ SẢN PHẨM)
@@ -988,7 +1117,7 @@ $(document).ready(function () {
     }
   });
   //tim kiem bang giong noi
-  if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
 
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'vi-VN';
@@ -1000,48 +1129,48 @@ $(document).ready(function () {
 
     // Click micro
     mic.on('click', function () {
-      if (isRecognizing) {
-        recognition.stop();
-      } else {
-        recognition.start();
-      }
+        if (isRecognizing) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
     });
 
     // Bắt đầu nghe
     recognition.onstart = function () {
-      isRecognizing = true;
-      mic.removeClass('fa-microphone').addClass('fa-microphone-slash');
-      console.log('Speech recognition started');
+        isRecognizing = true;
+        mic.removeClass('fa-microphone').addClass('fa-microphone-slash');
+        console.log('Speech recognition started');
     };
 
     // Có kết quả
     recognition.onresult = function (event) {
-      let transcript = event.results[0][0].transcript.trim();
+        let transcript = event.results[0][0].transcript.trim();
 
-      // ❗ Xóa dấu . , ! ? ở cuối
-      transcript = transcript.replace(/[.,!?]+$/, '');
+        // ❗ Xóa dấu . , ! ? ở cuối
+        transcript = transcript.replace(/[.,!?]+$/, '');
 
-      input.val(transcript);
+        input.val(transcript);
     };
 
     // Lỗi
     recognition.onerror = function (event) {
-      console.log('Speech recognition error:', event.error);
-      toastr.error('Có lỗi xảy ra khi nhận diện giọng nói: ' + event.error);
+        console.log('Speech recognition error:', event.error);
+        toastr.error('Có lỗi xảy ra khi nhận diện giọng nói: ' + event.error);
     };
 
     // Kết thúc
     recognition.onend = function () {
-      isRecognizing = false;
-      mic.removeClass('fa-microphone-slash').addClass('fa-microphone');
-      console.log('Speech recognition ended');
+        isRecognizing = false;
+        mic.removeClass('fa-microphone-slash').addClass('fa-microphone');
+        console.log('Speech recognition ended');
     };
 
-  } else {
+} else {
     console.log("Trình duyệt không hỗ trợ");
     toastr.error("Trình duyệt của bạn không hỗ trợ giọng nói");
-  }
-  //giao hang nhanh
+}
+//giao hang nhanh
 
 
 });

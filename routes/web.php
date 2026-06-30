@@ -85,6 +85,9 @@ Route::prefix('/')->group(function () {
         // ========================
         Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 
+        // Lấy phí ship
+        Route::get('/checkout/shipping-fee', [CheckoutController::class, 'shippingFee'])->name('checkout.shippingFee');
+
         // Lấy địa chỉ được chọn để fill vào form
         Route::get('/checkout/get-address', [CheckoutController::class, 'getAddress']);
 
@@ -93,7 +96,6 @@ Route::prefix('/')->group(function () {
 
         // Thanh toán PayPal
         Route::post('/checkout/paypal', [CheckoutController::class, 'placeOrderPayPal'])->name('checkout.placeOrderPayPal');
-        Route::get('/Checkout/shipping-free', [CheckoutController::class, 'ShippingFree'])->name('checkout.shippingFree');
 
         // Chi tiết đơn hàng của user
         Route::get('/order/{id}', [OrderController::class, 'showOrder'])->name('order.show');

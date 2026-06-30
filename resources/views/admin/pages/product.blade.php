@@ -28,7 +28,7 @@
                                     <p class="text-muted font-13 m-b-30">
                                         Sản phẩm quản lý thông tin trưng bày; tồn kho và giá bán điều chỉnh cập nhật trong phần quản lý kho.
                                     </p>
-                                    <table id="datatable-buttons" class="table table-striped table-bordered"
+                                    <table id="datatable-responsive" class="table table-striped table-bordered"
                                         style="width:100%; text-align: center;">
                                         <thead>
                                             <tr>

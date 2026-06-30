@@ -71,9 +71,12 @@ class OrderController extends Controller
 
             if ($inventory) {
                 $inventory->quantity_remaining = $inventory->quantity_remaining + $item->quantity;
-                if ($inventory->quantity_remaining > $inventory->quantity_imported) {
-                    $inventory->quantity_remaining = $inventory->quantity_imported;
+                $maxRemainingQuantity = max(0, $inventory->quantity_imported - $inventory->quantity_damaged);
+
+                if ($inventory->quantity_remaining > $maxRemainingQuantity) {
+                    $inventory->quantity_remaining = $maxRemainingQuantity;
                 }
+
                 $inventory->refreshCondition();
                 $inventory->save();
 

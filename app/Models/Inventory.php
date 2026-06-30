@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Inventory extends Model
 {
+    use HasFactory;
+
     const NEAR_EXPIRY_DAYS = 60;
 
     protected $fillable = [
@@ -47,6 +50,69 @@ class Inventory extends Model
     public function itemCode($number)
     {
         return $this->lotCode() . '-' . str_pad($number, 2, '0', STR_PAD_LEFT);
+    }
+
+    public function conditionLabel()
+    {
+        if ($this->condition == 'fresh') {
+            return 'Tươi mới';
+        }
+
+        if ($this->condition == 'near_expiry') {
+            return 'Cận hạn';
+        }
+
+        if ($this->condition == 'expired') {
+            return 'Hết hạn';
+        }
+
+        if ($this->condition == 'damaged') {
+            return 'Hư hỏng';
+        }
+
+        if ($this->condition == 'sold_out') {
+            return 'Đã bán hết';
+        }
+
+        return $this->condition;
+    }
+
+    public function conditionClass()
+    {
+        if ($this->condition == 'fresh') {
+            return 'badge badge-success';
+        }
+
+        if ($this->condition == 'near_expiry') {
+            return 'badge badge-warning';
+        }
+
+        if ($this->condition == 'expired' || $this->condition == 'damaged') {
+            return 'badge badge-danger';
+        }
+
+        return 'badge badge-secondary';
+    }
+
+    public function maxUnsoldQuantity()
+    {
+        $maxUnsoldQuantity = $this->quantity_imported - $this->soldQuantity();
+
+        if ($maxUnsoldQuantity < 0) {
+            return 0;
+        }
+
+        return $maxUnsoldQuantity;
+    }
+
+    public function isDamagedItem($number)
+    {
+        return in_array((int) $number, $this->damagedItemNumbers());
+    }
+
+    public function isSoldItem($number)
+    {
+        return in_array((int) $number, $this->soldItemNumbers());
     }
 
     public function damagedItemNumbers()
@@ -146,7 +212,7 @@ class Inventory extends Model
 
     public static function checkCondition($condition, $quantityRemaining, $expiredAt)
     {
-        if ($condition == 'damaged') {
+        if ($condition == 'damaged' && $quantityRemaining <= 0) {
             return 'damaged';
         }
 

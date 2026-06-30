@@ -287,13 +287,11 @@ class CartController extends Controller
         // Tính tiền
         $subtotal   = $product->calculatePriceByQuantity($quantity);
         $total      = $this->caculateCartTotal();
-        $grandTotal = $total + 25000;
 
         return response()->json([
             'quantity'   => $quantity,
             'subtotal'   => number_format($subtotal, 0, ',', '.'),
             'total'      => number_format($total, 0, ',', '.'),
-            'grandTotal' => number_format($grandTotal, 0, ',', '.'),
         ]);
     }
 
@@ -344,11 +342,9 @@ class CartController extends Controller
             session()->put('cart', $cart);
         }
         $total      = $this->caculateCartTotal();
-        $grandTotal = $total + 25000;
 
         return response()->json([
             'total'      => number_format($total, 0, ',', '.'),
-            'grandTotal' => number_format($grandTotal, 0, ',', '.'),
         ]);
     }
 

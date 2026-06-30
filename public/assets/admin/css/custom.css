@@ -86,3 +86,38 @@ image-preview-listproduct {
 .custom-badge{
     padding: 10px 5px;
 }
+
+/* Quản lý kho */
+.inventory-code-label {
+    border: 1px solid #ddd;
+    margin: 3px;
+    padding: 5px 8px;
+    cursor: pointer;
+    background: #fff;
+    color: #333;
+}
+
+.inventory-code-label input {
+    display: none;
+}
+
+.inventory-code-label.is-damaged {
+    background: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+.inventory-code-label.is-sold {
+    background: #eee;
+    color: #999;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+.inventory-code-list {
+    line-height: 34px;
+}
+
+.inventory-damaged-error {
+    display: none;
+}

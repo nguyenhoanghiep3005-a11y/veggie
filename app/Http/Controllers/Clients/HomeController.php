@@ -29,7 +29,7 @@ class HomeController extends Controller
         $promotionInventories = Inventory::with('product.category', 'product.firstImage', 'product.reviews')
             ->where('quantity_remaining', '>', 0)
             ->whereDate('expired_at', '>=', now()->toDateString())
-            ->where('condition', 'near_expiry')
+            ->whereNotIn('condition', ['expired', 'damaged', 'sold_out'])
             ->whereNotNull('adjusted_price')
             ->where('adjusted_price', '>', 0)
             ->orderBy('expired_at')

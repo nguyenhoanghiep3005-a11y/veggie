@@ -20,6 +20,10 @@ class GhnLocationController extends Controller
 
     public function districts(Request $request)
     {
+        if (!$request->province_id) {
+            return response()->json(['status' => false, 'message' => 'Vui lòng chọn tỉnh/thành'], 422);
+        }
+
         if (!$this->hashToken()) {
             return response()->json(['status' => false, 'message' => 'Token GHN chưa được cấu hình'], 400);
         }
@@ -31,6 +35,10 @@ class GhnLocationController extends Controller
     }
     public function wards(Request $request)
     {
+        if (!$request->district_id) {
+            return response()->json(['status' => false, 'message' => 'Vui lòng chọn quận/huyện'], 422);
+        }
+
         if (!$this->hashToken()) {
             return response()->json(['status' => false, 'message' => 'Token GHN chưa được cấu hình'], 400);
         }

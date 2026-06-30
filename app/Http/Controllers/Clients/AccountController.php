@@ -28,28 +28,10 @@ class AccountController extends Controller
             'ltn__name'        => 'required|string|max:255',
             'ltn__phone_number' => 'nullable|string|max:15',
             'ltn__address'     => 'nullable|string|max:255',
-            'avatar'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Xử lý ảnh đại diện (avatar)
-        if ($request->hasFile('avatar')) {
-            // Xóa ảnh cũ nếu có
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-            // Lấy file mới
-            $file = $request->file('avatar');
-            // Tạo tên file mới 
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            // Lưu file vào thư mục storage/app/public/uploads/users
-            $avatarPath = $file->storeAs('uploads/users', $filename, 'public');
-            // Cập nhật đường dẫn avatar trong DB
-            $user->avatar = $avatarPath;
-        }
-
-        
         $user->name = $request->input('ltn__name');
         $user->phone_number = $request->input('ltn__phone_number');
         $user->address = $request->input('ltn__address');
@@ -58,7 +40,6 @@ class AccountController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'cập nhật thông tin thành công',
-            'avatar' => asset('storage/' . $user->avatar)
         ]);
     }
 
@@ -97,30 +78,38 @@ class AccountController extends Controller
     public function addAddress(Request $request)
     {
         $request->validate([
-            'full_name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-            // 'city' => 'required|string|max:100',
+            'full_name' => 'required|string|min:3|max:255',
+            'phone' => ['required', 'string', 'regex:/^[0-9]{10,11}$/'],
+            'address' => 'required|string|min:5|max:255',
             'province_id' => 'required|integer',
             'district_id' => 'required|integer',
-            'ward_id' => 'required|string',
+            'ward_id' => 'required|string|max:50',
+            'province_name' => 'required|string|max:100',
+            'district_name' => 'required|string|max:100',
+            'ward_name' => 'required|string|max:100',
         ]);
 
+        $provinceName = trim($request->province_name);
+        $districtName = trim($request->district_name);
+        $wardName = trim($request->ward_name);
+        $isFirstAddress = !ShippingAddress::where('user_id', Auth::id())->exists();
+        $isDefault = $request->has('default') || $isFirstAddress;
+
         //neu dia chi moi set mac dinh thi update
-        if ($request->has('default')) {
+        if ($isDefault) {
             ShippingAddress::where('user_id', Auth::id())->update(['default' => 0]);
         }
 
         ShippingAddress::create([
             'user_id' => Auth::id(),
-            'full_name' => $request->full_name,
-            'phone' => $request->phone,
-            'address' => $request->address . ', ' . $request->ward_name . ', ' . $request->district_name,
-            'city' => $request->province_name,
-            'province_id'=> $request->province_id,
-            'district_id'=> $request->district_id,
-            'ward_id'=> $request->ward_id,
-            'default' => $request->has('default') ? 1 : 0
+            'full_name' => trim($request->full_name),
+            'phone' => trim($request->phone),
+            'address' => trim($request->address) . ', ' . $wardName . ', ' . $districtName,
+            'city' => $provinceName,
+            'province_id' => $request->province_id,
+            'district_id' => $request->district_id,
+            'ward_id' => $request->ward_id,
+            'default' => $isDefault ? 1 : 0
         ]);
         return back()->with('success', 'Địa chỉ đã được thêm');
     }
@@ -137,7 +126,18 @@ class AccountController extends Controller
 
     public function deleteAddress($id)
     {
-        ShippingAddress::where('id', $id)->where('user_id', Auth::id())->delete();
+        $address = ShippingAddress::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        $wasDefault = $address->default;
+
+        $address->delete();
+
+        if ($wasDefault) {
+            $nextAddress = ShippingAddress::where('user_id', Auth::id())->first();
+
+            if ($nextAddress) {
+                $nextAddress->update(['default' => 1]);
+            }
+        }
          toastr()->success('Địa chỉ đã được xóa');
         return back();
     }

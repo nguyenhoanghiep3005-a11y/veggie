@@ -52,23 +52,23 @@
               <!-- info row -->
               <div class="row invoice-info">
                 <div class="col-sm-4 invoice-col">
-                  Từ
-                  <address>
-                    <strong>{{ optional($order->shippingAddress)->full_name ?? '—' }}</strong>
-                    <br>{{ optional($order->shippingAddress)->address ?? '—' }}
-                    <br>{{ optional($order->shippingAddress)->city ?? '—' }}
-                    <br>{{ optional($order->shippingAddress)->phone ?? '—' }}
-                  </address>
-                </div>
-                <!-- /.col -->
-                <div class="col-sm-4 invoice-col">
-                  Đến
+                  Từ (Người gửi)
                   <address>
                     <strong>Hiep SHOP</strong>
                     <br>Tân phú
                     <br>Hồ Chí Minh, VN
                     <br>Phone: 0388536385
                     <br>Email: nguyenhoanghiep@gmail.com
+                  </address>
+                </div>
+                <!-- /.col -->
+                <div class="col-sm-4 invoice-col">
+                  Đến (Người nhận)
+                  <address>
+                    <strong>{{ optional($order->shippingAddress)->full_name ?? '—' }}</strong>
+                    <br>{{ optional($order->shippingAddress)->address ?? '—' }}
+                    <br>{{ optional($order->shippingAddress)->city ?? '—' }}
+                    <br>{{ optional($order->shippingAddress)->phone ?? '—' }}
                   </address>
                 </div>
                 <!-- /.col -->

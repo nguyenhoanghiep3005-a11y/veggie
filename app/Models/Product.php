@@ -35,6 +35,7 @@ class Product extends Model
             ->where('quantity_remaining', '>', 0)
             ->whereDate('expired_at', '>=', now()->toDateString())
             ->whereNotIn('condition', ['expired', 'damaged', 'sold_out'])
+            ->orderByRaw('CASE WHEN adjusted_price IS NOT NULL AND adjusted_price > 0 THEN 0 ELSE 1 END')
             ->orderBy('expired_at')
             ->orderBy('id');
     }

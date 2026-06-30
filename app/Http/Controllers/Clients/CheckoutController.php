@@ -12,11 +12,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\GhnShippingService;
 
 use function Flasher\Toastr\Prime\toastr;
 
 class CheckoutController extends Controller
 {
+    protected $shippingService;
+
+    public function __construct(GhnShippingService $shippingService)
+    {
+        $this->shippingService = $shippingService;
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -32,14 +40,38 @@ class CheckoutController extends Controller
             $defaultAddress = $addresses->first();
         }
 
-        $cartItems = CartItem::where('user_id', $user->id)->with('product')->get();
-        $totalPrice = $this->calculateCartTotal($cartItems);
+        if (!$defaultAddress->hasGhnLocation()) {
+            $defaultAddress = $addresses->first(function ($address) {
+                return $address->hasGhnLocation();
+            });
+        }
 
-        return view('clients.pages.checkout', compact('addresses', 'defaultAddress', 'cartItems', 'totalPrice'));
+        if (!$defaultAddress) {
+            toastr()->error('Vui lÃ²ng thÃªm Ä‘á»‹a chá»‰ giao hÃ ng cÃ³ Ä‘áº§y Ä‘á»§ tá»‰nh, quáº­n, phÆ°á»ng GHN');
+            return redirect()->route('account');
+        }
+
+        $cartItems = CartItem::where('user_id', $user->id)->with('product')->get();
+
+        if ($cartItems->isEmpty()) {
+            toastr()->error('Giá» hÃ ng trá»‘ng');
+            return redirect()->route('cart.index');
+        }
+
+        $amounts = $this->calculateOrderAmounts($cartItems, $defaultAddress);
+        $totalPrice = $amounts['total'];
+        $shippingFee = $amounts['shipping_fee'];
+        $subtotal = $amounts['subtotal'];
+
+        return view('clients.pages.checkout', compact('addresses', 'defaultAddress', 'cartItems', 'totalPrice', 'shippingFee', 'subtotal'));
     }
 
     public function getAddress(Request $request)
     {
+        $request->validate([
+            'address_id' => ['required', 'integer', 'exists:shipping_addresses,id']
+        ]);
+
         $address = ShippingAddress::where('id', $request->address_id)
             ->where('user_id', Auth::id())
             ->first();
@@ -50,7 +82,14 @@ class CheckoutController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $address
+            'data' => [
+                'id' => $address->id,
+                'full_name' => $address->full_name,
+                'phone' => $address->phone,
+                'address' => $address->address,
+                'city' => $address->city,
+                'has_ghn_location' => $address->hasGhnLocation(),
+            ]
         ]);
     }
 
@@ -66,13 +105,20 @@ class CheckoutController extends Controller
         $address = $this->findAddressForUser($user->id, $request->address_id);
 
         if ($cartItems->isEmpty()) {
-            return redirect()->route('cart')->with('error', 'Giỏ hàng trống');
+            return redirect()->route('cart.index')->with('error', 'Giỏ hàng trống');
         }
 
         if (!$address) {
             toastr()->error('Không tìm thấy địa chỉ giao hàng');
             return redirect()->route('checkout');
         }
+
+        if (!$address->hasGhnLocation()) {
+            toastr()->error('Vui lòng chọn địa chỉ có đầy đủ tỉnh, quận, phường GHN');
+            return redirect()->route('checkout');
+        }
+
+        $shippingFee = $this->shippingService->calculateFee($address, $cartItems);
 
         DB::beginTransaction();
 
@@ -84,8 +130,8 @@ class CheckoutController extends Controller
             $order->status = 'pending';
             $order->save();
 
-            $totalPrice = $this->createOrderItemsAndUpdateStock($order, $cartItems);
-            $order->total_price = $totalPrice + 25000;
+            $itemsTotal = $this->createOrderItemsAndUpdateStock($order, $cartItems);
+            $order->total_price = $itemsTotal + $shippingFee;
             $order->save();
 
             Payment::create([
@@ -110,17 +156,17 @@ class CheckoutController extends Controller
         }
     }
 
-    public function shippingFree(Request $request)
+    public function shippingFee(Request $request)
     {
         $request->validate([
             'address_id' => ['required', 'integer', 'exists:shipping_addresses,id']
         ]);
 
-        $user = Auth::use();
+        $user = Auth::user();
         $cartItems = CartItem::where('user_id', $user->id)->with('product')->get();
 
         if ($cartItems->isEmpty()) {
-            return reponse()->json([
+            return response()->json([
                 'status' => false,
                 'message' => 'Giỏ hàng trống',
             ], 422);
@@ -132,8 +178,26 @@ class CheckoutController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Không tìm thấy địa chỉ giao hàng.',
-            ], 400);
+            ], 404);
         }
+
+        if (!$address->hasGhnLocation()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Địa chỉ giao hàng chưa có đầy đủ tỉnh, quận, phường GHN.',
+            ], 422);
+        }
+
+        $amounts = $this->calculateOrderAmounts($cartItems, $address);
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'subtotal' => $amounts['subtotal'],
+                'shipping_fee' => $amounts['shipping_fee'],
+                'total' => $amounts['total'],
+            ]
+        ]);
     }
 
     private function findAddressForUser(int $userId, $addressId)
@@ -181,6 +245,15 @@ class CheckoutController extends Controller
             ], 400);
         }
 
+        if (!$address->hasGhnLocation()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Địa chỉ giao hàng chưa có đầy đủ tỉnh, quận, phường GHN',
+            ], 422);
+        }
+
+        $shippingFee = $this->shippingService->calculateFee($address, $cartItems);
+
         DB::beginTransaction();
 
         try {
@@ -195,8 +268,8 @@ class CheckoutController extends Controller
             $order->status = 'pending';
             $order->save();
 
-            $totalPrice = $this->createOrderItemsAndUpdateStock($order, $cartItems);
-            $order->total_price = $totalPrice + 25000;
+            $itemsTotal = $this->createOrderItemsAndUpdateStock($order, $cartItems);
+            $order->total_price = $itemsTotal + $shippingFee;
             $order->save();
 
             Payment::create([
@@ -234,6 +307,28 @@ class CheckoutController extends Controller
         }
 
         return $totalPrice;
+    }
+
+    private function calculateOrderAmounts($cartItems, ?ShippingAddress $address = null): array
+    {
+        $subtotal = $this->calculateCartTotal($cartItems);
+        $shippingFee = 0.0;
+        
+        if ($subtotal > 0) {
+            if ($address) {
+                $shippingFee = $this->shippingService->calculateFee($address, $cartItems);
+            } else {
+                $shippingFee = (float) config('ghn.fallback_fee', 25000);
+            }
+        }
+
+        $total = max($subtotal + $shippingFee, 0);
+
+        return [
+            'subtotal' => $subtotal,
+            'shipping_fee' => $shippingFee,
+            'total' => $total,
+        ];
     }
 
     private function createOrderItemsAndUpdateStock($order, $cartItems)

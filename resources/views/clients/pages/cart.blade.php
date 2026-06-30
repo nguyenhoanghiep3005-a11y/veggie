@@ -62,14 +62,6 @@
                                     <td>Tổng tiền hàng</td>
                                     <td><span class="cart-total">{{number_format($cartTotal, 0 , ',',".")}}đ</span></td>
                                 </tr>
-                                <tr>
-                                    <td>Phí vận chuyển</td>
-                                    <td>25.000 đ</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Tổng thanh toán</strong></td>
-                                    <td><strong><span class="cart-grand-total">{{number_format($cartTotal + 25000, 0 , ',',".")}}đ</span></strong></td>
-                                </tr>
                             </tbody>
                         </table>
                         <div class="btn-wrapper text-right text-end">

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('shipping_addresses', function (Blueprint $table) {
             $table->unsignedBigInteger('province_id')->nullable()->after('city');
             $table->unsignedBigInteger('district_id')->nullable()->after('province_id');
-            $table->unsignedBigInteger('ward_id')->nullable()->after('district_id');
+            $table->string('ward_id', 50)->nullable()->after('district_id');
 
 
         });
@@ -30,3 +30,4 @@ return new class extends Migration
         });
     }
 };
+
