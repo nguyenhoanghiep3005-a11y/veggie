@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class CartItem extends Model
 {
-      use HasFactory;
-    protected $fillable = ['user_id','product_id', 'quantity'];
+    use HasFactory;
+
+    protected $fillable = ['user_id', 'product_id', 'inventory_id', 'quantity'];
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -17,5 +19,10 @@ class CartItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function inventory()
+    {
+        return $this->belongsTo(Inventory::class);
     }
 }

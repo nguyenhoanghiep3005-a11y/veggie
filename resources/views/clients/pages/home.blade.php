@@ -171,6 +171,7 @@
 @endif
 
 
+@if($bestSellerCategories->count() > 0)
 <!-- PRODUCT TAB AREA START (product-item-3) -->
 <div class="ltn__product-tab-area ltn__product-gutter pt-115 pb-70 home-best-seller-section">
     <div class="container">
@@ -181,14 +182,14 @@
                 </div>
                 <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
                     <div class="nav">
-                        @foreach ($categories as $index => $category)
+                        @foreach ($bestSellerCategories as $index => $category)
                         <a class="{{$index ==0? 'active show' : ''}}" data-bs-toggle="tab"
                             href="#tab-{{$category->id}}">{{$category->name}}</a>
                         @endforeach
                     </div>
                 </div>
                 <div class="tab-content">
-                    @foreach ($categories as $index => $category)
+                    @foreach ($bestSellerCategories as $index => $category)
                     <div class="tab-pane fade {{$index == 0? 'active show' : ''}}" id="tab-{{$category->id}}">
                         <div class="ltn__product-tab-content-inner">
                             <div class="row ltn__tab-product-slider-one-active slick-arrow-1 home-product-slider {{$category->products->count() > 4 ? 'has-many-products' : ''}}">
@@ -197,7 +198,7 @@
                                 <div class="col-lg-12">
                                     <div class="ltn__product-item ltn__product-item-3 text-center">
                                         <div class="product-img">
-                                            <a href="#"><img src="{{$product->image_url}}" alt="{{$product->name}}"></a>
+                                            <a href="{{route('product.detail',$product->slug)}}"><img src="{{$product->image_url}}" alt="{{$product->name}}"></a>
                                             <div class="product-hover-action">
                                                 <ul>
                                                     <li>
@@ -267,6 +268,7 @@
     </div>
 </div>
 <!-- PRODUCT TAB AREA END -->
+@endif
 
 <!-- CATEGORY AREA START -->
 <div class="ltn__category-area section-bg-1-- ltn__primary-bg before-bg-1 bg-image bg-overlay-theme-black-5--0 pt-115 pb-90 home-category-section"

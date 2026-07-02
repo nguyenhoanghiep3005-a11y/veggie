@@ -40,7 +40,6 @@
         </main>
         @include('clients.partials.feature')
 
-
     </div>
 
     <!-- preloader area start -->

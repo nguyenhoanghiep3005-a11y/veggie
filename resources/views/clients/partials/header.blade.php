@@ -19,7 +19,7 @@
                                     <li class="menu-icon"><a href="\">Trang chủ</a> </li>
                                     <li class="menu-icon"><a href="javascript:void(0)">Về Nông Sản Khô</a>
                                         <ul>
-                                            <li><a href="javascript:void(0)">Về Nông Sản Khô</a></li>
+                                            <li><a href="{{route('about')}}">Về Nông Sản Khô</a></li>
                                             <li><a href="javascript:void(0)">Dịch vụ</a></li>
                                             <li><a href="javascript:void(0)">Đội ngũ</a></li>
                                             <li><a href="javascript:void(0)">FAQ</a></li>

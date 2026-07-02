@@ -64,7 +64,7 @@
                                     <tr>
                                         <td><strong>{{$inventory->lotCode()}}</strong></td>
                                         <td>{{$inventory->product->name}}</td>
-                                        <td>{{$inventory->product->category->name}}</td>
+                                        <td>{{ optional(optional($inventory->product)->category)->name ?? 'Chưa phân loại' }}</td>
                                         <td>{{date('d/m/Y', strtotime($inventory->imported_at))}}</td>
                                         <td>{{date('d/m/Y', strtotime($inventory->expired_at))}}</td>
                                         <td>{{$inventory->quantity_remaining}} / {{$inventory->quantity_imported}}</td>
@@ -191,7 +191,7 @@
                         <div class="col-md-6">
                             <p><strong>Mã lô:</strong> {{$inventory->lotCode()}}</p>
                             <p><strong>Sản phẩm:</strong> {{$inventory->product->name}}</p>
-                            <p><strong>Danh mục:</strong> {{$inventory->product->category->name}}</p>
+                            <p><strong>Danh mục:</strong> {{ optional(optional($inventory->product)->category)->name ?? 'Chưa phân loại' }}</p>
                             <p><strong>Giá niêm yết:</strong> {{number_format($inventory->product->price, 0, ',', '.')}}đ</p>
                         </div>
                         <div class="col-md-6">

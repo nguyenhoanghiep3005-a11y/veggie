@@ -121,7 +121,7 @@ class ProductController extends Controller
                 'id' => $product->id,
                 'name' => $product->name,
                 'slug' => $product->slug,
-                'category_name' => $product->category->name,
+                'category_name' => optional($product->category)->name ?? 'Chưa phân loại',
                 'description' => $product->description,
                 'price' => $product->price,
                 'stock' => $product->stock,

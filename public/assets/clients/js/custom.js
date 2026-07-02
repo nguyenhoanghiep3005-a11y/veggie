@@ -527,6 +527,7 @@ $(document).ready(function () {
     e.preventDefault();
 
     let productId = $(this).data('id');
+    let inventoryId = $(this).data('inventory-id') || null;
     let quantity = $(this)
       .closest('.ltn__product-item, .ltn__product-details-menu-2')
       .find('.cart-plus-minus-box')
@@ -539,7 +540,7 @@ $(document).ready(function () {
     $.ajax({
       url: '/cart/add',
       type: 'POST',
-      data: { product_id: productId, quantity: quantity },
+      data: { product_id: productId, inventory_id: inventoryId, quantity: quantity },
 
       success: function (response) {
 
@@ -602,6 +603,7 @@ $(document).ready(function () {
     e.stopPropagation();
 
     let productId = $(this).data('product-id');
+    let inventoryId = $(this).data('inventory-id') || null;
     let row = $(this).closest('.mini-cart-item');
 
     $.ajaxSetup({
@@ -611,7 +613,7 @@ $(document).ready(function () {
     $.ajax({
       url: '/cart/remove',
       type: 'POST',
-      data: { product_id: productId },
+      data: { product_id: productId, inventory_id: inventoryId },
 
       beforeSend: function () {
         row.css('opacity', 0.5);
@@ -660,6 +662,7 @@ $(document).ready(function () {
       let oldValue = parseInt($input.val());
       let maxStock = parseInt($input.data('max'));
       let productId = $input.data('id');
+      let inventoryId = $input.data('inventory-id') || null;
 
       let newValue = oldValue;
 
@@ -670,13 +673,13 @@ $(document).ready(function () {
       }
 
       if (newValue !== oldValue) {
-        updateCart(productId, newValue, $input);
+        updateCart(productId, inventoryId, newValue, $input);
       }
     });
   }
 
   // AJAX update số lượng trong giỏ hàng
-  function updateCart(productId, quantity, $input) {
+  function updateCart(productId, inventoryId, quantity, $input) {
 
     $.ajaxSetup({
       headers: { "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content") }
@@ -685,7 +688,7 @@ $(document).ready(function () {
     $.ajax({
       url: '/cart/update',
       type: 'POST',
-      data: { product_id: productId, quantity: quantity },
+      data: { product_id: productId, inventory_id: inventoryId, quantity: quantity },
 
       success: function (response) {
 
@@ -713,6 +716,7 @@ $(document).ready(function () {
   $('.remove-from-cart').on('click', function () {
 
     let productId = $(this).data('id');
+    let inventoryId = $(this).data('inventory-id') || null;
     let row = $(this).closest('tr');
 
     $.ajaxSetup({
@@ -722,7 +726,7 @@ $(document).ready(function () {
     $.ajax({
       url: '/cart/remove-cart',
       type: 'POST',
-      data: { product_id: productId },
+      data: { product_id: productId, inventory_id: inventoryId },
 
       success: function (response) {
 
@@ -1033,6 +1037,7 @@ $(document).ready(function () {
     e.preventDefault();
 
     let productId = $(this).data('id');
+    let inventoryId = $(this).data('inventory-id') || null;
 
     $.ajaxSetup({
       headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
@@ -1041,7 +1046,7 @@ $(document).ready(function () {
     $.ajax({
       url: '/wishlist/add',
       type: 'POST',
-      data: { product_id: productId },
+      data: { product_id: productId, inventory_id: inventoryId },
 
       success: function (response) {
         if (response.status) {
@@ -1049,8 +1054,12 @@ $(document).ready(function () {
         }
       },
 
-      error: function () {
-        alert("Lỗi khi thêm vào wishlist");
+      error: function (xhr) {
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          toastr.error(xhr.responseJSON.message);
+        } else {
+          alert("Lỗi khi thêm vào wishlist");
+        }
       }
     });
   });
@@ -1060,6 +1069,7 @@ $(document).ready(function () {
     e.preventDefault();
 
     let productId = $(this).data('id');
+    let inventoryId = $(this).data('inventory-id') || null;
     let row = $(this).closest("tr");
 
     $.ajaxSetup({
@@ -1069,7 +1079,7 @@ $(document).ready(function () {
     $.ajax({
       url: '/wishlist/remove',
       type: 'POST',
-      data: { product_id: productId },
+      data: { product_id: productId, inventory_id: inventoryId },
 
       success: function (response) {
         if (response.status) {

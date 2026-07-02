@@ -53,7 +53,7 @@
                                                         alt="{{ $product->name }}" class="image-product">
                                                 </td>
                                                 <td>{{$product->name}}</td>
-                                                <td>{{$product->category->name}}</td>
+                                                <td>{{ optional($product->category)->name ?? 'Chưa phân loại' }}</td>
                                                 <td>{{$product->slug}}</td>
                                                 <td>{{$product->description}}</td>
                                                 <td>{{$product->stock}}</td>

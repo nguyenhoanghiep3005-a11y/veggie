@@ -18,11 +18,9 @@ class User extends Authenticatable
         'password',
         'status',
         'phone_number',
-        'avatar',
         'address',
         'role_id',
-        'activation_token',
-        'google_id'
+        'activation_token'
     ];
 
     public function role()
@@ -40,7 +38,7 @@ class User extends Authenticatable
         return $this->hasMany(ShippingAddress::class);
     }
 
-    //check status
+    //check trạng thái
     public function isPending()
     {
         return $this->status === 'pending';
@@ -58,10 +56,6 @@ class User extends Authenticatable
 
     public function isDelete()
     {
-        return $this->status === 'delete';
-    }
-
-    public function getAvatarUrlAttribute(){
-        return $this->avatar ?  asset('storage/' . $this->avatar) : asset('storage/uploads/users/default-avatar.jpg');
+        return $this->status === 'deleted';
     }
 }

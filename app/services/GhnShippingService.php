@@ -68,7 +68,7 @@ class GhnShippingService
 
         $subtotal = (int) $items->sum(function ($item) {
             if (isset($item->product) && method_exists($item->product, 'calculatePriceByQuantity')) {
-                return $item->product->calculatePriceByQuantity($item->quantity ?? 1);
+                return $item->product->calculatePriceByQuantity($item->quantity ?? 1, $item->inventory_id ?? null);
             }
             $price = $item['price'] ?? $item->product->price ?? 0;
             $quantity = (int) ($item['quantity'] ?? $item->quantity ?? 1);

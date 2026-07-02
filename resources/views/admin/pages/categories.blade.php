@@ -50,7 +50,7 @@
 
                                             @foreach ($categories as $category)
                                             <tr id="category-row-{{$category->id}}">
-                                                <td><img src="{{asset('storage/'. $category->image)}}"
+                                                <td><img src="{{ $category->image_url }}"
                                                         alt="{{$category->name}}" class="image-category"></td>
                                                 <td>{{$category->name}}</td>
                                                 <td>{{$category->slug}}</td>
@@ -117,7 +117,7 @@
                                                                         for="category-image">Hình
                                                                         ảnh</label>
                                                                     <div class="col-md-6 col-sm-6 ">
-                                                                        <img src="{{asset('storage/'. $category->image)}}"
+                                                                        <img src="{{ $category->image_url }}"
                                                                             alt="{{$category->name}}"
                                                                             id="image-preview-{{$category->id}}"
                                                                             class="image-preview">

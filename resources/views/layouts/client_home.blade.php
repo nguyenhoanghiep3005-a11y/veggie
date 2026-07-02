@@ -11,7 +11,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="base-url" content="{{ url('/') }}">
 
-
+    
     <!-- Place favicon.png in the root directory -->
     <link rel="shortcut icon" href="{{ asset('assets/clients/img/favicon.png' )}}" type="image/x-icon" />
     <!-- Font Icons css -->

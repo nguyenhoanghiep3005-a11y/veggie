@@ -1,4 +1,3 @@
-<!-- BREADCRUMB AREA START -->
 <div class="ltn__breadcrumb-area ltn__breadcrumb-area-2 ltn__breadcrumb-color-white bg-overlay-theme-black-90 bg-image"
     data-bg="{{asset('assets/clients/img/bg/5.jpg')}}">
     <div class="container">
@@ -19,5 +18,4 @@
             </div>
         </div>
     </div>
-</div>
-<!-- BREADCRUMB AREA END -->
+</div> 

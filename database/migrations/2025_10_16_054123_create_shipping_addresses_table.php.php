@@ -11,17 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create( 'shipping_addresses',function(Blueprint $table)
-       {
-        $table->id();
-        $table->foreignId( 'user_id')->constrained('users')->onDelete('cascade');
-        $table->string('full_name');
-        $table->string('phone');
-        $table->string('address');
-        $table->string('city');
-        $table->boolean('default')->default(false);
-        $table->timestamps();
-       });
+        Schema::create('shipping_addresses', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('full_name');
+            $table->string('phone');
+            $table->string('address');
+            $table->string('city');
+            $table->unsignedBigInteger('province_id')->nullable();
+            $table->unsignedBigInteger('district_id')->nullable();
+            $table->string('ward_id', 50)->nullable();
+            $table->boolean('default')->default(false);
+            $table->timestamps();
+        });
     }
 
     /**

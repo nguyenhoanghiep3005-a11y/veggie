@@ -30,7 +30,7 @@ class CategoryController extends Controller
         Category::create([
             'name' => $request->input('name'),
             'slug' => Str::slug($request->input('name')),
-            'description' => $request->input('category-description'),
+            'description' => $request->input('description'),
             'image' => $imagePath,
         ]);
         return redirect()->route('admin.categories.add')->with('success', 'Danh mục đã được thêm thành công!');

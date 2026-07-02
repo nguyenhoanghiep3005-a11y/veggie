@@ -33,34 +33,57 @@ class InventoryController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        $product = Product::find($request->product_id);
+        $product = Product::findOrFail($request->product_id);
+        $quantityImported = (int) $request->quantity_imported;
         $adjustedPrice = $this->getAdjustedPrice($request->adjusted_price);
 
-        if ($adjustedPrice !== null && $adjustedPrice >= $product->price) {
-            return redirect()->route('admin.inventories.index')
-                ->with('error', 'Giá điều chỉnh phải nhỏ hơn giá niêm yết.');
+        $priceError = $this->validateAdjustedPrice($adjustedPrice, $product);
+
+        if ($priceError) {
+            return redirect()->route('admin.inventories.index')->with('error', $priceError);
         }
 
-        $quantityDamaged = 0;
-        $quantityRemaining = (int) $request->quantity_imported;
-        $condition = Inventory::checkCondition('fresh', $quantityRemaining, $request->expired_at);
+        $inventory = $this->findMatchingInventory(
+            $product->id,
+            $request->imported_at,
+            $request->expired_at,
+            $adjustedPrice
+        );
 
-        $inventory = Inventory::create([
-            'product_id' => $request->product_id,
-            'quantity_imported' => $request->quantity_imported,
-            'quantity_remaining' => $quantityRemaining,
-            'quantity_damaged' => $quantityDamaged,
-            'imported_at' => $request->imported_at,
-            'expired_at' => $request->expired_at,
-            'condition' => $condition,
-            'adjusted_price' => $adjustedPrice,
-            'note' => $request->note,
-        ]);
+        if ($inventory) {
+            $inventory->quantity_imported += $quantityImported;
+            $inventory->quantity_remaining += $quantityImported;
+            $inventory->condition = Inventory::checkCondition(
+                'fresh',
+                $inventory->quantity_remaining,
+                $inventory->expired_at->toDateString()
+            );
+
+            if (!$inventory->note && $request->note) {
+                $inventory->note = $request->note;
+            }
+
+            $inventory->save();
+            $message = 'Lô hàng đã tồn tại, hệ thống đã cộng dồn số lượng vào ' . $inventory->lotCode() . '.';
+        } else {
+            $inventory = Inventory::create([
+                'product_id' => $product->id,
+                'quantity_imported' => $quantityImported,
+                'quantity_remaining' => $quantityImported,
+                'quantity_damaged' => 0,
+                'imported_at' => $request->imported_at,
+                'expired_at' => $request->expired_at,
+                'condition' => Inventory::checkCondition('fresh', $quantityImported, $request->expired_at),
+                'adjusted_price' => $adjustedPrice,
+                'note' => $request->note,
+            ]);
+            $message = 'Thêm lô hàng vào kho thành công!';
+        }
 
         $this->updateProductStatus($inventory->product);
 
         return redirect()->route('admin.inventories.index')
-            ->with('success', 'Thêm lô hàng vào kho thành công!');
+            ->with('success', $message);
     }
 
     public function update(Request $request)
@@ -73,11 +96,10 @@ class InventoryController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        $inventory = Inventory::with('product')->find($request->inventory_id);
-        $soldQuantity = $inventory->soldQuantity();
-        $maxUnsoldQuantity = $inventory->quantity_imported - $soldQuantity;
+        $inventory = Inventory::with('product')->findOrFail($request->inventory_id);
         $damagedItemNumbers = $this->getDamagedItemNumbers($request->damaged_item_numbers);
         $soldItemNumbers = $inventory->soldItemNumbers();
+        $maxUnsoldQuantity = $inventory->maxUnsoldQuantity();
 
         foreach ($damagedItemNumbers as $number) {
             if ($number > $inventory->quantity_imported) {
@@ -85,7 +107,7 @@ class InventoryController extends Controller
                     ->with('error', 'Mã hàng hư không hợp lệ với số lượng nhập của lô.');
             }
 
-            if (in_array($number, $soldItemNumbers)) {
+            if (in_array($number, $soldItemNumbers, true)) {
                 return redirect()->route('admin.inventories.index')
                     ->with('error', 'Không thể chọn mã hàng đã bán làm hàng hư.');
             }
@@ -96,25 +118,19 @@ class InventoryController extends Controller
                 ->with('error', 'Số lượng mã hư không được lớn hơn số lượng chưa bán của lô.');
         }
 
-        $quantityDamaged = count($damagedItemNumbers);
-        $quantityRemaining = $maxUnsoldQuantity - $quantityDamaged;
-
         $adjustedPrice = $this->getAdjustedPrice($request->adjusted_price);
 
-        if ($adjustedPrice !== null && $adjustedPrice >= $inventory->product->price) {
-            return redirect()->route('admin.inventories.index')
-                ->with('error', 'Giá điều chỉnh phải nhỏ hơn giá niêm yết.');
+        $priceError = $this->validateAdjustedPrice($adjustedPrice, $inventory->product);
+
+        if ($priceError) {
+            return redirect()->route('admin.inventories.index')->with('error', $priceError);
         }
 
-        if ($quantityRemaining == 0 && $quantityDamaged > 0) {
-            $condition = 'damaged';
-        } else {
-            $condition = Inventory::checkCondition('fresh', $quantityRemaining, $inventory->expired_at);
-        }
+        $quantityRemaining = $maxUnsoldQuantity - count($damagedItemNumbers);
 
         $inventory->quantity_remaining = $quantityRemaining;
         $inventory->setDamagedItemNumbers($damagedItemNumbers);
-        $inventory->condition = $condition;
+        $inventory->condition = Inventory::checkCondition('fresh', $quantityRemaining, $inventory->expired_at->toDateString());
         $inventory->adjusted_price = $adjustedPrice;
         $inventory->note = $request->note;
         $inventory->save();
@@ -127,13 +143,9 @@ class InventoryController extends Controller
 
     private function updateProductStatus($product)
     {
-        $availableQuantity = $product->availableInventories()->sum('quantity_remaining');
-
-        if ($availableQuantity > 0) {
-            $product->status = 'int_stock';
-        } else {
-            $product->status = 'out_of_stock';
-        }
+        $product->status = $product->availableInventories()->sum('quantity_remaining') > 0
+            ? 'int_stock'
+            : 'out_of_stock';
 
         $product->save();
     }
@@ -146,33 +158,49 @@ class InventoryController extends Controller
             $oldCondition = $inventory->condition;
             $inventory->refreshCondition();
 
-            if ($oldCondition != $inventory->condition) {
+            if ($oldCondition !== $inventory->condition) {
                 $inventory->save();
-
-                if ($inventory->product) {
-                    $this->updateProductStatus($inventory->product);
-                }
             }
-        }
 
-        $products = Product::all();
-        foreach ($products as $product) {
-            $this->updateProductStatus($product);
+            if ($inventory->product) {
+                $this->updateProductStatus($inventory->product);
+            }
         }
     }
 
     private function getAdjustedPrice($adjustedPrice)
     {
-        if ($adjustedPrice === null || $adjustedPrice === '') {
-            return null;
-        }
-
-        if ($adjustedPrice <= 0) {
+        if ($adjustedPrice === null || $adjustedPrice === '' || $adjustedPrice <= 0) {
             return null;
         }
 
         return $adjustedPrice;
     }
+
+    private function validateAdjustedPrice($adjustedPrice, Product $product)
+    {
+        if ($adjustedPrice !== null && $adjustedPrice >= $product->price) {
+            return 'Giá điều chỉnh trong kho chỉ dùng để giảm giá. Nếu muốn tăng giá bán, hãy cập nhật giá niêm yết của sản phẩm.';
+        }
+
+        return null;
+    }
+
+    private function findMatchingInventory($productId, $importedAt, $expiredAt, $adjustedPrice)
+    {
+        $query = Inventory::where('product_id', $productId)
+            ->whereDate('imported_at', $importedAt)
+            ->whereDate('expired_at', $expiredAt);
+
+        if ($adjustedPrice === null) {
+            $query->whereNull('adjusted_price');
+        } else {
+            $query->where('adjusted_price', $adjustedPrice);
+        }
+
+        return $query->orderBy('id')->first();
+    }
+
 
     private function getDamagedItemNumbers($numbers)
     {
@@ -185,7 +213,7 @@ class InventoryController extends Controller
         foreach ($numbers as $number) {
             $number = (int) $number;
 
-            if ($number > 0 && !in_array($number, $damagedItemNumbers)) {
+            if ($number > 0 && !in_array($number, $damagedItemNumbers, true)) {
                 $damagedItemNumbers[] = $number;
             }
         }

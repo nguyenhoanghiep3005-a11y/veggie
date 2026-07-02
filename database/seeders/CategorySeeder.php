@@ -3,26 +3,28 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $categories = [
-            ['name' => 'Rau củ ', 'slug' => 'rau-cu', 'description' => 'Các loại rau củ tươi ngon', 'image' => 'uploads/categories/rau-cu.png'],
-            ['name' => 'Trái cây', 'slug' => 'trai-cay', 'description' => 'Trái cây sạch tươi ngon', 'image' => 'uploads/categories/trai-cay.png'],
-            ['name' => 'Thịt', 'slug' => 'thit', 'description' => 'Thịt tươi ngon, đảm bảo chất lượng', 'image' => 'uploads/categories/thit.png'],
-            ['name' => 'Cá ', 'slug' => 'ca', 'description' => 'Hải sản và cá tươi sống', 'image' => 'uploads/categories/ca.png'],
-            ['name' => 'Thực phẩm khác ', 'slug' => 'thuc-pham-khac', 'description' => 'Các loại thực phẩm khác', 'image' => 'uploads/categories/thuc-pham-khac.png'],
+            ['name' => 'Thực Phẩm Khô', 'slug' => 'thuc-pham-kho', 'description' => 'Các loại thực phẩm khô đóng gói, dễ bảo quản.', 'image' => 'uploads/categories/1782975650_6a460ca274db3.png'],
+            ['name' => 'Gia vị', 'slug' => 'gia-vi', 'description' => 'Gia vị nấu ăn dùng hằng ngày.', 'image' => 'uploads/categories/1782975699_6a460cd39b937.png'],
+            ['name' => 'Gạo', 'slug' => 'gao', 'description' => 'Các loại gạo trắng, gạo lứt và gạo đặc sản.', 'image' => 'uploads/categories/1782975722_6a460cea6a2c9.png'],
+            ['name' => 'Hạt Dinh Dưỡng', 'slug' => 'hat-dinh-duong', 'description' => 'Hạt ăn vặt và hạt dinh dưỡng tốt cho sức khỏe.', 'image' => 'uploads/categories/1782975680_6a460cc07b6a4.png'],
         ];
-        foreach($categories as $category)
-        {
-            Category::create($category);
+
+        Category::whereNotIn('slug', collect($categories)->pluck('slug')->all())
+            ->doesntHave('products')
+            ->delete();
+
+        foreach ($categories as $category) {
+            Category::updateOrCreate(
+                ['slug' => $category['slug']],
+                $category
+            );
         }
     }
 }

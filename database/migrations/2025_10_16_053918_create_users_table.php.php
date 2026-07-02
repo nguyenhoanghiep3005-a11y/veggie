@@ -18,11 +18,11 @@ return new class extends Migration
       $table->string('password');
       $table->enum('status', ['pending', 'active', 'banned', 'deleted'])->default('pending');
       $table->string('phone_number')->nullable();
-      $table->string('avatar')->nullable();
+
       $table->text('address')->nullable();
       $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
       $table->string('activation_token')->nullable();
-      $table->string('google_id')->nullable();
+
       $table->timestamps();
     });
   }
