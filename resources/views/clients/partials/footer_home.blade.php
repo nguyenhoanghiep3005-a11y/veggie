@@ -5,7 +5,7 @@
                     <div class="row">
                         <div class="col-xl-3 col-md-6 col-sm-6 col-12">
                             <div class="footer-widget footer-about-widget">
-                               <p>Chúng tôi chuyên cung cấp rau củ quả tươi sạch, có nguồn gốc rõ ràng, an toàn cho sức khỏe và thân thiện với môi trường.</p>
+                               <p>Chúng tôi chuyên cung cấp nông sản khô, có nguồn gốc rõ ràng, an toàn cho sức khỏe và thân thiện với môi trường.</p>
                                 <div class="footer-address">
                                     <ul>
                                         <li>
@@ -53,7 +53,7 @@
                                         <li><a href="{{route('about')}}">Về chúng tôi</a></li>
                                         <li><a href="{{route('products.index')}}">Sản phẩm</a></li>
                                         <li><a href="{{route('faq')}}">FAQ</a></li>
-                                        <li><a href="{{route('contact.send')}}">Liên hệ</a></li>
+                                        <li><a href="{{route('contact.index')}}">Liên hệ</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -81,7 +81,7 @@
                                         <li><a href="{{route('wishlist')}}">Danh sách yêu thích</a></li>
                                         <li><a href="{{route('account')}}">Theo dõi đơn hàng</a></li>
                                         <li><a href="{{route('faq')}}">FAQ</a></li>
-                                        <li><a href="{{route('contact.send')}}">Liên hệ</a></li>
+                                        <li><a href="{{route('contact.index')}}">Liên hệ</a></li>
                                     </ul>
                                 </div>
                             </div>

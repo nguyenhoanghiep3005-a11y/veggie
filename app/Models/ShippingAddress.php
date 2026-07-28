@@ -23,8 +23,13 @@ class ShippingAddress extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function hasGhnLocation()
     {
-        return !empty($this->province_id) && !empty($this->district_id) && !empty($this->ward_id);
+        return ! empty($this->province_id) && ! empty($this->district_id) && ! empty($this->ward_id);
     }
 }

@@ -8,37 +8,54 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    // Hiển thị danh sách tài khoản khách hàng.
     public function index()
     {
-        $users = User::with('role')->paginate(9);
+        $users = User::with('role')
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'customer');
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(9);
+
         return view('admin.pages.users', compact('users'));
     }
-    // nâng cấp user thành nhân viên
-    public function upgrade(Request $request)
-    {
-        $userId = $request->user_id;
-        $user = User::find($userId);
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                 'message' => 'Không tìm thấy người dùng']);
-        }
-        $user->role_id = 2; //  2 là ID của admin
-        $user->save();
-        return response()->json(['status' => true, 'message' => 'Đã update thành NV']);
-    }
+
+    // Chặn hoặc bỏ chặn tài khoản khách hàng.
     public function updateStatus(Request $request)
     {
-        $userId = $request->user_id;
-        $status = $request->status;
-        $user = User::find($userId);
-        if (!$user) {
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'status' => 'required|in:active,banned',
+        ]);
+
+        $user = User::whereKey($data['user_id'])
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'customer');
+            })
+            ->first();
+
+        if (! $user) {
             return response()->json([
                 'status' => false,
-                 'message' => 'Không tìm thấy người dùng']);
+                'message' => 'Không tìm thấy người dùng.',
+            ]);
         }
-        $user->status = $status; // Đảo ngược trạng thái hiện tại
+
+        $user->status = $data['status'];
         $user->save();
-        return response()->json(['status' => true, 'message' => 'Đã cập nhật trạng thái người dùng']);
+
+        $message = 'Đã bỏ chặn tài khoản khách hàng.';
+        if ($user->status == 'banned') {
+            $message = 'Đã chặn tài khoản khách hàng.';
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => $message,
+            'data' => [
+                'status' => $user->status,
+            ],
+        ]);
     }
 }

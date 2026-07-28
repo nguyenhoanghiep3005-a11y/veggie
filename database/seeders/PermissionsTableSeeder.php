@@ -15,13 +15,11 @@ class PermissionsTableSeeder extends Seeder
         $permissions = [
             1 => 'manage_user',
             2 => 'manage_products',
-            3 => 'manage_orders',
+            3 => 'manage_order',
             4 => 'manage_categories',
-            5 => 'manage_contacts',
         ];
 
-        foreach($permissions as $id => $name)
-        {
+        foreach ($permissions as $id => $name) {
             DB::table('permissions')->updateOrInsert(
                 ['id' => $id],
                 ['name' => $name, 'created_at' => now(), 'updated_at' => now()]

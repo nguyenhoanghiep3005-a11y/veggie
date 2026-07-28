@@ -21,7 +21,8 @@ class DatabaseSeeder extends Seeder
             UsersTableSeeder::class,
             AdminStaffTableSeeder::class,
             CategorySeeder::class,
-            ProductSeeder::class
+            ProductSeeder::class,
+            PurchaseWorkflowSeeder::class,
         ]);
     }
 }

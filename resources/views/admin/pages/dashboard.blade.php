@@ -5,7 +5,7 @@
 <!-- page content -->
 <div class="right_col" role="main">
     <!-- top tiles -->
-    <div class="row" style="display: inline-block; width:100%">
+    <div class="row dashboard-top-row">
         <div class="tile_count">
             <div class="col-md-2 col-sm-4  tile_stats_count">
                 <span class="count_top"><i class="fa fa-user"></i> Tổng số người dùng</span>
@@ -19,9 +19,9 @@
                 <span class="count_top"><i class="fa fa-shopping-cart"></i> Tổng số lượng đơn hàng</span>
                 <div class="count">{{$orders->count()}}</div>
             </div>
-            <div class="col-md-2 col-sm-4  tile_stats_count" style="overflow: unset">
+            <div class="col-md-2 col-sm-4  tile_stats_count dashboard-revenue-tile">
                 <span class="count_top"><i class="fa fa-money"></i>Tổng doanh thu</span>
-                <div class="count">{{number_format($orders->sum('total_price'),0,0)}}VND</div>
+                <div class="count">{{number_format($orders->sum('total_price'),0,0)}}</div>
             </div>
         </div>
     </div>
@@ -40,9 +40,9 @@
                     <div class="clearfix"></div>
                 </div>
                 <div class="x_content">
-                    <table class="" style="width:100%">
+                    <table class="dashboard-category-table">
                         <tr>
-                            <th style="width:37%;">
+                            <th class="dashboard-chart-heading">
                                 <p>Top 5</p>
                             </th>
                             <th>
@@ -57,18 +57,16 @@
                         <tr>
                             <td>
                                 <canvas class="canvasDoughnutCategory" height="140" width="140"
-                                    data-labels='@json($categories->pluck(' name'))'
+                                    data-labels='@json($categories->pluck('name'))'
                                     data-counts='@json($categories->map(fn($category)=>$category->products->count()))'
-                                    style="margin: 15px 10px 10px 0"></canvas>
+                                    class="dashboard-doughnut"></canvas>
                             </td>
                             <td>
                                 <table class="tile_info">
                                     @foreach ($categories as $index => $category)
                                     <tr>
                                         <td>
-                                            <p><i class="fa fa-square" style="color:{{[ " #BDC3C7", "#9B59B6"
-                                                    , "#E74C3C" , "#26B99A" , "#3498DB"
-                                                    ][$index%5]}}"></i>{{$category->name}}</p>
+                                            <p><i class="fa fa-square dashboard-color-{{ $index % 5 }}"></i>{{$category->name}}</p>
                                         </td>
                                         <td>{{$category->products->count()}}</td>
                                     </tr>

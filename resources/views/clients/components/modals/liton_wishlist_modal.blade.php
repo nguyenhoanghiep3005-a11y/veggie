@@ -14,10 +14,10 @@
                                     <div class="row">
                                         <div class="col-12">
                                             <div class="modal-product-img">
-                                        <img src="{{$product->image_url}}" alt="{{$product->name}}">
+                                        <img src="{{$product->image_url}}" alt="{{$product->display_name}}">
                                             </div>
                                             <div class="modal-product-info">
-                                                <h5><a href="{{route('product.detail', $product->slug)}}">{{$product->name}}</a></h5>
+                                                <h5><a href="{{route('product.detail', $product->slug)}}">{{$product->display_name}}</a></h5>
                                                 <p class="added-cart"><i class="fa fa-check-circle"></i>Đã thêm thành công vào danh sách yêu thích</p>
                                                 <div class="btn-wrapper">
                                                     <a href="{{route('wishlist')}}" class="theme-btn-1 btn btn-effect-1">Xem</a>

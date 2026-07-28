@@ -11,27 +11,59 @@ class WishlistController extends Controller
 {
     public function index()
     {
-        $wishlist = Wishlist::with('product')->where('user_id', Auth::id())->get();
+        $wishlist = Wishlist::with('product.firstImage')
+            ->where('user_id', Auth::id())
+            ->whereHas('product')
+            ->latest()
+            ->get();
+
         return view('clients.pages.wishlist', compact('wishlist'));
     }
-    public function addToWishList(Request $request)
-    {
-        $user_id = Auth::id();
-        $product_id = $request->product_id;
 
-        Wishlist::create([
-            'user_id' => $user_id,
-            'product_id' => $product_id,
+    public function store(Request $request)
+    {
+        if (! Auth::check()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Vui lòng đăng nhập để sử dụng danh sách yêu thích.',
+            ], 401);
+        }
+
+        $data = $request->validate([
+            'product_id' => 'required|integer|exists:products,id',
         ]);
+
+        Wishlist::firstOrCreate([
+            'user_id' => Auth::id(),
+            'product_id' => $data['product_id'],
+        ]);
+
         return response()->json([
-            'status'=>true,
+            'status' => true,
+            'message' => 'Đã thêm sản phẩm vào danh sách yêu thích.',
         ]);
     }
-    public function removeWishListItem(Request $request)
+
+    public function destroy(Request $request)
     {
-        Wishlist::where('user_id', Auth::id())->where('product_id', $request->product_id)->delete();
+        if (! Auth::check()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Vui lòng đăng nhập để sử dụng danh sách yêu thích.',
+            ], 401);
+        }
+
+        $data = $request->validate([
+            'product_id' => 'required|integer|exists:products,id',
+        ]);
+
+        Wishlist::where('user_id', Auth::id())
+            ->where('product_id', $data['product_id'])
+            ->delete();
+
         return response()->json([
-            'status' => true
+            'status' => true,
+            'message' => 'Đã xóa sản phẩm khỏi danh sách yêu thích.',
         ]);
     }
 }

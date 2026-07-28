@@ -25,7 +25,7 @@
     <!-- toastr css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     {{-- import custom css --}}
-    <link rel="stylesheet" href="{{ asset('assets/clients/css/custom.css' )}}">
+    <link rel="stylesheet" href="{{ asset('assets/clients/css/custom.css' )}}?v={{ filemtime(public_path('assets/clients/css/custom.css')) }}">
 </head>
 
 <body>
@@ -54,9 +54,8 @@
     <script src="{{ asset('assets/clients/js/main.js')}}"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script src="{{asset('assets/clients/js/custom.js')}}"></script>
+    <script src="{{ asset('assets/clients/js/custom.js') }}?v={{ filemtime(public_path('assets/clients/js/custom.js')) }}"></script>
       <!-- PayPal JS -->
     <script src="https://www.paypal.com/sdk/js?client-id={{ env('PAYPAL_CLIENT_ID') }}&currency=USD"></script>
 </body>
-
 </html>

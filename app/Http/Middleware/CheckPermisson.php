@@ -17,12 +17,16 @@ class CheckPermisson
     public function handle(Request $request, Closure $next, $permission): Response
     {
         $user = Auth::guard('admin')->user();
+        if (! $user) {
+            return redirect()->route('admin.login');
+        }
+
         $role = $user?->role;
 
-        if(!$role || !$role->permissions->contains('name', $permission))
-        {
+        if (! $role || ! $role->permissions->contains('name', $permission)) {
             abort(403, 'Bạn không có quyền truy cập');
         }
+
         return $next($request);
     }
 }

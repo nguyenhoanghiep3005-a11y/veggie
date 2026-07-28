@@ -6,7 +6,6 @@ use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
  */
@@ -44,17 +43,17 @@ class ProductFactory extends Factory
             'Thịt bò Úc',
             'Cá hồi phi lê',
             'Tôm sú',
-            'Gà ta nguyên con'
+            'Gà ta nguyên con',
         ]);
 
         return [
             'name' => ucfirst($name),
-            'slug' => Str::slug($name) . '-' . $this->faker->unique()->numberBetween(1, 1000),
+            'slug' => Str::slug($name).'-'.$this->faker->unique()->numberBetween(1, 1000),
             'category_id' => Category::inRandomOrder()->first()->id,
-            'description' =>  $this->faker->sentence(10),
+            'description' => $this->faker->sentence(10),
             'price' => $this->faker->randomFloat(2, 10000, 200000),
             'status' => 'int_stock',
-            'unit' => $this->faker->randomElement(['kb', 'bó', 'túi', 'hộp'])
+            'unit' => $this->faker->randomElement(['kb', 'bó', 'túi', 'hộp']),
 
         ];
     }

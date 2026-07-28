@@ -26,7 +26,7 @@
                     </div>
                     <div class="x_content">
                         <br />
-                        <form action="{{Route('admin.categories.add')}}" id="add-category" method="POST" class="form-horizontal form-label-left"
+                        <form action="{{ route('admin.categories.store') }}" id="add-category" method="POST" class="form-horizontal form-label-left"
                             enctype="multipart/form-data">
                             @csrf
 

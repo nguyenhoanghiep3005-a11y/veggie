@@ -17,38 +17,43 @@
         <div class="row">
             <div class="col-lg-6 offset-lg-3">
                 <div class="account-login-inner">
-                    <form action="{{route('post-register') }}" class="ltn__form-box contact-form-box" method="POST" id="register-form">
+                    <form action="{{ route('post-register') }}" class="ltn__form-box contact-form-box" method="POST" id="register-form">
                         @csrf
-                        <input type="text" name="name" placeholder="Họ và Tên" value="{{old('name')}}" required>
+                        <input type="text" name="name" placeholder="Họ và Tên" value="{{ old('name') }}" required>
                         @error('name')
-                        <div class="alert alert-danger">{{$message}} </div>    
+                        <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
-                        <input type="email" name="email" placeholder="Email*" value="{{old('email')}}" required>
-                         @error('email')
-                        <div class="alert alert-danger">{{$message}} </div>    
+
+                        <input type="email" name="email" placeholder="Email*" value="{{ old('email') }}" required>
+                        @error('email')
+                        <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
+
                         <input type="password" name="password" placeholder="Mật khẩu*" required>
-                         @error('password')
-                        <div class="alert alert-danger">{{$message}} </div>    
+                        @error('password')
+                        <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
-                        <input type="password" name="confirmPassword" placeholder="Xác nhận mật khẩu*"required>
-                         @error('confirmPassword')
-                        <div class="alert alert-danger">{{$message}} </div>    
+
+                        <input type="password" name="confirmPassword" placeholder="Xác nhận mật khẩu*" required>
+                        @error('confirmPassword')
+                        <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
+
                         <label class="checkbox-inline">
-                            <input type="checkbox" name="checkbox1" value="" required>
+                            <input type="checkbox" name="checkbox1" value="1" {{ old('checkbox1') ? 'checked' : '' }} required>
                             Tôi đồng ý cho phép hệ thống xử lý dữ liệu cá nhân của tôi để gửi thông tin khuyến mãi
                             theo chính sách bảo mật.
                         </label>
-                         @error('checkbox1')
-                        <div class="alert alert-danger">{{$message}} </div>    
+                        @error('checkbox1')
+                        <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
+
                         <label class="checkbox-inline">
-                            <input type="checkbox" name="checkbox2" value="" required>
+                            <input type="checkbox" name="checkbox2" value="1" {{ old('checkbox2') ? 'checked' : '' }} required>
                             Bằng cách nhấn “Tạo tài khoản”, tôi đồng ý với chính sách bảo mật.
                         </label>
-                         @error('checkbox2')
-                        <div class="alert alert-danger">{{$message}} </div>    
+                        @error('checkbox2')
+                        <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
 
                         <div class="btn-wrapper">
@@ -69,4 +74,3 @@
 </div>
         
 @endsection
-

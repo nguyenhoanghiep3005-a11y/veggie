@@ -52,9 +52,13 @@
                         <h4 class="ltn__widget-title ltn__widget-title-border">Danh mục</h4>
                         <ul>
                             @foreach ($categories as $category)
-                            <li><a href="javascript:void(0)" class="category-filter"
-                                    data-id="{{$category->id}}">{{$category->name}}<span>
-                                        <i class="fas fa-long-arrow-alt-right"></i></span></a>
+                            <li>
+                                <a href="{{ route('products.index', ['category_id' => $category->id]) }}"
+                                   class="category-filter {{ (int) $selectedCategoryId === (int) $category->id ? 'active' : '' }}"
+                                   data-id="{{ $category->id }}">
+                                    {{ $category->name }}
+                                    <span><i class="fas fa-long-arrow-alt-right"></i></span>
+                                </a>
                             </li>
                             @endforeach
                         </ul>

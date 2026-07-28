@@ -17,17 +17,16 @@
                             <div class="ltn__main-menu">
                                 <ul>
                                     <li class="menu-icon"><a href="\">Trang chủ</a> </li>
-                                    <li class="menu-icon"><a href="javascript:void(0)">Về Nông Sản Khô</a>
+                                    <li class="menu-icon"><a href="javascript:void(0)">Danh mục</a>
                                         <ul>
-                                            <li><a href="javascript:void(0)">Về Nông Sản Khô</a></li>
-                                            <li><a href="javascript:void(0)">Dịch vụ</a></li>
-                                            <li><a href="javascript:void(0)">Đội ngũ</a></li>
-                                            <li><a href="javascript:void(0)">FAQ</a></li>
+                                            @foreach(\App\Models\Category::all() as $category)
+                                                <li><a href="{{ route('products.index', ['category_id' => $category->id]) }}">{{ $category->name }}</a></li>
+                                            @endforeach
                                         </ul>
                                     </li>
                                     <li class="menu-icon"><a href="{{route('products.index')}}">Sản phẩm</a>
                                     </li>
-                                    <li><a href="{{route('contact.index')}}">Liên hệ</a></li>
+                                    <li><a href="{{ route('vouchers.index') }}">🎁 Voucher</a></li>
                                     <li class="special-link"><a href="{{route('contact.index')}}">Tư vấn mua hàng</a></li>
                                 </ul>
                             </div>
@@ -76,30 +75,21 @@
                         <a href="#ltn__utilize-cart-menu" class="ltn__utilize-toggle">
                             <i class="icon-shopping-cart"></i>
                             <sup id="cart_count">
-                                @auth
-                                {{ \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity')}}
-                                @else
-                                {{session('cart') ? array_sum(array_column(session('cart'),'quantity')) : 0}}
-                                @endauth
+                                @php
+                                    $cartCount = 0;
+                                    foreach ((array) session('cart', []) as $cartLine) {
+                                        if (is_array($cartLine)) {
+                                            $cartCount += (int) ($cartLine['quantity'] ?? 0);
+                                        } else {
+                                            $cartCount += (int) $cartLine;
+                                        }
+                                    }
+                                @endphp
+                                {{ $cartCount }}
                             </sup>
                         </a>
                     </div>
                     <!-- mini-cart -->
-                    <!-- Mobile Menu Button -->
-                    <div class="mobile-menu-toggle d-xl-none">
-                        <a href="#ltn__utilize-mobile-menu" class="ltn__utilize-toggle">
-                            <svg viewBox="0 0 800 600">
-                                <path
-                                    d="M300,220 C300,220 520,220 540,220 C740,220 640,540 520,420 C440,340 300,200 300,200"
-                                    id="top"></path>
-                                <path d="M300,320 L540,320" id="middle"></path>
-                                <path
-                                    d="M300,210 C300,210 520,210 540,210 C740,210 640,530 520,410 C440,330 300,190 300,190"
-                                    id="bottom" transform="translate(480, 320) scale(1, -1) translate(-480, -318) ">
-                                </path>
-                            </svg>
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -113,5 +103,4 @@
     </div>
 </div>
 <!-- Utilize Cart Menu End -->
-@include('clients.partials.utilize_mobile')
 <div class="ltn__utilize-overlay"></div>

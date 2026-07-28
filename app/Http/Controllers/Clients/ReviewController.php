@@ -14,22 +14,24 @@ class ReviewController extends Controller
     {
         return view('clients.components.modals.includes.review-list', compact('product'))->render();
     }
-    public function createReview(Request $request)
+
+    public function store(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string',
         ]);
-        $review = new Review();
+        $review = new Review;
         $review->user_id = Auth::id();
         $review->product_id = $request->product_id;
         $review->rating = $request->rating;
         $review->comment = $request->comment;
         $review->save();
+
         return response()->json([
             'status' => true,
-            'message' => 'Đánh giá đã được gửi'
+            'message' => 'Đánh giá đã được gửi',
         ], 200);
     }
 }

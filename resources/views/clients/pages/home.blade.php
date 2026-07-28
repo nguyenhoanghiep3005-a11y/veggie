@@ -22,7 +22,7 @@
                                     </h6>
                                     <h1 class="slide-title animated">Khám phá <br> hương vị mộc mạc <br> từ Nông Sản Khô</h1>
                                     <div class="slide-brief animated">
-                                        <p>Cam kết cung cấp nông sản khô chất lượng, được chọn lọc kỹ
+                                        <p>Cam kết cung cấp nông sản khô chất lượng, ược chọn lọc kỹ
                                             từ nguồn cung uy tín tại Việt Nam.</p>
                                     </div>
                                     <div class="btn-wrapper animated">
@@ -51,7 +51,7 @@
                                     <h1 class="slide-title animated">Nông Sản Khô Chất Lượng <br> Cho Bữa Ăn Gia Đình</h1>
                                     <div class="slide-brief animated">
                                         <p>Tuyển chọn các loại thực phẩm khô, gia vị, gạo và hạt dinh dưỡng,
-                                            đảm bảo an toàn, tiện lợi và dễ bảo quản.</p>
+                                            ảm bảo an toàn, tiện lợi và dễ bảo quản.</p>
                                     </div>
                                     <div class="btn-wrapper animated">
                                         <a href="{{route('about')}}"
@@ -73,7 +73,7 @@
 </div>
 <!-- SLIDER AREA END -->
 
-@if($promotionProducts->count() > 0)
+@if(count($promotionProducts) > 0)
 <!-- PROMOTION PRODUCT AREA START -->
 <div class="ltn__product-slider-area ltn__product-gutter pt-115 pb-70 home-promotion-section">
     <div class="container">
@@ -84,25 +84,18 @@
                 </div>
             </div>
         </div>
-        <div class="row ltn__tab-product-slider-one-active slick-arrow-1 home-product-slider {{$promotionProducts->count() > 4 ? 'has-many-products' : ''}}">
+        <div class="row ltn__tab-product-slider-one-active slick-arrow-1 home-product-slider">
             @foreach ($promotionProducts as $product)
-            @php
-                $salePrice = $product->promotion_price ?? $product->current_price;
-                $discountPercent = 0;
-                if ($product->price > 0 && $salePrice < $product->price) {
-                    $discountPercent = round((($product->price - $salePrice) / $product->price) * 100);
-                }
-            @endphp
             <div class="col-lg-12">
                 <div class="ltn__product-item ltn__product-item-3 text-center">
                     <div class="product-img">
                         <a href="{{route('product.detail',$product->slug)}}">
                             <img src="{{$product->image_url}}" alt="{{$product->name}}">
                         </a>
-                        @if($discountPercent > 0)
+                        @if($product->home_discount_percent > 0)
                         <div class="product-badge">
                             <ul>
-                                <li>-{{$discountPercent}}%</li>
+                                <li>-{{$product->home_discount_percent}}%</li>
                             </ul>
                         </div>
                         @endif
@@ -132,46 +125,44 @@
                     <div class="product-info">
                         <div class="product-ratting">
                             <ul>
-                                @php
-                                    $avgRating = $product->reviews->avg('rating') ?? 0;
-                                    $totalReviews = $product->reviews->count();
-                                @endphp
                                 @for ($i = 1; $i <= 5; $i++)
                                 <li>
                                     <a href="javascript:void(0)">
-                                        <i class="{{ $i <= $avgRating ? 'fas fa-star' : 'far fa-star' }}"></i>
+                                        <i class="{{ $i <= $product->home_avg_rating ? 'fas fa-star' : 'far fa-star' }}"></i>
                                     </a>
                                 </li>
                                 @endfor
                                 <li class="review-total">
-                                    ({{ $totalReviews }} Đánh giá)
+                                    ({{ $product->home_total_reviews }} Đánh giá)
                                 </li>
                             </ul>
                         </div>
                         <h2 class="product-title">
                             <a href="{{route('product.detail',$product->slug)}}">{{$product->name}}</a>
                         </h2>
-                        <div class="product-price">
-                            @if($salePrice < $product->price)
-                            <del class="d-block">{{number_format($product->price,0,',','.')}} VNĐ</del>
-                            @endif
-                            <span>{{number_format($salePrice,0,',','.')}} VNĐ</span>
+                        <div class="product-card-bottom">
+                            <div class="product-card-price">
+                                @if($product->home_sale_price < $product->price)
+                                <del>{{number_format($product->price,0,',','.')}}<small class="product-price-symbol">&#273;</small></del>
+                                @endif
+                                <span>{{number_format($product->home_sale_price,0,',','.')}}<small class="product-price-symbol">&#273;</small></span>
+                            </div>
+                            <div class="product-card-sold">
+                                {{ $product->sold_quantity ?? 0 }} &#273;&#227; b&#225;n
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             @endforeach
         </div>
-        @foreach ($promotionProducts as $product)
-        @include('clients.components.modals.includes.include-modals')
-        @endforeach
     </div>
 </div>
 <!-- PROMOTION PRODUCT AREA END -->
 @endif
 
 
-@if($bestSellerCategories->count() > 0)
+@if(count($bestSellerCategories) > 0)
 <!-- PRODUCT TAB AREA START (product-item-3) -->
 <div class="ltn__product-tab-area ltn__product-gutter pt-115 pb-70 home-best-seller-section">
     <div class="container">
@@ -182,18 +173,18 @@
                 </div>
                 <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
                     <div class="nav">
-                        @foreach ($bestSellerCategories as $index => $category)
-                        <a class="{{$index ==0? 'active show' : ''}}" data-bs-toggle="tab"
+                        @foreach ($bestSellerCategories as $category)
+                        <a class="{{$category->home_tab_class}}" data-bs-toggle="tab"
                             href="#tab-{{$category->id}}">{{$category->name}}</a>
                         @endforeach
                     </div>
                 </div>
                 <div class="tab-content">
-                    @foreach ($bestSellerCategories as $index => $category)
-                    <div class="tab-pane fade {{$index == 0? 'active show' : ''}}" id="tab-{{$category->id}}">
+                    @foreach ($bestSellerCategories as $category)
+                    <div class="tab-pane fade {{$category->home_content_class}}" id="tab-{{$category->id}}">
                         <div class="ltn__product-tab-content-inner">
-                            <div class="row ltn__tab-product-slider-one-active slick-arrow-1 home-product-slider {{$category->products->count() > 4 ? 'has-many-products' : ''}}">
-                                @foreach ($category->products as $product)
+                            <div class="row ltn__tab-product-slider-one-active slick-arrow-1 home-product-slider">
+                                @foreach ($category->home_products as $product)
                                 <!-- ltn__product-item -->
                                 <div class="col-lg-12">
                                     <div class="ltn__product-item ltn__product-item-3 text-center">
@@ -226,28 +217,32 @@
                                         <div class="product-info">
                                             <div class="product-ratting">
                                                 <ul>
-                                                    @php
-                                                    $avgRating = $product->reviews->avg('rating') ?? 0;
-                                                    $totalReviews = $product->reviews->count();
-                                                    @endphp
                                                     @for ($i = 1; $i <= 5; $i++) <li>
                                                         <a href="javascript:void(0)">
                                                             <i
-                                                                class="{{ $i <= $avgRating ? 'fas fa-star' : 'far fa-star' }}"></i>
+                                                                class="{{ $i <= $product->home_avg_rating ? 'fas fa-star' : 'far fa-star' }}"></i>
                                                         </a>
                                                         </li>
                                                         @endfor
 
                                                         <li class="review-total">
-                                                            ({{ $totalReviews }} Đánh giá)
+                                                            ({{ $product->home_total_reviews }} Đánh giá)
                                                         </li>
                                                 </ul>
                                             </div>
                                             <h2 class="product-title"><a
                                                     href="{{route('product.detail',$product->slug)}}">{{$product->name}}</a>
                                             </h2>
-                                            <div class="product-price">
-                                                <span>{{number_format($product->current_price,0,',','.')}} VNĐ</span>
+                                            <div class="product-card-bottom">
+                                                <div class="product-card-price">
+                                                    @if($product->current_price < $product->price)
+                                                    <del>{{number_format($product->price,0,',','.')}}<small class="product-price-symbol">&#273;</small></del>
+                                                    @endif
+                                                    <span>{{number_format($product->current_price,0,',','.')}}<small class="product-price-symbol">&#273;</small></span>
+                                                </div>
+                                                <div class="product-card-sold">
+                                                    {{ $product->sold_quantity ?? 0 }} &#273;&#227; b&#225;n
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -255,9 +250,6 @@
                                 </div>
                                 @endforeach
                             </div>
-                            @foreach ($category->products as $product)
-                            @include('clients.components.modals.includes.include-modals')
-                            @endforeach
                         </div>
                     </div>
                     @endforeach
@@ -286,13 +278,13 @@
             <div class="col-12">
                 <div class="ltn__category-item ltn__category-item-3 text-center">
                     <div class="ltn__category-item-img">
-                        <a href="shop.html">
-                            <img src="{{asset('storage/'.$category->image)}}" alt="{{$category->name}}">
+                        <a href="{{ route('products.index', ['category_id' => $category->id]) }}">
+                            <img src="{{$category->image_url}}" alt="{{$category->name}}">
                         </a>
                     </div>
                     <div class="ltn__category-item-name">
-                        <h5><a href="{{route('products.index')}}">{{$category->name}}</a></h5>
-                        <h6>{{$category->products->count()}} Sản phẩm</h6>
+                        <h5><a href="{{ route('products.index', ['category_id' => $category->id]) }}">{{ $category->name }}</a></h5>
+                        <h6>{{count($category->products)}} Sản phẩm</h6>
                     </div>
                 </div>
             </div>
@@ -303,50 +295,8 @@
 <!-- CATEGORY AREA END -->
 
 
-<!-- COUNTER UP AREA START -->
-<div class="ltn__counterup-area bg-image bg-overlay-theme-black-80 pt-115 pb-70"
-    data-bg="{{ asset('assets/clients/img/bg/5.jpg') }}">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3 col-sm-6 align-self-center">
-                <div class="ltn__counterup-item-3 text-color-white text-center">
-                    <div class="counter-icon">
-                        <img src="{{asset('assets/clients/img/icons/icon-img/2.png')}}" alt="#">
-                    </div>
-                    <h1><span class="counter">733</span><span class="counterUp-icon">+</span></h1>
-                    <h6>Khách hàng hài lòng</h6>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 align-self-center">
-                <div class="ltn__counterup-item-3 text-color-white text-center">
-                    <div class="counter-icon">
-                        <img src="{{asset('assets/clients/img/icons/icon-img/3.png')}}" alt="#">
-                    </div>
-                    <h1><span class="counter">33</span><span class="counterUp-letter">K</span><span
-                            class="counterUp-icon">+</span></h1>
-                    <h6>Đơn hàng đã giao</h6>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 align-self-center">
-                <div class="ltn__counterup-item-3 text-color-white text-center">
-                    <div class="counter-icon">
-                        <img src="{{asset('assets/clients/img/icons/icon-img/4.png')}}" alt="#">
-                    </div>
-                    <h1><span class="counter">100</span><span class="counterUp-icon">+</span></h1>
-                    <h6>Giải thưởng & chứng nhận</h6>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 align-self-center">
-                <div class="ltn__counterup-item-3 text-color-white text-center">
-                    <div class="counter-icon">
-                        <img src="{{asset('assets/clients/img/icons/icon-img/5.png')}}" alt="#">
-                    </div>
-                    <h1><span class="counter">21</span><span class="counterUp-icon">+</span></h1>
-                    <h6>Tỉnh thành phân phối</h6>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- COUNTER UP AREA END -->
+@foreach ($homeModalProducts as $product)
+@include('clients.components.modals.includes.include-modals')
+@endforeach
+
 @endsection

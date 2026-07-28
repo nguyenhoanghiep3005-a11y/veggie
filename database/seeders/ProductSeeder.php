@@ -3,264 +3,183 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
-use App\Models\Inventory;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        $products = [
-            [
-                'category' => 'thuc-pham-kho',
-                'slug' => 'nam-huong-kho',
-                'name' => 'Nấm hương khô 100g',
-                'price' => 95000,
-                'unit' => 'gói',
-                'inventories' => [
-                    ['quantity' => 40, 'expires_in_days' => 240, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                    ['quantity' => 12, 'expires_in_days' => 45, 'adjusted_price' => 79000, 'note' => 'Dữ liệu mẫu - lô khuyến mãi'],
-                ],
-            ],
-            [
-                'category' => 'thuc-pham-kho',
-                'slug' => 'moc-nhi-kho',
-                'name' => 'Mộc nhĩ khô 100g',
-                'price' => 68000,
-                'unit' => 'gói',
-                'inventories' => [
-                    ['quantity' => 35, 'expires_in_days' => 220, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'thuc-pham-kho',
-                'slug' => 'mien-dong-500g',
-                'name' => 'Miến dong 500g',
-                'price' => 52000,
-                'unit' => 'gói',
-                'inventories' => [
-                    ['quantity' => 50, 'expires_in_days' => 300, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'thuc-pham-kho',
-                'slug' => 'banh-da-nem-gao-500g',
-                'name' => 'Bánh đa nem gạo 500g',
-                'price' => 45000,
-                'unit' => 'gói',
-                'inventories' => [
-                    ['quantity' => 45, 'expires_in_days' => 180, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'gia-vi',
-                'slug' => 'tieu-den-xay',
-                'name' => 'Tiêu đen xay 100g',
-                'price' => 52000,
-                'unit' => 'hũ',
-                'inventories' => [
-                    ['quantity' => 45, 'expires_in_days' => 365, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                    ['quantity' => 10, 'expires_in_days' => 55, 'adjusted_price' => 45000, 'note' => 'Dữ liệu mẫu - lô khuyến mãi'],
-                ],
-            ],
-            [
-                'category' => 'gia-vi',
-                'slug' => 'bot-nghe-nguyen-chat',
-                'name' => 'Bột nghệ nguyên chất 100g',
-                'price' => 60000,
-                'unit' => 'hũ',
-                'inventories' => [
-                    ['quantity' => 30, 'expires_in_days' => 365, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'gia-vi',
-                'slug' => 'ot-bot-han-quoc-100g',
-                'name' => 'Ớt bột Hàn Quốc 100g',
-                'price' => 49000,
-                'unit' => 'gói',
-                'inventories' => [
-                    ['quantity' => 35, 'expires_in_days' => 270, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'gia-vi',
-                'slug' => 'que-thanh-100g',
-                'name' => 'Quế thanh 100g',
-                'price' => 55000,
-                'unit' => 'gói',
-                'inventories' => [
-                    ['quantity' => 25, 'expires_in_days' => 365, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'gao',
-                'slug' => 'gao-st25',
-                'name' => 'Gạo ST25 5kg',
-                'price' => 185000,
-                'unit' => 'túi',
-                'inventories' => [
-                    ['quantity' => 40, 'expires_in_days' => 180, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                    ['quantity' => 8, 'expires_in_days' => 40, 'adjusted_price' => 169000, 'note' => 'Dữ liệu mẫu - lô khuyến mãi'],
-                ],
-            ],
-            [
-                'category' => 'gao',
-                'slug' => 'gao-lut-huyet-rong',
-                'name' => 'Gạo lứt huyết rồng 2kg',
-                'price' => 120000,
-                'unit' => 'túi',
-                'inventories' => [
-                    ['quantity' => 32, 'expires_in_days' => 180, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'gao',
-                'slug' => 'gao-nang-hoa-5kg',
-                'name' => 'Gạo nàng hoa 5kg',
-                'price' => 170000,
-                'unit' => 'túi',
-                'inventories' => [
-                    ['quantity' => 36, 'expires_in_days' => 180, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'gao',
-                'slug' => 'gao-thom-lai-5kg',
-                'name' => 'Gạo thơm lài 5kg',
-                'price' => 155000,
-                'unit' => 'túi',
-                'inventories' => [
-                    ['quantity' => 34, 'expires_in_days' => 180, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'hat-dinh-duong',
-                'slug' => 'hat-dieu-rang-muoi',
-                'name' => 'Hạt điều rang muối 250g',
-                'price' => 145000,
-                'unit' => 'hộp',
-                'inventories' => [
-                    ['quantity' => 30, 'expires_in_days' => 210, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                    ['quantity' => 10, 'expires_in_days' => 120, 'adjusted_price' => 129000, 'note' => 'Dữ liệu mẫu - lô khuyến mãi'],
-                ],
-            ],
-            [
-                'category' => 'hat-dinh-duong',
-                'slug' => 'hanh-nhan-rang-bo',
-                'name' => 'Hạnh nhân rang bơ 250g',
-                'price' => 165000,
-                'unit' => 'hộp',
-                'inventories' => [
-                    ['quantity' => 26, 'expires_in_days' => 210, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'hat-dinh-duong',
-                'slug' => 'hat-oc-cho-250g',
-                'name' => 'Hạt óc chó 250g',
-                'price' => 175000,
-                'unit' => 'hộp',
-                'inventories' => [
-                    ['quantity' => 24, 'expires_in_days' => 210, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                    ['quantity' => 8, 'expires_in_days' => 90, 'adjusted_price' => 155000, 'note' => 'Dữ liệu mẫu - lô khuyến mãi'],
-                ],
-            ],
-            [
-                'category' => 'hat-dinh-duong',
-                'slug' => 'hat-macca-nut-vo-250g',
-                'name' => 'Hạt macca nứt vỏ 250g',
-                'price' => 190000,
-                'unit' => 'hộp',
-                'inventories' => [
-                    ['quantity' => 20, 'expires_in_days' => 210, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'kho-ca',
-                'slug' => 'kho-ca-loc-500g',
-                'name' => 'Khô cá lóc 500g',
-                'price' => 180000,
-                'unit' => 'gói',
-                'inventories' => [
-                    ['quantity' => 22, 'expires_in_days' => 150, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                    ['quantity' => 6, 'expires_in_days' => 45, 'adjusted_price' => 159000, 'note' => 'Dữ liệu mẫu - lô khuyến mãi'],
-                ],
-            ],
-            [
-                'category' => 'kho-ca',
-                'slug' => 'kho-ca-sac-500g',
-                'name' => 'Khô cá sặc 500g',
-                'price' => 165000,
-                'unit' => 'gói',
-                'inventories' => [
-                    ['quantity' => 18, 'expires_in_days' => 150, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'kho-ca',
-                'slug' => 'kho-ca-dua-500g',
-                'name' => 'Khô cá dứa 500g',
-                'price' => 220000,
-                'unit' => 'gói',
-                'inventories' => [
-                    ['quantity' => 16, 'expires_in_days' => 150, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                ],
-            ],
-            [
-                'category' => 'kho-ca',
-                'slug' => 'kho-ca-com-rim-250g',
-                'name' => 'Khô cá cơm rim 250g',
-                'price' => 85000,
-                'unit' => 'hộp',
-                'inventories' => [
-                    ['quantity' => 30, 'expires_in_days' => 120, 'adjusted_price' => null, 'note' => 'Dữ liệu mẫu - lô thường'],
-                    ['quantity' => 10, 'expires_in_days' => 75, 'adjusted_price' => 75000, 'note' => 'Dữ liệu mẫu - lô khuyến mãi'],
-                ],
-            ],
-        ];
+        $wantedSlugs = [];
 
-        foreach ($products as $item) {
-            $category = Category::where('slug', $item['category'])->first();
-
-            if (!$category) {
+        foreach ($this->catalog() as $categorySlug => $items) {
+            $category = Category::where('slug', $categorySlug)->first();
+            if (! $category) {
                 continue;
             }
 
-            $product = Product::updateOrCreate(
-                ['slug' => $item['slug']],
-                [
-                    'name' => $item['name'],
-                    'category_id' => $category->id,
-                    'description' => $item['name'] . ' phù hợp bảo quản khô, dùng hằng ngày.',
-                    'price' => $item['price'],
-                    'status' => 'int_stock',
-                    'unit' => $item['unit'],
-                    'average_rating' => 5,
-                ]
-            );
+            foreach ($items as $item) {
+                foreach ($item['variants'] as $unit => $price) {
+                    $slug = Str::slug($item['name'].'-'.$unit);
+                    $wantedSlugs[] = $slug;
 
-            Inventory::where('product_id', $product->id)
-                ->where('note', 'like', 'Dữ liệu mẫu%')
-                ->delete();
-
-            foreach ($item['inventories'] as $inventory) {
-                $expiredAt = now()->addDays($inventory['expires_in_days'])->toDateString();
-
-                Inventory::create([
-                    'product_id' => $product->id,
-                    'quantity_imported' => $inventory['quantity'],
-                    'quantity_remaining' => $inventory['quantity'],
-                    'quantity_damaged' => 0,
-                    'damaged_item_numbers' => null,
-                    'imported_at' => now()->subDays(7)->toDateString(),
-                    'expired_at' => $expiredAt,
-                    'condition' => Inventory::checkCondition('fresh', $inventory['quantity'], $expiredAt),
-                    'adjusted_price' => $inventory['adjusted_price'],
-                    'note' => $inventory['note'],
-                ]);
+                    Product::updateOrCreate(
+                        ['slug' => $slug],
+                        [
+                            'name' => $item['name'],
+                            'category_id' => $category->id,
+                            'description' => $this->description($item),
+                            'price' => $price,
+                            'stock' => 0,
+                            'status' => 'out_of_stock',
+                            'unit' => $unit,
+                            'average_rating' => 5,
+                        ]
+                    );
+                }
             }
+        }
+
+        $this->removeUnusedSampleProducts($wantedSlugs);
+    }
+
+    private function catalog(): array
+    {
+        return [
+            'thuc-pham-kho' => [
+                [
+                    'name' => 'Nấm đông cô',
+                    'origin' => 'Lâm Đồng, Việt Nam',
+                    'storage' => 'Để nơi khô ráo, thoáng mát, đậy kín sau khi mở bao bì.',
+                    'variants' => ['100g' => 95000, '250g' => 220000, '500g' => 420000],
+                ],
+                [
+                    'name' => 'Mộc nhĩ khô',
+                    'origin' => 'Hòa Bình, Việt Nam',
+                    'storage' => 'Tránh ẩm, tránh ánh nắng trực tiếp.',
+                    'variants' => ['100g' => 68000, '250g' => 150000, '500g' => 285000],
+                ],
+                [
+                    'name' => 'Miến dong',
+                    'origin' => 'Bắc Kạn, Việt Nam',
+                    'storage' => 'Bảo quản nơi khô, buộc kín sau khi dùng.',
+                    'variants' => ['500g' => 52000, '1kg' => 98000, '2kg' => 188000],
+                ],
+                [
+                    'name' => 'Bánh đa nem gạo',
+                    'origin' => 'Tây Ninh, Việt Nam',
+                    'storage' => 'Để nơi khô ráo, tránh làm gãy vỡ.',
+                    'variants' => ['250g' => 25000, '500g' => 45000, '1kg' => 85000],
+                ],
+            ],
+            'gia-vi' => [
+                [
+                    'name' => 'Tiêu đen xay',
+                    'origin' => 'Đắk Lắk, Việt Nam',
+                    'storage' => 'Đóng kín nắp sau khi sử dụng.',
+                    'variants' => ['100g' => 52000, '250g' => 115000, '500g' => 220000],
+                ],
+                [
+                    'name' => 'Bột nghệ nguyên chất',
+                    'origin' => 'Nghệ An, Việt Nam',
+                    'storage' => 'Bảo quản trong hũ kín, tránh ẩm.',
+                    'variants' => ['100g' => 60000, '250g' => 135000, '500g' => 260000],
+                ],
+                [
+                    'name' => 'Ớt bột Hàn Quốc',
+                    'origin' => 'Nhập khẩu Hàn Quốc',
+                    'storage' => 'Để nơi thoáng mát, tránh ánh nắng trực tiếp.',
+                    'variants' => ['100g' => 49000, '250g' => 110000, '500g' => 210000],
+                ],
+                [
+                    'name' => 'Quế thanh',
+                    'origin' => 'Yên Bái, Việt Nam',
+                    'storage' => 'Để nơi khô ráo để giữ mùi thơm.',
+                    'variants' => ['100g' => 55000, '250g' => 125000, '500g' => 240000],
+                ],
+            ],
+            'gao' => [
+                [
+                    'name' => 'Gạo ST25',
+                    'origin' => 'Sóc Trăng, Việt Nam',
+                    'storage' => 'Để nơi khô thoáng, tránh côn trùng.',
+                    'variants' => ['2kg' => 82000, '5kg' => 185000, '10kg' => 360000],
+                ],
+                [
+                    'name' => 'Gạo lứt huyết rồng',
+                    'origin' => 'Long An, Việt Nam',
+                    'storage' => 'Bảo quản kín, tránh nơi ẩm thấp.',
+                    'variants' => ['1kg' => 62000, '2kg' => 120000, '5kg' => 285000],
+                ],
+                [
+                    'name' => 'Gạo nàng hoa',
+                    'origin' => 'Đồng Tháp, Việt Nam',
+                    'storage' => 'Để nơi khô thoáng, dùng trong 6 tháng sau khi mở bao.',
+                    'variants' => ['2kg' => 72000, '5kg' => 170000, '10kg' => 330000],
+                ],
+                [
+                    'name' => 'Gạo thơm lài',
+                    'origin' => 'An Giang, Việt Nam',
+                    'storage' => 'Bảo quản trong thùng kín, tránh ánh nắng.',
+                    'variants' => ['2kg' => 66000, '5kg' => 155000, '10kg' => 300000],
+                ],
+            ],
+            'hat-dinh-duong' => [
+                [
+                    'name' => 'Hạt điều rang muối',
+                    'origin' => 'Bình Phước, Việt Nam',
+                    'storage' => 'Đóng kín sau khi mở túi để giữ độ giòn.',
+                    'variants' => ['250g' => 145000, '500g' => 270000, '1kg' => 520000],
+                ],
+                [
+                    'name' => 'Hạnh nhân rang bơ',
+                    'origin' => 'Nhập khẩu Mỹ, rang đóng gói tại Việt Nam',
+                    'storage' => 'Bảo quản kín, tránh nhiệt độ cao.',
+                    'variants' => ['250g' => 165000, '500g' => 310000, '1kg' => 600000],
+                ],
+                [
+                    'name' => 'Hạt óc chó',
+                    'origin' => 'Nhập khẩu Mỹ',
+                    'storage' => 'Bảo quản nơi mát, có thể để ngăn mát sau khi mở.',
+                    'variants' => ['250g' => 175000, '500g' => 330000, '1kg' => 640000],
+                ],
+                [
+                    'name' => 'Hạt macca nứt vỏ',
+                    'origin' => 'Đắk Lắk, Việt Nam',
+                    'storage' => 'Để nơi khô ráo, dùng kẹp kín miệng túi.',
+                    'variants' => ['250g' => 190000, '500g' => 360000, '1kg' => 700000],
+                ],
+            ],
+        ];
+    }
+
+    private function description(array $item): string
+    {
+        return $item['name'].' được đóng gói theo từng khối lượng, phù hợp nhu cầu sử dụng gia đình.'
+            ."\nNguồn gốc: {$item['origin']}"
+            ."\nBảo quản: {$item['storage']}";
+    }
+
+    private function removeUnusedSampleProducts(array $wantedSlugs): void
+    {
+        $products = Product::whereNotIn('slug', $wantedSlugs)->get();
+
+        foreach ($products as $product) {
+            $hasRelatedData = DB::table('order_items')->where('product_id', $product->id)->exists()
+                || DB::table('wishlists')->where('product_id', $product->id)->exists()
+                || DB::table('purchase_order_items')->where('product_id', $product->id)->exists()
+                || DB::table('import_receipt_items')->where('product_id', $product->id)->exists()
+                || DB::table('damage_slip_items')->where('product_id', $product->id)->exists()
+                || $product->reviews()->exists();
+
+            if ($hasRelatedData) {
+                continue;
+            }
+
+            $product->images()->delete();
+            $product->delete();
         }
     }
 }

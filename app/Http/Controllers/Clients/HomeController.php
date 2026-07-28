@@ -4,133 +4,134 @@ namespace App\Http\Controllers\Clients;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use App\Models\Inventory;
 use App\Models\OrderItem;
+use App\Models\Product;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $categories = Category::with('products.firstImage', 'products.reviews', 'products.inventories')->get();
-
-        foreach ($categories as $category) {
-            $products = collect();
-
-            foreach ($category->products as $product) {
-                if ($product->status == 'int_stock' && $product->stock > 0) {
-                    $products->push($product);
-                }
-            }
-
-            $category->setRelation('products', $products);
-        }
-
-        $promotionProducts = $this->promotionProducts();
-        $bestSellerCategories = $this->bestSellerCategories($categories);
-
-        return view('clients.pages.home', compact('categories', 'promotionProducts', 'bestSellerCategories'));
-    }
-
-    private function promotionProducts()
-    {
-        $inventories = Inventory::with('product.category', 'product.firstImage', 'product.reviews')
-            ->orderBy('expired_at')
-            ->orderBy('id')
+        // Lấy danh mục kèm sản phẩm còn hàng để hiển thị ở trang chủ.
+        $categories = Category::with(['products.firstImage', 'products.reviews', 'products.orderItems.order'])
             ->get();
 
-        $promotionProducts = collect();
-        $addedProductIds = [];
+        foreach ($categories as $category) {
+            foreach ($category->products as $product) {
+                $this->prepareHomeProduct($product);
+            }
+        }
 
-        foreach ($inventories as $inventory) {
-            if (!$this->isPromotionInventory($inventory)) {
+        // Lấy sản phẩm khuyến mãi.
+        $promotionProducts = [];
+        $products = Product::with('firstImage', 'reviews', 'orderItems.order')
+            ->where('status', 'int_stock')
+            ->where('stock', '>', 0)
+            ->orderByDesc('updated_at')
+            ->get();
+
+        foreach ($products as $product) {
+            if (! $product->is_on_sale) {
                 continue;
             }
 
-            if (in_array($inventory->product_id, $addedProductIds)) {
-                continue;
+            $this->preparePromotionProduct($product);
+            $promotionProducts[] = $product;
+
+            if (count($promotionProducts) == 12) {
+                break;
             }
-
-            $product = $inventory->product;
-            $product->promotion_price = $inventory->sellingPrice();
-
-            $promotionProducts->push($product);
-            $addedProductIds[] = $inventory->product_id;
         }
 
-        return $promotionProducts;
-    }
-
-    private function isPromotionInventory($inventory)
-    {
-        if (!$inventory->product) {
-            return false;
-        }
-
-        if ($inventory->product->status != 'int_stock') {
-            return false;
-        }
-
-        if (!$inventory->isAvailable()) {
-            return false;
-        }
-
-        if ($inventory->adjusted_price === null || $inventory->adjusted_price <= 0) {
-            return false;
-        }
-
-        return $inventory->adjusted_price < $inventory->product->price;
-    }
-
-    private function bestSellerCategories($categories)
-    {
+        // Tính số lượng đã bán để lấy sản phẩm bán chạy.
         $soldQuantities = $this->soldQuantitiesByProduct();
-        $bestSellerCategories = collect();
+        $bestSellerCategories = [];
+        $tabIndex = 0;
 
         foreach ($categories as $category) {
-            $products = collect();
+            $bestSellerProducts = [];
 
             foreach ($category->products as $product) {
-                if (!isset($soldQuantities[$product->id])) {
+                if (! isset($soldQuantities[$product->id])) {
                     continue;
                 }
 
-                if ($this->hasActivePromotion($product)) {
+                if ($product->is_on_sale) {
                     continue;
                 }
 
                 $product->sold_quantity = $soldQuantities[$product->id];
-                $products->push($product);
+                $bestSellerProducts[] = $product;
             }
 
-            $products = $products->sortByDesc('sold_quantity')->values();
-
-            if ($products->isEmpty()) {
+            if (count($bestSellerProducts) == 0) {
                 continue;
             }
 
-            $bestSellerCategory = clone $category;
-            $bestSellerCategory->setRelation('products', $products);
-            $bestSellerCategories->push($bestSellerCategory);
+            usort($bestSellerProducts, function ($firstProduct, $secondProduct) {
+                if ($secondProduct->sold_quantity > $firstProduct->sold_quantity) {
+                    return 1;
+                }
+
+                if ($secondProduct->sold_quantity < $firstProduct->sold_quantity) {
+                    return -1;
+                }
+
+                return 0;
+            });
+
+            $category->home_products = $bestSellerProducts;
+
+            if ($tabIndex == 0) {
+                $category->home_tab_class = 'active show';
+                $category->home_content_class = 'active show';
+            } else {
+                $category->home_tab_class = '';
+                $category->home_content_class = '';
+            }
+
+            $bestSellerCategories[] = $category;
+            $tabIndex++;
         }
 
-        return $bestSellerCategories;
+        // Gom sản phẩm để include modal một lần cuối trang.
+        $homeModalProducts = [];
+        $addedProductIds = [];
+
+        foreach ($promotionProducts as $product) {
+            $homeModalProducts[] = $product;
+            $addedProductIds[$product->id] = true;
+        }
+
+        foreach ($bestSellerCategories as $category) {
+            foreach ($category->home_products as $product) {
+                if (isset($addedProductIds[$product->id])) {
+                    continue;
+                }
+
+                $homeModalProducts[] = $product;
+                $addedProductIds[$product->id] = true;
+            }
+        }
+
+        return view('clients.pages.home', compact('categories', 'promotionProducts', 'bestSellerCategories', 'homeModalProducts'));
     }
 
-    private function soldQuantitiesByProduct()
+    private function soldQuantitiesByProduct(): array
     {
+        // Cộng số lượng đã bán, bỏ qua đơn hàng đã hủy.
         $soldQuantities = [];
         $orderItems = OrderItem::with('order')->get();
 
         foreach ($orderItems as $item) {
-            if (!$item->order) {
+            if (! $item->order) {
                 continue;
             }
 
-            if (in_array($item->order->status, ['canceled', 'cancelled'])) {
+            if (in_array($item->order->status, ['canceled', 'cancelled'], true)) {
                 continue;
             }
 
-            if (!isset($soldQuantities[$item->product_id])) {
+            if (! isset($soldQuantities[$item->product_id])) {
                 $soldQuantities[$item->product_id] = 0;
             }
 
@@ -140,20 +141,26 @@ class HomeController extends Controller
         return $soldQuantities;
     }
 
-    private function hasActivePromotion($product)
+    private function preparePromotionProduct(Product $product): void
     {
-        foreach ($product->inventories as $inventory) {
-            if (!$inventory->isAvailable()) {
-                continue;
-            }
+        // Chuẩn bị giá khuyến mãi và phần trăm giảm giá cho từng sản phẩm.
+        $salePrice = $product->promotion_price ?? $product->current_price;
+        $discountPercent = 0;
 
-            if ($inventory->adjusted_price !== null
-                && $inventory->adjusted_price > 0
-                && $inventory->adjusted_price < $product->price) {
-                return true;
-            }
+        if ($product->price > 0 && $salePrice < $product->price) {
+            $discountPercent = round((($product->price - $salePrice) / $product->price) * 100);
         }
 
-        return false;
+        $this->prepareHomeProduct($product);
+        $product->home_sale_price = $salePrice;
+        $product->home_discount_percent = $discountPercent;
+    }
+
+    private function prepareHomeProduct(Product $product): void
+    {
+        // Chuẩn bị điểm đánh giá để view chỉ việc hiển thị.
+        $product->home_avg_rating = $product->reviews->avg('rating') ?? 0;
+        $product->home_total_reviews = $product->reviews->count();
+        $product->sold_quantity = $product->soldQuantity();
     }
 }

@@ -4,8 +4,7 @@
         <div class="modal-content">
 
             <div class="modal-header border-0 pb-0">
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"
-                    style="font-size: 24px; border: none; background: none;">
+                <button type="button" class="close modal-close-button" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -16,11 +15,11 @@
                         <div class="text-center">
 
                             <div class="modal-product-img mb-3">
-                                <img src="{{$product->image_url}}" alt="{{$product->name}}" style="max-width: 120px;">
+                                <img src="{{$product->image_url}}" alt="{{$product->display_name}}" class="add-cart-modal-image">
                             </div>
 
                             <div class="modal-product-info">
-                                <h5 class="mb-2">{{$product->name}}</h5>
+                                <h5 class="mb-2">{{$product->display_name}}</h5>
 
                                 <p class="added-cart mb-3">
                                     <i class="fa fa-check-circle text-success"></i>

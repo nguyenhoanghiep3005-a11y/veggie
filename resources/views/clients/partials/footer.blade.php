@@ -55,7 +55,7 @@
                                 <li><a href="{{route('about')}}">Về Nông Sản Khô</a></li>
                                 <li><a href="{{route('products.index')}}">Sản phẩm</a></li>
                                 <li><a href="{{route('faq')}}">FAQ</a></li>
-                                <li><a href="{{route('contact.send')}}">Liên hệ</a></li>
+                                <li><a href="{{route('contact.index')}}">Liên hệ</a></li>
                             </ul>
                         </div>
                     </div>
@@ -83,7 +83,7 @@
                                 <li><a href="{{route('wishlist')}}">Danh sách yêu thích</a></li>
                                 <li><a href="{{route('account')}}">Theo dõi đơn hàng</a></li>
                                 <li><a href="{{route('faq')}}">FAQ</a></li>
-                                <li><a href="{{route('contact.send')}}">Liên hệ</a></li>
+                                <li><a href="{{route('contact.index')}}">Liên hệ</a></li>
                             </ul>
                         </div>
                     </div>

@@ -4,115 +4,77 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
 
 class ProductController extends Controller
 {
-    public function showFormAddProduct()
+    // Hiển thị form thêm sản phẩm.
+    public function create()
     {
-        $categories = Category::all();
+        $categories = Category::orderBy('name')->get();
+
         return view('admin.pages.product-add', compact('categories'));
     }
 
-    public function addProduct(Request $request)
+    // Lưu sản phẩm mới, tồn kho ban đầu bằng 0.
+    public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'unit' => 'required|string|max:50',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif',
-        ]);
+        $this->normalizeImageFiles($request);
 
-        $slug = Str::slug($request->name) . '-' . time();
+        $data = $request->validate($this->addRules(), $this->messages());
+        $data['slug'] = Str::slug($data['name'].'-'.$data['unit']).'-'.time();
+        $data['stock'] = 0;
+        $data['status'] = 'out_of_stock';
 
-        $product = Product::create([
-            'name' => $request->name,
-            'slug' => $slug,
-            'category_id' => $request->category_id,
-            'description' => $request->description,
-            'price' => $request->price,
-            'unit' => $request->unit,
-            'status' => 'out_of_stock',
-        ]);
-
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-
-                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $path = 'uploads/products/' . $imageName;
-
-                // Resize bằng Intervention
-
-
-                Storage::disk('public')->put($path, file_get_contents($image));
-
-
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image' => $path,
-                ]);
-            }
-        }
+        $product = Product::create($data);
+        $this->saveImages($product, $request);
 
         return redirect()->route('admin.product.add')
-            ->with('success', 'Thêm sản phẩm thành công!');
+            ->with('success', 'Thêm sản phẩm thành công. Tồn kho sẽ tăng khi nhập hàng.');
     }
+
+    // Hiển thị danh sách sản phẩm admin.
     public function index()
     {
-
-        $products = Product::with('category', 'images', 'firstImage', 'inventories')
-            ->orderByDesc('id')
+        $products = Product::with(['category', 'images', 'firstImage'])
+            ->orderBy('id', 'desc')
             ->get();
-        $categories = Category::all();
+        $categories = Category::orderBy('name')->get();
+
         return view('admin.pages.product', compact('products', 'categories'));
     }
-    public function updateProduct(Request $request)
-    {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'unit' => 'required|string|max:50',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif',
-        ]);
-        $product = Product::find($request->product_id);
-        $product->update([
-            'name' => $request->name,
-            'category_id' => $request->category_id,
-            'description' => $request->description,
-            'price' => $request->price,
-            'unit' => $request->unit
-        ]);
-        // Cập nhật hình ảnh
-        if ($request->hasFile('images')) {
 
-            // Xóa ảnh cũ
-            foreach ($product->images as $image) {
-                Storage::disk('public')->delete($image->image);
-            }
-            ProductImage::where('product_id', $product->id)->delete();
-            // Thêm ảnh mới
-            foreach ($request->file('images') as $image) {
-                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $path = 'uploads/products/' . $imageName;
-                Storage::disk('public')->put($path, file_get_contents($image));
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image' => $path,
-                ]);
-            }
+    // Cập nhật sản phẩm bằng Ajax.
+    public function update(Request $request)
+    {
+        $this->normalizeImageFiles($request);
+
+        $data = $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ] + $this->updateRules(), $this->messages());
+
+        $product = Product::findOrFail($data['product_id']);
+        unset($data['product_id']);
+
+        $product->fill($data);
+        $product->refreshStatus();
+        $product->save();
+
+        if ($request->hasFile('images')) {
+            $this->deleteImages($product);
+            $this->saveImages($product, $request);
         }
-        $product->load('category', 'images', 'inventories');
+
+        $product->load('category', 'images', 'firstImage');
+
+        $categoryName = 'Chưa phân loại';
+        if ($product->category) {
+            $categoryName = $product->category->name;
+        }
 
         return response()->json([
             'status' => true,
@@ -120,55 +82,123 @@ class ProductController extends Controller
             'data' => [
                 'id' => $product->id,
                 'name' => $product->name,
+                'display_name' => $product->display_name,
                 'slug' => $product->slug,
-                'category_name' => optional($product->category)->name ?? 'Chưa phân loại',
+                'category_name' => $categoryName,
                 'description' => $product->description,
                 'price' => $product->price,
-                'stock' => $product->stock,
                 'unit' => $product->unit,
-                'status' => $product->stock > 0 ? 'Còn hàng' : 'Hết hàng',
-                'images' => $product->images->map(fn($img) => asset('storage/' . $img->image))
-            ]
+                'image_url' => $product->image_url,
+                'images' => $this->imageUrls($product),
+            ],
         ]);
     }
-    public function deleteProduct(Request $request)
+
+    // Xóa sản phẩm và xóa ảnh liên quan.
+    public function destroy(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);
-        $product = Product::find($request->product_id);
 
-        // Xóa ảnh sản phẩm khỏi storage
-        foreach ($product->images as $image) {
-            Storage::disk('public')->delete($image->image);
-        }
-
-        // Xóa bản ghi ảnh sản phẩm khỏi database
-        ProductImage::where('product_id', $product->id)->delete();
-
-        // Xóa sản phẩm
+        $product = Product::with('images')->findOrFail($request->product_id);
+        $this->deleteImages($product);
         $product->delete();
 
         return response()->json([
             'status' => true,
-            'message' => 'Xóa sản phẩm thành công!'
+            'message' => 'Xóa sản phẩm thành công!',
         ]);
     }
-    public function confirmOrder(Request $request)
+
+    // Rule kiểm tra khi thêm sản phẩm.
+    private function addRules()
     {
-        $order = Order::find($request->id);
-        if($order)
-        {
-            $order->status = 'processing';
-               $order->save();
-               return response()->json([
-                'status' => true,
-                'message' => 'Xác nhận đơn hàng thành công!'
+        return [
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'description' => 'required|string',
+            'price' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:50',
+            'images' => 'nullable|array',
+            'images.*' => 'file|image|mimes:jpeg,png,jpg,gif,webp',
+        ];
+    }
+
+    // Rule kiểm tra khi sửa sản phẩm.
+    private function updateRules()
+    {
+        return $this->addRules();
+    }
+
+    // Message lỗi riêng cho form sản phẩm.
+    private function messages()
+    {
+        return [
+            'images.*.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
+        ];
+    }
+
+    // Bỏ input ảnh rỗng để validate không báo lỗi khi không chọn ảnh.
+    private function normalizeImageFiles($request)
+    {
+        if (! $request->hasFile('images')) {
+            return;
+        }
+
+        $files = [];
+        foreach ($request->file('images') as $file) {
+            if ($file && $file->isValid()) {
+                $files[] = $file;
+            }
+        }
+
+        if (count($files) == 0) {
+            $request->files->remove('images');
+            return;
+        }
+
+        $request->files->set('images', $files);
+    }
+
+    // Lưu các ảnh sản phẩm vào storage và bảng product_images.
+    private function saveImages($product, $request)
+    {
+        if (! $request->hasFile('images')) {
+            return;
+        }
+
+        foreach ($request->file('images') as $image) {
+            $imageName = time().'_'.uniqid().'.'.$image->getClientOriginalExtension();
+            $path = 'uploads/products/'.$imageName;
+            Storage::disk('public')->put($path, file_get_contents($image));
+
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image' => $path,
             ]);
         }
-        return response()->json([
-            'status' => false,
-            'message' => 'Đơn hàng không tồn tại!'
-        ]);
+    }
+
+    // Xóa ảnh cũ khỏi storage và bảng product_images.
+    private function deleteImages($product)
+    {
+        foreach ($product->images as $image) {
+            Storage::disk('public')->delete($image->image);
+        }
+
+        ProductImage::where('product_id', $product->id)->delete();
+    }
+
+    // Lấy danh sách đường dẫn ảnh để trả về Ajax.
+    private function imageUrls($product)
+    {
+        $images = [];
+
+        foreach ($product->images as $image) {
+            $images[] = asset('storage/'.$image->image);
+        }
+
+        return $images;
     }
 }

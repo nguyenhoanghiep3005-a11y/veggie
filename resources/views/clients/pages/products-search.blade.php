@@ -9,7 +9,21 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
+                <div class="ltn__shop-options">
+                    <ul class="search-sort-right">
+                        <li>
+                            <div class="short-by text-center">
+                                <select id="sort-by" class="nice-select">
+                                    <option value="default">Sắp xếp mặc định</option>
+                                    <option value="latest">Sắp xếp theo sản phẩm mới</option>
+                                    <option value="price_asc">Sắp xếp theo giá: Thấp ến Cao</option>
+                                    <option value="price_desc">Sắp xếp theo giá: Cao ến Thấp</option>
+                                </select>
+                            </div>
+                        </li>
 
+                    </ul>
+                </div>
                 <div class="tab-content">
                     <div class="tab-pane fade active show" id="liton_product_grid">
 
@@ -24,7 +38,7 @@
                                         <!-- ẢNH -->
                                         <div class="product-img">
                                             <a href="{{ route('product.detail', $product->slug) }}">
-                                                <img src="{{ $product->image_url }}" alt="{{ $product->name }}">
+                                                <img src="{{ $product->image_url }}" alt="{{ $product->display_name }}">
                                             </a>
 
                                             <div class="product-hover-action">
@@ -66,6 +80,7 @@
                                             @php
                                                 $avgRating = $product->reviews->avg('rating') ?? 0;
                                                 $totalReviews = $product->reviews->count();
+                                                $soldQuantity = $product->sold_quantity ?? 0;
                                             @endphp
 
                                             <div class="product-ratting">
@@ -79,19 +94,27 @@
                                                     @endfor
 
                                                     <li class="review-total">
-                                                        ({{ $totalReviews }} đánh giá)
+                                                        ({{ $totalReviews }} ánh giá)
                                                     </li>
                                                 </ul>
                                             </div>
 
                                             <h2 class="product-title">
                                                 <a href="{{ route('product.detail', $product->slug) }}">
-                                                    {{ $product->name }}
+                                                    {{ $product->display_name }}
                                                 </a>
                                             </h2>
 
-                                            <div class="product-price">
-                                                <span>{{ number_format($product->current_price, 0, ',', '.') }} VND</span>
+                                            <div class="product-card-bottom">
+                                                <div class="product-card-price">
+                                                    @if($product->current_price < $product->price)
+                                                    <del>{{ number_format($product->price, 0, ',', '.') }}<small class="product-price-symbol">&#273;</small></del>
+                                                    @endif
+                                                    <span>{{ number_format($product->current_price, 0, ',', '.') }}<small class="product-price-symbol">&#273;</small></span>
+                                                </div>
+                                                <div class="product-card-sold">
+                                                    {{ $soldQuantity }} &#273;&#227; b&#225;n
+                                                </div>
                                             </div>
 
                                         </div>
@@ -105,6 +128,11 @@
 
                     </div>
                 </div>
+                <div class="ltn__pagination-area text-center">
+                    <div class="ltn__pagination">
+                        {!! $products->links('clients.components.pagination.pagination_custom') !!}
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -112,4 +140,8 @@
 </div>
 <!-- PRODUCT DETAILS AREA END -->
 
+
+@foreach ($products as $product)
+@include('clients.components.modals.includes.include-modals')
+@endforeach
 @endsection

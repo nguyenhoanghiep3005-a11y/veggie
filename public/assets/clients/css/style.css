@@ -12121,6 +12121,13 @@ input.cart-plus-minus-box {
 /* ----------------------------------------------------
     END
 ---------------------------------------------------- */
+
+/* Product list price color override */
+.ltn__product-area .ltn__product-item-3 .product-price,
+.ltn__product-area .ltn__product-item-3 .product-price span {
+  color: #5ba24a !important;
+}
+
 /* ----------------------------------------------------
     Footer Default Style
 ---------------------------------------------------- */

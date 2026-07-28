@@ -5,7 +5,7 @@
         </div>
         <nav class="nav navbar-nav">
             <ul class=" navbar-right">
-                <li class="nav-item dropdown open" style="padding-left: 15px;">
+                <li class="nav-item dropdown open admin-top-user-menu">
                     <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true" id="navbarDropdown"
                         data-toggle="dropdown" aria-expanded="false">                    </a>
                     <div class="dropdown-menu dropdown-usermenu pull-right" aria-labelledby="navbarDropdown">

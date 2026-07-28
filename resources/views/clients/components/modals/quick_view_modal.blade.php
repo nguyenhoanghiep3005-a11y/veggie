@@ -14,7 +14,7 @@
                             <div class="row">
                                 <div class="col-lg-6 col-12">
                                     <div class="modal-product-img">
-                                        <img src="{{$product->image_url}}" alt="{{$product->name}}">
+                                        <img src="{{$product->image_url}}" alt="{{$product->display_name}}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6 col-12">
@@ -25,9 +25,12 @@
 
                                             </ul>
                                         </div>
-                                        <h3>{{$product->name}}</h3>
-                                        <div class="product-price">
-                                            <span>{{number_format($product->current_price , 0 , ',',".")}}VND</span>
+                                        <h3>{{$product->display_name}}</h3>
+                                        <div class="product-price product-detail-price-box">
+                                            @if($product->current_price < $product->price)
+                                            <del class="product-detail-old-price">{{number_format($product->price, 0, ',', '.')}}<small class="product-price-symbol">đ</small></del>
+                                            @endif
+                                            <span>{{number_format($product->current_price , 0 , ',',".")}}<small class="product-price-symbol">đ</small></span>
                                         </div>
                                         <div class="modal-product-meta ltn__product-details-menu-1">
                                             <ul>
@@ -64,8 +67,7 @@
                                         <div class="ltn__product-details-menu-3">
                                             <ul>
                                                 <li>
-                                                    <a href="#" class="" title="Wishlist" data-bs-toggle="modal"
-                                                        data-bs-target="#liton_wishlist_modal">
+                                                    <a href="javascript:void(0)" class="add-to-wishlist" title="Yêu thích" data-id="{{ $product->id }}">
                                                         <i class="far fa-heart"></i>
                                                         <span>Yêu thích</span>
                                                     </a>

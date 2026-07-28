@@ -49,7 +49,7 @@
     rel="stylesheet">
   @endif
   <!-- Custom css -->
-  <link rel="stylesheet" href="{{asset('assets/admin/css/custom.css')}}">
+  <link rel="stylesheet" href="{{asset('assets/admin/css/custom.css')}}?v={{ filemtime(public_path('assets/admin/css/custom.css')) }}">
 </head>
 
 <body class="nav-md">
@@ -126,7 +126,8 @@
   <!-- Custom Theme Scripts -->
   <script src="{{asset('assets/admin/build/js/custom.js')}}"></script>
   <!-- Custom Theme Scripts -->
-  <script src="{{asset('assets/admin/js/custom.js')}}"></script>
+  <script src="{{asset('assets/admin/js/custom.js')}}?v={{ filemtime(public_path('assets/admin/js/custom.js')) }}"></script>
+  @stack('scripts')
 
 </body>
 

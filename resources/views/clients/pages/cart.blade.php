@@ -1,7 +1,7 @@
 @extends('layouts.client')
 
-@section('title','Giỏ hàng')
-@section('breadcrumb','Giỏi hàng')
+@section('title', 'Giỏ hàng')
+@section('breadcrumb', 'Giỏ hàng')
 
 @section('content')
 <!-- SHOPING CART AREA START -->
@@ -13,62 +13,60 @@
                     <div class="shoping-cart-table table-responsive">
                         <table class="table">
                             <tbody>
-                                @php
-                                $cartTotal = 0;
-                                @endphp
-                                @forelse ($cartItems as $item)
-                                @php
-                                $subtotal = $item['subtotal'];
-                                $cartTotal += $subtotal;
-                                @endphp
-                                <tr>
-                                    <td class="cart-product-remove">
-                                        <button class="remove-from-cart" data-id="{{$item['product_id']}}">x</button>
-                                    </td>
-                                    <td class="cart-product-image">
-                                        <a href="javascript:void(0)">
-                                            <img src="{{asset('storage/'. ($item['image'] ?? 'uploads/products/default.png'))}}"
-                                                alt="Sản phẩm"></a>
-                                    </td>
-                                    <td class="cart-product-info">
-                                        <h5>{{ $item['name'] }}</h5>
-                                    </td>
-                                    </td>
-                                    <td class="javascript:void(0)">{{number_format($item['price'] , 0 , ',',".")}}đ</td>
-                                    <td class="cart-product-quantity">
-                                        <div class="cart-plus-minus">
-                                            <input type="text" value="{{$item['quantity']}}" name="qtybutton"
-                                                class="cart-plus-minus-box" readonly data-max="{{$item['stock']}}"
-                                                data-id="{{$item['product_id']}}">
-                                        </div>
-                                    </td>
-                                    <td class="cart-product-subtotal">{{number_format($subtotal, 0 , ',',".")}}đ</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="6" class="text-center">Giỏ hàng của bạn đang trống</td>
-                                </tr>
-                                @endforelse
+                                @if (!empty($cartItems) && count($cartItems) > 0)
+                                    @foreach ($cartItems as $item)
+                                        <tr>
+                                            <td class="cart-product-remove">
+                                                <button type="button" class="remove-from-cart" data-id="{{ $item['product_id'] }}">x</button>
+                                            </td>
+                                            <td class="cart-product-image">
+                                                <a href="javascript:void(0)">
+                                                    <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}">
+                                                </a>
+                                            </td>
+                                            <td class="cart-product-info">
+                                                <h5>{{ $item['name'] }}</h5>
+                                            </td>
+                                            <td class="cart-product-price">{{ number_format($item['price'], 0, ',', '.') }}đ</td>
+                                            <td class="cart-product-quantity">
+                                                <div class="cart-plus-minus">
+                                                    <input type="text"
+                                                        value="{{ $item['quantity'] }}"
+                                                        name="qtybutton"
+                                                        class="cart-plus-minus-box"
+                                                        readonly
+                                                        data-max="{{ $item['stock'] }}"
+                                                        data-id="{{ $item['product_id'] }}">
+                                                </div>
+                                            </td>
+                                            <td class="cart-product-subtotal">{{ number_format($item['subtotal'], 0, ',', '.') }}đ</td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <td colspan="6" class="text-center">Giỏ hàng của bạn đang trống</td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
 
-                            </tbody>
-                        </table>
-                    </div>
-                   @if(!empty($cartItems))
-                     <div class="shoping-cart-total mt-50">
-                        <h4>Tổng giỏ hàng</h4>
-                        <table class="table">
-                            <tbody>
-                                <tr>
-                                    <td>Tổng tiền hàng</td>
-                                    <td><span class="cart-total">{{number_format($cartTotal, 0 , ',',".")}}đ</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div class="btn-wrapper text-right text-end">
-                            <a href="{{route('checkout')}}" class="theme-btn-1 btn btn-effect-1">Thanh toán</a>
+                    @if (!empty($cartItems) && count($cartItems) > 0)
+                        <div class="shoping-cart-total mt-50">
+                            <h4>Tổng giỏ hàng</h4>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>Tổng tiền hàng</td>
+                                        <td><span class="cart-total">{{ number_format($cartTotal, 0, ',', '.') }}đ</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="btn-wrapper text-right text-end">
+                                <a href="{{ route('checkout') }}" class="theme-btn-1 btn btn-effect-1">Thanh toán</a>
+                            </div>
                         </div>
-                    </div>
-                   @endif
+                    @endif
                 </div>
             </div>
         </div>

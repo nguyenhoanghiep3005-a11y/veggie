@@ -1,8 +1,17 @@
+:root {
+    --admin-primary: #368ae3;
+    --admin-primary-dark: #2a6ebd;
+    --admin-accent: #1d0eea;
+    --admin-border: #ddd;
+    --admin-text: #2c3e50;
+    --admin-muted: #6c7a89;
+}
+
 .custom-file-upload {
     display: inline-block;
     padding: 10px 15px;
     cursor: pointer;
-    background-color: #368ae3;
+    background-color: var(--admin-primary);
     color: white;
     border-radius: 5px;
     font-weight: bold;
@@ -12,7 +21,7 @@
 }
 
 .custom-file-upload:hover {
-    background-color: #2a6ebd;
+    background-color: var(--admin-primary-dark);
 }
 
 #category-image, #product-images, .product-images {
@@ -23,7 +32,7 @@
     margin-top: 10px;
     max-width: 200px;
     max-height: 200px;
-    border: 2px solid #1d0eea;
+    border: 2px solid var(--admin-accent);
     border-radius: 5px;
 }
 
@@ -44,7 +53,7 @@
     object-fit: cover;
     border-radius: 8px;
     margin-bottom: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--admin-border);
 }
 
 .custom-file-upload {
@@ -52,7 +61,7 @@
     display: inline-block;
     padding: 6px 12px;
     cursor: pointer;
-    background: #3498db;
+    background: var(--admin-primary);
     color: #fff;
     border-radius: 6px;
 }
@@ -76,48 +85,285 @@ table.dataTable td.dtr-control,
 table.dataTable th.dtr-control {
     display: none !important;
 }
-image-preview-listproduct {
+.image-preview-listproduct {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     width: 100%;
     margin-top:10px ;
     gap: 10px;
 }
-.custom-badge{
-    padding: 10px 5px;
+
+.d-inline {
+    display: inline;
+}
+.custom-badge {
+    display: inline-block;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.25;
+    white-space: normal;
 }
 
-/* Quản lý kho */
-.inventory-code-label {
-    border: 1px solid #ddd;
-    margin: 3px;
-    padding: 5px 8px;
-    cursor: pointer;
-    background: #fff;
-    color: #333;
+.admin-table-centered {
+    width: 100%;
+    text-align: center;
 }
 
-.inventory-code-label input {
-    display: none;
+.admin-top-user-menu {
+    padding-left: 15px;
 }
 
-.inventory-code-label.is-damaged {
-    background: #dc3545;
-    border-color: #dc3545;
+.dashboard-top-row {
+    display: inline-block;
+    width: 100%;
+}
+
+.dashboard-revenue-tile {
+    overflow: unset;
+}
+
+.dashboard-category-table {
+    width: 100%;
+}
+
+.dashboard-chart-heading {
+    width: 37%;
+}
+
+.dashboard-doughnut {
+    margin: 15px 10px 10px 0;
+}
+
+.dashboard-color-0 {
+    color: #BDC3C7;
+}
+
+.dashboard-color-1 {
+    color: #9B59B6;
+}
+
+.dashboard-color-2 {
+    color: #E74C3C;
+}
+
+.dashboard-color-3 {
+    color: #26B99A;
+}
+
+.dashboard-color-4 {
+    color: #3498DB;
+}
+
+.warehouse-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.warehouse-table th,
+.warehouse-table td {
+    vertical-align: middle !important;
+    white-space: normal;
+    word-break: break-word;
+    padding: 10px 8px !important;
+}
+
+.warehouse-table th:nth-child(1) {
+    width: 15%;
+}
+
+.warehouse-table th:nth-child(2) {
+    width: 20%;
+}
+
+.warehouse-table th:nth-child(3) {
+    width: 10%;
+}
+
+.warehouse-table th:nth-child(4),
+.warehouse-table th:nth-child(5) {
+    width: 11%;
+}
+
+.warehouse-table th:nth-child(6) {
+    width: 10%;
+}
+
+.warehouse-table th:nth-child(7) {
+    width: 12%;
+}
+
+.warehouse-table th:nth-child(8) {
+    width: 11%;
+}
+
+.warehouse-supplier strong,
+.warehouse-product-name strong,
+.warehouse-supplier small,
+.warehouse-product-name small {
+    display: block;
+}
+
+.warehouse-supplier small,
+.warehouse-product-name small {
+    margin-top: 4px;
+    color: var(--admin-muted);
+    line-height: 1.35;
+}
+
+.warehouse-quantity,
+.warehouse-action {
+    white-space: nowrap;
+}
+
+.warehouse-price {
+    line-height: 1.35;
+}
+
+.warehouse-price del,
+.warehouse-price strong,
+.warehouse-price span {
+    display: block;
+    white-space: nowrap;
+}
+
+.warehouse-price strong {
+    color: #e3342f;
+}
+
+.warehouse-action .btn {
+    min-width: 86px;
+    white-space: normal;
+}
+
+.warehouse-stock-summary {
+    line-height: 1.7;
+}
+
+.warehouse-status-badge {
+    display: inline-block;
+    min-width: 84px;
+    padding: 7px 10px;
+    border-radius: 999px;
     color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
 }
 
-.inventory-code-label.is-sold {
-    background: #eee;
-    color: #999;
-    cursor: not-allowed;
-    text-decoration: line-through;
+.warehouse-status-badge.label-success {
+    background: #26b99a;
 }
 
-.inventory-code-list {
-    line-height: 34px;
+.warehouse-status-badge.label-warning {
+    background: #f0ad4e;
+    color: #3d2b00;
 }
 
-.inventory-damaged-error {
-    display: none;
+.warehouse-status-badge.label-danger {
+    background: #d9534f;
+}
+
+.warehouse-status-badge.label-default {
+    background: #7f8c8d;
+}
+
+.purchase-orders-table th,
+.purchase-orders-table td {
+    vertical-align: middle !important;
+}
+
+.purchase-orders-table th:last-child,
+.purchase-order-actions {
+    min-width: 170px;
+}
+
+.admin-action-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.admin-action-group form {
+    margin: 0;
+}
+
+.admin-action-group .action-btn {
+    min-width: 72px;
+    padding: 7px 10px;
+    font-weight: 600;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.admin-action-group .btn-success.action-btn {
+    min-width: 98px;
+}
+
+@media (max-width: 1200px) {
+    .admin-action-group {
+        flex-wrap: wrap;
+    }
+}
+
+.admin-coupon-panel .x_content {
+    padding-top: 18px;
+}
+
+.admin-coupon-form .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.admin-coupon-column {
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+.admin-coupon-form .form-group {
+    margin-bottom: 16px;
+}
+
+.admin-coupon-form label {
+    color: #73879c;
+    font-weight: 600;
+}
+
+.admin-coupon-form .form-control {
+    height: 42px;
+    border-radius: 2px;
+}
+
+.admin-coupon-form select[multiple] {
+    height: 130px;
+}
+
+.admin-coupon-status {
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    margin-top: 4px;
+}
+
+.admin-coupon-customer-box {
+    padding: 12px;
+    border: 1px dashed #cfd8dc;
+    border-radius: 4px;
+    background: #fbfcfd;
+}
+
+.admin-coupon-submit {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.admin-coupon-submit .btn {
+    min-width: 110px;
 }

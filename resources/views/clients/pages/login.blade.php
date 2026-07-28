@@ -3,7 +3,6 @@
 @section('title','Đăng nhập')
 @section('breadcrumb','Đăng nhập')
 @section('content')
-   <!-- LOGIN AREA START -->
     <div class="ltn__login-area pb-65">
         <div class="container">
             <div class="row">
@@ -18,16 +17,16 @@
             <div class="row">
                 <div class="col-lg-6">
                     <div class="account-login-inner">
-                        <form action="#" class="ltn__form-box contact-form-box" method="POST" id="login-form">
+                        <form action="{{ route('post-login') }}" class="ltn__form-box contact-form-box" method="POST" id="login-form">
                             @csrf
-                            <input type="email" name="email" placeholder="Email*" required>
-                             @error('email')
-                                <div class="alert alert-danger">{{$message}} </div>    
+                            <input type="email" name="email" placeholder="Email*" value="{{ old('email') }}" required>
+                            @error('email')
+                                <div class="alert alert-danger">{{ $message }}</div>
                             @enderror
                             <input type="password" name="password" placeholder="Mật khẩu*" required>
                             @error('password')
-                                <div class="alert alert-danger">{{$message}} </div>    
-                             @enderror
+                                <div class="alert alert-danger">{{ $message }}</div>
+                            @enderror
                             <div class="btn-wrapper mt-0">
                                 <button class="theme-btn-1 btn btn-block" type="submit">ĐĂNG NHẬP</button>
                             </div>
@@ -50,7 +49,4 @@
             </div>
         </div>
     </div>
-
-        <!-- LOGIN AREA END -->
 @endsection
-

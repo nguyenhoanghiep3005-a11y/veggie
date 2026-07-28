@@ -1,25 +1,24 @@
 <?php
 
-use App\Http\Controllers\Clients\CheckoutController;
 use App\Http\Controllers\Clients\AccountController;
 use App\Http\Controllers\Clients\AuthController;
+use App\Http\Controllers\Clients\CartController;
+use App\Http\Controllers\Clients\CheckoutController;
+use App\Http\Controllers\Clients\VoucherController;
 use App\Http\Controllers\Clients\ForgotPasswordController;
+use App\Http\Controllers\Clients\GhnLocationController;
 use App\Http\Controllers\Clients\HomeController;
+use App\Http\Controllers\Clients\OrderController;
 use App\Http\Controllers\Clients\ProductController;
 use App\Http\Controllers\Clients\ResetPasswordController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Clients\CartController;
-use App\Http\Controllers\Clients\ContactController;
-use App\Http\Controllers\Clients\OrderController;
 use App\Http\Controllers\Clients\ReviewController;
 use App\Http\Controllers\Clients\SearchController;
 use App\Http\Controllers\Clients\WishlistController;
-use App\Http\Controllers\Clients\GhnLocationController;
-
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('/')->group(function () {
     Route::get('/', [HomeController::class, 'index'])
-        ->name('home');  
+        ->name('home');
     Route::get('/about', function () {
         return view('clients.pages.about');
     })->name('about');
@@ -35,146 +34,106 @@ Route::prefix('/')->group(function () {
     Route::get('/faq', function () {
         return view('clients.pages.faq');
     })->name('faq');
+
+    Route::get('/vouchers', [VoucherController::class, 'index'])->name('vouchers.index');
+
     //  Không cho phép vào các trang này nếu đã đăng nhập
     Route::middleware('guest')->group(function () {
-
-        // --- Đăng ký tài khoản ---
         Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
         Route::post('/register', [AuthController::class, 'register'])->name('post-register');
-        // --- Đăng nhập ---
-        Route::get('/login', [AuthController::class, 'showloginForm'])->name('login');
+        Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
         Route::post('/login', [AuthController::class, 'login'])->name('post-login');
-
-        // --- Quên mật khẩu---
         Route::get('/forgot-password', [ForgotPasswordController::class, 'showForgotPasswordForm'])->name('password.request');
         Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetlink'])->name('password.email');
-
-        // --- Trang reset mật khẩu ---
         Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
         Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword'])->name('password.update');
     });
+
     //  KÍCH HOẠT TÀI KHOẢN QUA EMAIL
     Route::get('/activate/{token}', [AuthController::class, 'activate'])->name('activate');
 
     Route::middleware(['auth.custom'])->group(function () {
         //  ĐĂNG XUẤT
         Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
         Route::prefix('account')->group(function () {
-
-            // Trang tài khoản
             Route::get('/', [AccountController::class, 'index'])->name('account');
-
-            // Cập nhật thông tin tài khoản
             Route::put('/update', [AccountController::class, 'update'])->name('account.update');
-
-            // Đổi mật khẩu
             Route::post('/change-password', [AccountController::class, 'changePassword'])->name('account.change-password');
-
-            // Thêm địa chỉ giao hàng
             Route::post('/addresses', [AccountController::class, 'addAddress'])->name('account.addresses.add');
-
-            // Cập nhật địa chỉ giao hàng
             Route::put('/addresses/{id}', [AccountController::class, 'updatePrimaryAddress'])->name('account.addresses.update');
-
-            // Xóa địa chỉ
             Route::delete('/addresses/{id}', [AccountController::class, 'deleteAddress'])->name('account.addresses.delete');
         });
 
         // ========================
-        //  CHECKOUT / THANH TOÁN
+        //  ĐƠN HÀNG
         // ========================
-        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-
-        // Lấy phí ship
-        Route::get('/checkout/shipping-fee', [CheckoutController::class, 'shippingFee'])->name('checkout.shippingFee');
-
-        // Lấy địa chỉ được chọn để fill vào form
-        Route::get('/checkout/get-address', [CheckoutController::class, 'getAddress']);
-
-        // Đặt hàng COD
-        Route::post('/checkout', [CheckoutController::class, 'placeOrder'])->name('checkout.placeOrder');
-
-        // Thanh toán PayPal
-        Route::post('/checkout/paypal', [CheckoutController::class, 'placeOrderPayPal'])->name('checkout.placeOrderPayPal');
-
-        // Chi tiết đơn hàng của user
         Route::get('/order/{id}', [OrderController::class, 'showOrder'])->name('order.show');
-
-        // User hủy đơn
         Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('order.cancel');
+        Route::post('/order/{id}/return-request', [OrderController::class, 'requestReturn'])->name('order.return-request.store');
 
+        Route::post('/vouchers/{coupon}/claim', [VoucherController::class, 'claim'])->name('vouchers.claim');
 
         // ========================
         //  ĐÁNH GIÁ SẢN PHẨM
         // ========================
-        Route::post('/review', [ReviewController::class, 'createReview']);
+        Route::post('/review', [ReviewController::class, 'store']);
         Route::get('/review/{product}', [ReviewController::class, 'index']);
 
-
         // ========================
-        //  WISHLIST (Danh sách yêu thích)
+        //  WISHLIST
         // ========================
         Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
-        Route::post('/wishlist/add', [WishlistController::class, 'addToWishList']);
-        Route::post('/wishlist/remove', [WishlistController::class, 'removeWishListItem']);
-        
-        // ========================
-        //  Giao hang nhanh
-        // ========================
-        Route::get('/ghn/provinces', [GhnLocationController::class, 'provinces'])->name('ghn.provinces');
-        Route::get('/ghn/districts', [GhnLocationController::class, 'districts'])->name('ghn.districts');
-        Route::get('/ghn/wards', [GhnLocationController::class, 'wards'])->name('ghn.wards');
-        });
+        Route::post('/wishlist/add', [WishlistController::class, 'store'])->name('wishlist.add');
+        Route::post('/wishlist/remove', [WishlistController::class, 'destroy'])->name('wishlist.remove');
 
+    });
+
+    // ========================
+    //  GHN API (Cả guest và user đăng nhập đều dùng được)
+    // ========================
+    Route::get('/ghn/provinces', [GhnLocationController::class, 'provinces'])->name('ghn.provinces');
+    Route::get('/ghn/districts', [GhnLocationController::class, 'districts'])->name('ghn.districts');
+    Route::get('/ghn/wards', [GhnLocationController::class, 'wards'])->name('ghn.wards');
+
+    // ========================
+    //  CHECKOUT (cả guest lẫn user đã đăng nhập)
+    // ========================
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::get('/checkout/shipping-fee', [CheckoutController::class, 'shippingFee'])->name('checkout.shippingFee');
+    Route::get('/checkout/shipping-fee-guest', [CheckoutController::class, 'shippingFeeGuest'])->name('checkout.shippingFeeGuest');
+    Route::get('/checkout/get-address', [CheckoutController::class, 'getAddress']);
+    Route::post('/checkout/coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.coupon.apply');
+    Route::post('/checkout', [CheckoutController::class, 'placeOrder'])->name('checkout.placeOrder');
+    Route::post('/checkout/paypal', [CheckoutController::class, 'placeOrderPayPal'])->name('checkout.placeOrderPayPal');
 
     // =======================================================
     //  SẢN PHẨM
     // =======================================================
-
-    // Danh sách sản phẩm
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-
-    // Lọc sản phẩm bằng AJAX
     Route::get('products/filter', [ProductController::class, 'filter'])->name('products.filter');
-
-    // Chi tiết sản phẩm
+    Route::get('/products/{slug}/variant', [ProductController::class, 'variant'])->name('product.variant');
     Route::get('/products/{slug}', [ProductController::class, 'detail'])->name('product.detail');
-
 
     // =======================================================
     //  GIỎ HÀNG
     // =======================================================
-
-    // Thêm sản phẩm vào giỏ
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-
-    // Xóa item khỏi mini cart
-    Route::post('/cart/remove', [CartController::class, 'removeFormMiniCart'])->name('cart.remove');
-
-    // Load mini cart AJAX
-    Route::get('/mini-cart', [CartController::class, 'loadMiniCart'])->name('cart.mini');
-
-    // Trang giỏ hàng
+    Route::post('/cart/add', [CartController::class, 'store'])->name('cart.add');
+    Route::post('/cart/remove', [CartController::class, 'removeMiniCart'])->name('cart.remove');
+    Route::get('/mini-cart', [CartController::class, 'miniCart'])->name('cart.mini');
     Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.index');
-
-    // Update số lượng sản phẩm trong cart
-    Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.update');
-
-    // Xóa sản phẩm ở trang giỏ (khác mini cart)
-    Route::post('/cart/remove-cart', [CartController::class, 'removeCartItem'])->name('cart.remove');
-
+    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/remove-cart', [CartController::class, 'destroy']);
 
     // =======================================================
     //  TÌM KIẾM
     // =======================================================
     Route::get('/search', [SearchController::class, 'index'])->name('search');
 
-
     // =======================================================
     //  LIÊN HỆ
     // =======================================================
-    Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
-    Route::post('/contact', [ContactController::class, 'sendContact'])->name('contact.send');
+    Route::view('/contact', 'clients.pages.contact')->name('contact.index');
 });  // END PREFIX /
 
 /*
@@ -182,4 +141,4 @@ Route::prefix('/')->group(function () {
 | Nhúng route admin (tách file riêng)
 |--------------------------------------------------------------------------
 */
-require __DIR__ . '/admin.php';
+require __DIR__.'/admin.php';

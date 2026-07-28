@@ -11,7 +11,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     public $timestamps = true;
-  
+
     protected $fillable = [
         'name',
         'email',
@@ -20,7 +20,7 @@ class User extends Authenticatable
         'phone_number',
         'address',
         'role_id',
-        'activation_token'
+        'activation_token',
     ];
 
     public function role()
@@ -38,24 +38,16 @@ class User extends Authenticatable
         return $this->hasMany(ShippingAddress::class);
     }
 
-    //check trạng thái
+    public function coupons()
+    {
+        return $this->belongsToMany(Coupon::class, 'coupon_user')
+            ->withPivot(['claimed_at', 'used_at'])
+            ->withTimestamps();
+    }
+
+    // check trạng thái
     public function isPending()
     {
         return $this->status === 'pending';
-    }
-
-    public function isActive()
-    {
-        return $this->status === 'active';
-    }
-
-    public function isBanned()
-    {
-        return $this->status === 'banned';
-    }
-
-    public function isDelete()
-    {
-        return $this->status === 'deleted';
     }
 }

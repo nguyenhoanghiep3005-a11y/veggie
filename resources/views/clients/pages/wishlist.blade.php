@@ -12,36 +12,44 @@
                         <table class="table">
                             <tbody>
                                 @forelse ($wishlist as $item)
-                                <tr>
-                                    <td class="wishlist-product-remove" data-id="{{$item->product->id}}">
-                                        x
-                                    </td>
-                                    <td class="cart-product-image">
-                                        <a href="{{route('product.detail', $item->product->slug)}}">
-                                            <img src="{{ $item->product->image_url}}" alt="Sản phẩm"></a>
-                                    </td>
-                                    <td class="wishlist-product-info">
-                                        <h5><a href="{{route('product.detail', $item->product->slug)}}">{{$item->product->name}}
-                                        </h5>
-                                    </td>
-                                    </td>
-                                    <td class="{{route('product.detail', $item->product->slug)}}">
-                                        {{number_format($item->product->current_price , 0 , ',',".")}}đ</td>
-                                    <td class="wishlist-product-stock">
-                                        {{$item->product->stock > 0 ? "Còn hàng" : "Hết hàng"}}
-                                    </td>
-                                    <td>
-                                        <a href="{{route('product.detail', $item->product->slug)}}" class="submit-button-1 " title="Thêm vào giỏ hàng">
-                                            <span>Thêm vào giỏ hàng</span>
-                                        </a>
-                                    </td>
-                                </tr>
+                                    @php($product = $item->product)
+                                    <tr class="wishlist-row">
+                                        <td class="wishlist-product-remove" data-id="{{ $product->id }}" role="button" title="Xóa sản phẩm">
+                                            x
+                                        </td>
+                                        <td class="cart-product-image">
+                                            <a href="{{ route('product.detail', $product->slug) }}">
+                                                <img src="{{ $product->image_url }}" alt="{{ $product->display_name }}">
+                                            </a>
+                                        </td>
+                                        <td class="wishlist-product-info">
+                                            <h5>
+                                                <a href="{{ route('product.detail', $product->slug) }}">
+                                                    {{ $product->display_name }}
+                                                </a>
+                                            </h5>
+                                        </td>
+                                        <td class="cart-product-price">
+                                            {{ number_format($product->current_price, 0, ',', '.') }}đ
+                                        </td>
+                                        <td class="wishlist-product-stock">
+                                            @if ($product->sellableStock() > 0)
+                                                <span class="badge bg-success">Còn hàng</span>
+                                            @else
+                                                <span class="badge bg-danger">Hết hàng</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('product.detail', $product->slug) }}" class="submit-button-1" title="Xem sản phẩm">
+                                                <span>Xem sản phẩm</span>
+                                            </a>
+                                        </td>
+                                    </tr>
                                 @empty
-                                <tr>
-                                    <td colspan="6" class="text-center">Danh sách yêu thích của bạn đang trống</td>
-                                </tr>
+                                    <tr class="wishlist-empty-row">
+                                        <td colspan="6" class="text-center">Danh sách yêu thích của bạn đang trống.</td>
+                                    </tr>
                                 @endforelse
-
                             </tbody>
                         </table>
                     </div>

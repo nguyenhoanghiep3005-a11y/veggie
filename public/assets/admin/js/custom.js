@@ -2,51 +2,11 @@ $(document).ready(function () {
 
     // =============== QUẢN LÝ NGƯỜI DÙNG (MANAGEMENT USER) ===============
 
-    //   User sang Staff
-    $(document).on('click', '.upgradeStaff', function (e) {
-        let button = $(this);
-        let userId = button.data('userid'); // Lấy user_id từ nút bấm
-
-        // Thêm CSRF token cho AJAX POST của Laravel
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-
-        $.ajax({
-            type: 'POST',
-            url: 'user/upgrade', // route xử lý nâng cấp user
-            data: {
-                user_id: userId,
-            },
-
-            success: function (response) {
-
-                if (response.status) {
-                    toastr.success(response.message);
-
-                    // Cập nhật giao diện trong danh sách user
-                    button.closest('.profile_view').find('.brief i').text('Staff');
-                    button.closest('.profile_view').find('.changeStatus').hide();
-                    button.hide();
-                } else {
-                    toastr.error(response.message);
-                }
-            },
-
-            error: function (xhr, status, error) {
-                alert('AJAX error: ' + error);
-            }
-        });
-    });
-
-    //  Khóa / Xóa người dùng
+    // Chặn hoặc bỏ chặn tài khoản khách hàng
     $(document).on('click', '.changeStatus', function (e) {
-
         let button = $(this);
         let userId = button.data('userid');
-        let status = button.data('status');   // banned hoặc deleted
+        let status = button.data('status');
 
         $.ajaxSetup({
             headers: {
@@ -55,7 +15,7 @@ $(document).ready(function () {
         });
         $.ajax({
             type: 'POST',
-            url: 'user/updateStatus',
+            url: button.data('url'),
             data: {
                 user_id: userId,
                 status: status,
@@ -66,20 +26,29 @@ $(document).ready(function () {
                 if (response.status) {
                     toastr.success(response.message);
 
-                    // Đổi text nút khi update thành công
-                    status == "banned"
-                        ? button.text("Đã chặn")
-                        : button.text("Đã xóa");
+                    let isBanned = status === 'banned';
+                    let nextStatus = isBanned ? 'active' : 'banned';
+                    let buttonLabel = isBanned
+                        ? '<i class="fa fa-check"></i> Bỏ chặn'
+                        : '<i class="fa fa-ban"></i> Chặn';
 
-                    // Disable nút
-                    button.addClass("disabled").prop("disabled", true);
+                    button
+                        .data('status', nextStatus)
+                        .attr('data-status', nextStatus)
+                        .toggleClass('btn-warning', !isBanned)
+                        .toggleClass('btn-success', isBanned)
+                        .html(buttonLabel);
+
+                    button.closest('.profile_view')
+                        .find('.user-status')
+                        .text(isBanned ? 'Đã chặn' : 'Đang hoạt động');
                 } else {
                     toastr.error(response.message);
                 }
             },
 
-            error: function (xhr, status, error) {
-                alert('AJAX error: ' + error);
+            error: function (xhr) {
+                toastr.error(xhr.responseJSON?.message || 'Không thể cập nhật trạng thái tài khoản.');
             }
         });
     });
@@ -247,8 +216,8 @@ $(document).ready(function () {
         }
     });
 
-    //  Xem trước ảnh khi update sản phẩm
-    $(".product-images").change(function (e) {
+    //  Xem trước ảnh khi update sản phẩm (dùng event delegation để hoạt động trong modal)
+    $(document).on('change', '.product-images', function (e) {
         let files = e.target.files;
         let productId = $(this).data("id");
         let previewContainer = $("#image-preview-container-" + productId);
@@ -265,7 +234,7 @@ $(document).ready(function () {
                 reader.onload = function (event) {
                     let img = $('<img>')
                         .attr('src', event.target.result)
-                        .addClass("image-preview");
+                        .css({ width: '100px', height: '100px', objectFit: 'cover', marginRight: '10px', marginTop: '10px' });
 
                     previewContainer.append(img);
                 };
@@ -284,8 +253,26 @@ $(document).ready(function () {
         let productId = button.data("id");
         let form = button.closest(".modal").find('form');
 
+        // FormData đã lấy trực tiếp file từ input trong form.
+        // Không xoá rồi append lại vì có thể làm mất file trên một số trình duyệt.
         let formData = new FormData(form[0]);
         formData.append('product_id', productId);
+
+        let imageInput = form.find('.product-images')[0];
+        let allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+        let allowedImageExtensions = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
+
+        if (imageInput && imageInput.files.length > 0) {
+            for (let i = 0; i < imageInput.files.length; i++) {
+                let file = imageInput.files[i];
+                let extension = file.name.split('.').pop().toLowerCase();
+
+                if ((!file.type || !allowedImageTypes.includes(file.type)) && !allowedImageExtensions.includes(extension)) {
+                    toastr.error('Ảnh sản phẩm chỉ được dùng file jpeg, jpg, png, gif hoặc webp.');
+                    return;
+                }
+            }
+        }
 
         $.ajaxSetup({
             headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
@@ -293,7 +280,7 @@ $(document).ready(function () {
 
         $.ajax({
             type: 'POST',
-            url: 'product/update',
+            url: form.attr('action'),
             data: formData,
             processData: false,
             contentType: false,
@@ -308,22 +295,16 @@ $(document).ready(function () {
 
                     let product = response.data;
 
-                    let imageSrc = product.images.length > 0
+                    let imageSrc = product.image_url || (product.images && product.images.length > 0
                         ? product.images[0]
-                        : "storage/products/product_default.png";
+                        : "/storage/uploads/products/default.png");
 
                     let row = $('#product-row-' + product.id);
-                    let statusText = product.stock > 0 ? 'Còn hàng' : 'Hết hàng';
-
                     row.find('td:eq(0) img').attr('src', imageSrc);
-                    row.find('td:eq(1)').text(product.name);
+                    row.find('td:eq(1)').html('<strong>' + product.display_name + '</strong>');
                     row.find('td:eq(2)').text(product.category_name);
-                    row.find('td:eq(3)').text(product.slug);
-                    row.find('td:eq(4)').text(product.description);
-                    row.find('td:eq(5)').text(product.stock);
-                    row.find('td:eq(6)').text(new Intl.NumberFormat('vi-VN').format(product.price) + ' VND');
-                    row.find('td:eq(7)').text(product.unit);
-                    row.find('td:eq(8)').text(statusText);
+                    row.find('td:eq(3)').text(new Intl.NumberFormat('vi-VN').format(product.price) + ' đ');
+                    row.find('td:eq(4)').text(product.unit);
 
                     toastr.success(response.message);
                     $('#modalupdate-' + product.id).modal('hide');
@@ -334,7 +315,18 @@ $(document).ready(function () {
             },
 
             error: function (xhr) {
-                alert(xhr.responseText);
+                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                    let messages = [];
+
+                    Object.values(xhr.responseJSON.errors).forEach(function (errors) {
+                        messages = messages.concat(errors);
+                    });
+
+                    alert(messages.join('\n'));
+                    return;
+                }
+
+                alert('Có lỗi xảy ra khi cập nhật sản phẩm.');
             },
 
             complete: function () {
@@ -385,135 +377,415 @@ $(document).ready(function () {
         }
     });
 
-    // =============== QUẢN LÝ ĐƠN HÀNG (MANAGEMENT ORDER) ===============
-
-    //  Xác nhận đơn hàng
-    $(document).on('click', '.confirm-order', function (e) {
-
-        e.preventDefault();
-
-        let button = $(this);
-        let orderId = button.data("id");
-
-        $.ajaxSetup({
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
-        });
-
-        $.ajax({
-            type: 'POST',
-            url: 'order/confirm',
-            data: { id: orderId },
-
-            success: function (response) {
-                if (response.status) {
-
-                    toastr.success(response.message);
-
-                    // cập nhật trạng thái đơn hàng
-                    button.closest("tr")
-                        .find(".order-status")
-                        .html('<span class="custom-badge badge badge-info">Đang giao</span>');
-
-                    button.hide();
-                }
-                else {
-                    toastr.error(response.message);
-                }
-            },
-
-            error: function (xhr, status, error) {
-                alert('AJAX error: ' + error);
-            }
-        });
-    });
-
-    //  Hủy đơn hàng
-    $(document).on('click', '.cancel-order', function (e) {
-
-        e.preventDefault();
-
-        let button = $(this);
-        let orderId = button.data("id");
-
-        $.ajaxSetup({
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
-        });
-
-        $.ajax({
-            type: 'POST',
-            url: '/admin/order-detail/cancel-order',
-            data: { id: orderId },
-
-            success: function (response) {
-
-                if (response.status) {
-                    toastr.success(response.message);
-                    button.remove(); // Xóa nút cancel
-                }
-                else {
-                    toastr.error(response.message);
-                }
-            },
-
-            error: function (xhr, status, error) {
-                alert('AJAX error: ' + error);
-            }
-        });
-    });
-
-    // =============== QUẢN LÝ KHO (INVENTORY) ===============
-
-    function updateInventorySummary(form) {
-        let damagedCodes = form.find('.inventory-damaged-code');
-        let damagedCount = form.find('.inventory-damaged-count');
-        let remainingCount = form.find('.inventory-remaining-count');
-        let damagedError = form.find('.inventory-damaged-error');
-        let saveButton = form.find('.inventory-save-button');
-        let maxUnsold = parseInt(form.data('max-unsold'), 10);
-        let checkedCount = 0;
-
-        if (isNaN(maxUnsold)) {
-            maxUnsold = 0;
-        }
-
-        damagedCodes.each(function () {
-            let checkbox = $(this);
-            let label = checkbox.closest('.inventory-code-label');
-
-            if (checkbox.is(':checked')) {
-                checkedCount++;
-                label.addClass('is-damaged');
-            } else {
-                label.removeClass('is-damaged');
-            }
-        });
-
-        damagedCount.text(checkedCount);
-        remainingCount.text(maxUnsold - checkedCount);
-        damagedError.text('').hide();
-
-        if (checkedCount > maxUnsold) {
-            damagedError.text('Số lượng mã hư không được lớn hơn số lượng chưa bán.').show();
-            saveButton.prop('disabled', true);
-            return false;
-        }
-
-        saveButton.prop('disabled', false);
-        return true;
+    // =============== DANH SÁCH ĐƠN HÀNG ===============
+    function ordersPage() {
+        return $('.admin-orders-page');
     }
 
-    $('.inventory-adjust-form').each(function () {
-        updateInventorySummary($(this));
-    });
+    function orderListUrl(name) {
+        return ordersPage().data(name);
+    }
 
-    $(document).on('change', '.inventory-damaged-code', function () {
-        updateInventorySummary($(this).closest('.inventory-adjust-form'));
-    });
+    function orderCsrfToken() {
+        return $('meta[name="csrf-token"]').attr('content');
+    }
 
-    $(document).on('submit', '.inventory-adjust-form', function (e) {
-        if (!updateInventorySummary($(this))) {
-            e.preventDefault();
+    function disableOrderButton(button, text) {
+        button.addClass('disabled')
+            .css('pointer-events', 'none')
+            .text(text);
+    }
+
+    function enableOrderButton(button, text) {
+        button.removeClass('disabled')
+            .css('pointer-events', '')
+            .text(text);
+    }
+
+    $(document).on('click', '.confirm-order', function (event) {
+        if (!ordersPage().length) {
+            return;
         }
+
+        event.preventDefault();
+
+        let button = $(this);
+        let orderId = button.data('id');
+
+        if (!confirm('Bạn có chắc muốn xác nhận đơn hàng #' + orderId + ' không?')) {
+            return;
+        }
+
+        $.ajax({
+            url: orderListUrl('confirmUrl'),
+            type: 'POST',
+            data: {
+                id: orderId,
+                _token: orderCsrfToken()
+            },
+            beforeSend: function () {
+                disableOrderButton(button, 'Đang xác nhận...');
+            },
+            success: function (response) {
+                if (!response.status) {
+                    toastr.error(response.message || 'Không thể xác nhận đơn hàng.');
+                    enableOrderButton(button, 'Xác nhận');
+                    return;
+                }
+
+                toastr.success(response.message);
+                button.closest('tr').find('.order-status').html('<span class="custom-badge badge badge-primary">Đã xác nhận</span>');
+                button.remove();
+            },
+            error: function (xhr) {
+                let message = xhr.responseJSON && xhr.responseJSON.message
+                    ? xhr.responseJSON.message
+                    : 'Không thể xác nhận đơn hàng. Vui lòng kiểm tra lại trạng thái đơn.';
+                toastr.error(message);
+                enableOrderButton(button, 'Xác nhận');
+            }
+        });
     });
+
+    // Giao hàng (confirmed → shipping) — danh sách
+    $(document).on('click', '.ship-order', function (event) {
+        if (!ordersPage().length) {
+            return;
+        }
+
+        event.preventDefault();
+
+        let button = $(this);
+        let orderId = button.data('id');
+
+        if (!confirm('Bạn có chắc muốn giao đơn hàng #' + orderId + ' không?')) {
+            return;
+        }
+
+        $.ajax({
+            url: orderListUrl('shipUrl'),
+            type: 'POST',
+            data: {
+                id: orderId,
+                _token: orderCsrfToken()
+            },
+            success: function (response) {
+                if (!response.status) {
+                    toastr.error(response.message || 'Không thể giao đơn hàng.');
+                    return;
+                }
+
+                toastr.success(response.message);
+                let row = button.closest('tr');
+                row.find('.order-status').html('<span class="custom-badge badge badge-info">Đang giao</span>');
+                row.find('.confirm-order, .ship-order, .cancel-order').remove();
+            },
+            error: function () {
+                toastr.error('Có lỗi xảy ra khi giao đơn hàng.');
+            }
+        });
+    });
+
+    // Hủy đơn hàng — mở modal nhập lý do (danh sách)
+    $(document).on('click', '.cancel-order', function (event) {
+        if (!ordersPage().length) {
+            return;
+        }
+
+        event.preventDefault();
+
+        let orderId = $(this).data('id');
+        $('#cancel-order-id').val(orderId);
+        $('#cancel-reason').val('');
+        $('#cancel-reason-error').addClass('d-none');
+        $('#cancelOrderModal').modal('show');
+    });
+
+    // Xác nhận hủy đơn hàng sau khi nhập lý do (danh sách + chi tiết)
+    $(document).on('click', '#confirm-cancel-order', function () {
+        let orderId = $('#cancel-order-id').val();
+        let cancelReason = $('#cancel-reason').val().trim();
+
+        if (!cancelReason) {
+            $('#cancel-reason-error').removeClass('d-none');
+            return;
+        }
+
+        $('#cancel-reason-error').addClass('d-none');
+        let cancelBtn = $(this);
+        cancelBtn.prop('disabled', true).text('Đang xử lý...');
+
+        let cancelUrl = ordersPage().length
+            ? orderListUrl('cancelUrl')
+            : orderDetailUrl('cancelUrl');
+
+        $.ajax({
+            url: cancelUrl,
+            type: 'POST',
+            data: {
+                id: orderId,
+                cancel_reason: cancelReason,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                $('#cancelOrderModal').modal('hide');
+                if (!response.status) {
+                    toastr.error(response.message || 'Không thể hủy đơn hàng.');
+                    cancelBtn.prop('disabled', false).text('Xác nhận hủy');
+                    return;
+                }
+
+                toastr.success(response.message);
+
+                if (ordersPage().length) {
+                    // Cập nhật trên danh sách
+                    let row = $('[data-id="' + orderId + '"]').closest('tr');
+                    row.find('.order-status').html('<span class="custom-badge badge badge-danger">QTV hủy đơn</span>');
+                    row.find('.confirm-order, .ship-order, .cancel-order').remove();
+                } else {
+                    // Cập nhật trên chi tiết
+                    setTimeout(function () { location.reload(); }, 1200);
+                }
+            },
+            error: function (xhr) {
+                $('#cancelOrderModal').modal('hide');
+                toastr.error(xhr.responseJSON?.message || 'Có lỗi xảy ra khi hủy đơn hàng.');
+            },
+            complete: function () {
+                cancelBtn.prop('disabled', false).text('Xác nhận hủy');
+            }
+        });
+    });
+
+    // =============== CHI TIẾT ĐƠN HÀNG ===============
+    function orderDetailPage() {
+        return $('.admin-order-detail-page');
+    }
+
+    function orderReturnPage() {
+        return $('.admin-order-detail-page');
+    }
+
+    function orderDetailUrl(name, id) {
+        let page = orderDetailPage();
+        let url = page.data(name);
+
+        return id ? String(url).replace('__ID__', id) : url;
+    }
+
+    function orderReturnUrl(name, id) {
+        let page = orderReturnPage();
+        let url = page.data(name);
+
+        return id ? String(url).replace('__ID__', id) : url;
+    }
+
+    function showOrderDetailAlert(type, message) {
+        let cssClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        $('#alert-box').html(
+            '<div class="alert ' + cssClass + ' alert-dismissible">' +
+            '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+            message +
+            '</div>'
+        );
+    }
+
+    function postOrderAction(url, data, successDelay = 1200) {
+        data._token = $('meta[name="csrf-token"]').attr('content');
+
+        $.post(url, data, function (response) {
+            showOrderDetailAlert(response.status ? 'success' : 'danger', response.message || 'Không thể xử lý yêu cầu.');
+            if (response.status) {
+                setTimeout(function () { location.reload(); }, successDelay);
+            }
+        }).fail(function (xhr) {
+            showOrderDetailAlert('danger', xhr.responseJSON?.message || 'Không thể xử lý yêu cầu.');
+        });
+    }
+
+    $(document).on('click', '.confirm-order-btn', function () {
+        if (!orderDetailPage().length || !confirm('Xác nhận đơn hàng này và gửi hóa đơn cho khách?')) {
+            return;
+        }
+
+        let button = $(this);
+        button.prop('disabled', true);
+        postOrderAction(orderDetailUrl('confirmUrl'), { id: button.data('id') });
+    });
+
+    $(document).on('click', '.ship-order-btn', function () {
+        if (!orderDetailPage().length || !confirm('Giao đơn hàng này?')) {
+            return;
+        }
+
+        postOrderAction(orderDetailUrl('shipUrl'), { id: $(this).data('id') });
+    });
+
+    $(document).on('click', '.complete-order-btn', function () {
+        if (!orderDetailPage().length || !confirm('Đánh dấu đơn hàng đã giao thành công?')) {
+            return;
+        }
+
+        postOrderAction(orderDetailUrl('completeUrl'), {
+            id: $(this).data('id'),
+            status: 'completed'
+        });
+    });
+
+    // Hủy đơn hàng — mở modal nhập lý do (chi tiết)
+    $(document).on('click', '.cancel-order-btn', function () {
+        if (!orderDetailPage().length) {
+            return;
+        }
+
+        let orderId = $(this).data('id');
+        $('#cancel-order-id').val(orderId);
+        $('#cancel-reason').val('');
+        $('#cancel-reason-error').addClass('d-none');
+        $('#cancelOrderModal').modal('show');
+    });
+
+    $(document).on('click', '.approve-return-btn', function () {
+        let id = $(this).data('id');
+        if (!orderReturnPage().length || !confirm('Duyệt yêu cầu xử lý hàng lỗi/hư?')) {
+            return;
+        }
+
+        postOrderAction(orderReturnUrl('returnApproveUrl', id), {}, 1000);
+    });
+
+    $(document).on('click', '.receive-return-btn', function () {
+        let id = $(this).data('id');
+        if (!orderReturnPage().length || !confirm('Xác nhận đã nhận hàng lỗi/hư từ khách?')) {
+            return;
+        }
+
+        postOrderAction(orderReturnUrl('returnReceiveUrl', id), {}, 1000);
+    });
+
+    $(document).on('click', '.complete-return-btn', function () {
+        let id = $(this).data('id');
+        if (!orderReturnPage().length || !confirm('Hoàn tất yêu cầu đổi hàng này?')) {
+            return;
+        }
+
+        postOrderAction(orderReturnUrl('returnCompleteUrl', id), {}, 1000);
+    });
+
+    // =============== PHIẾU ĐẶT MUA ===============
+    function initCouponForm() {
+        function toggleCustomerBox(select) {
+            let form = select.closest('.admin-coupon-form');
+            if (!form) {
+                return;
+            }
+
+            let customerBox = form.querySelector('.admin-coupon-customer-box');
+            if (!customerBox) {
+                return;
+            }
+
+            customerBox.classList.toggle('d-none', select.value !== 'customer');
+        }
+
+        document.querySelectorAll('.js-coupon-apply-type').forEach(function (select) {
+            toggleCustomerBox(select);
+
+            select.addEventListener('change', function () {
+                toggleCustomerBox(select);
+            });
+        });
+    }
+
+    function initPurchaseOrderForm() {
+        let tbody = document.getElementById('purchase-order-items');
+        let addButton = document.getElementById('btn-add-purchase-row');
+        let optionTemplate = document.getElementById('purchase-product-options');
+
+        if (!tbody || !addButton || !optionTemplate) {
+            return;
+        }
+
+        let index = tbody.children.length;
+
+        function addRow() {
+            let row = document.createElement('tr');
+            row.innerHTML =
+                '<td><select name="items[' + index + '][product_id]" class="form-control js-product-select" required>' + optionTemplate.innerHTML + '</select></td>' +
+                '<td><input type="number" name="items[' + index + '][quantity_ordered]" class="form-control text-center" min="1" required></td>' +
+                '<td><button type="button" class="btn btn-danger btn-sm js-remove-row"><i class="fa fa-trash"></i></button></td>';
+
+            tbody.appendChild(row);
+            index++;
+        }
+
+        tbody.addEventListener('click', function (event) {
+            let button = event.target.closest('.js-remove-row');
+            if (!button) {
+                return;
+            }
+
+            button.closest('tr').remove();
+            if (!tbody.children.length) {
+                addRow();
+            }
+        });
+
+        addButton.addEventListener('click', addRow);
+
+        if (!tbody.children.length) {
+            addRow();
+        }
+    }
+
+    // =============== PHIẾU NHẬP HÀNG ===============
+    function initPurchaseImportForm() {
+        let form = document.getElementById('purchase-import-form');
+        let evidence = document.getElementById('defect-evidence');
+        let description = document.getElementById('defect-description');
+        let mark = document.getElementById('defect-required-mark');
+        let evidenceMark = document.getElementById('defect-evidence-required-mark');
+        let submit = document.getElementById('btn-submit-import');
+
+        if (!form || !evidence || !description || !mark || !evidenceMark || !submit) {
+            return;
+        }
+
+        function refreshImportForm() {
+            let hasRejected = false;
+            let invalid = false;
+
+            document.querySelectorAll('.js-import-row').forEach(function (row) {
+                let ordered = parseInt(row.querySelector('.js-ordered').value, 10) || 0;
+                let receivedInput = row.querySelector('.js-received');
+                let rejectedInput = row.querySelector('.js-rejected');
+                let received = parseInt(receivedInput.value, 10) || 0;
+                let rejected = parseInt(rejectedInput.value, 10) || 0;
+                let accepted = Math.max(0, received - rejected);
+
+                row.querySelector('.js-accepted').value = accepted;
+                row.querySelector('.js-manufactured').required = accepted > 0;
+                row.querySelector('.js-expired').required = accepted > 0;
+
+                hasRejected = hasRejected || rejected > 0;
+                invalid = invalid || received > ordered || rejected > received;
+                receivedInput.classList.toggle('parsley-error', received > ordered);
+                rejectedInput.classList.toggle('parsley-error', rejected > received);
+            });
+
+            evidence.required = hasRejected;
+            description.required = hasRejected;
+            mark.classList.toggle('d-none', !hasRejected);
+            evidenceMark.classList.toggle('d-none', !hasRejected);
+            submit.disabled = invalid;
+        }
+
+        form.addEventListener('input', refreshImportForm);
+        refreshImportForm();
+    }
+
+    initCouponForm();
+    initPurchaseOrderForm();
+    initPurchaseImportForm();
 
 });

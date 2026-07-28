@@ -11,13 +11,21 @@ class SearchController extends Controller
     public function index(Request $request)
     {
         $keyword = $request->input('keyword');
-        if(!$keyword)
-        {
-            return redirect()->back()->with('error','Vui lòng nhập từ khóa tìm kiếm');
+        if (! $keyword) {
+            return redirect()->back()->with('error', 'Vui lòng nhập từ khóa tìm kiếm');
         }
-      $products = Product::where('name', 'LIKE', "%$keyword%")
-        ->orWhere('description','LIKE',"%$keyword%")
-        ->paginate(12);
+        $products = Product::with('firstImage', 'images', 'reviews', 'orderItems.order')
+            ->where('status', 'int_stock')
+            ->where('stock', '>', 0)
+            ->where(function ($query) use ($keyword) {
+                $query->where('name', 'LIKE', "%$keyword%");
+            })
+            ->paginate(12);
+
+        foreach ($products as $product) {
+            $product->sold_quantity = $product->soldQuantity();
+        }
+
         return view('clients.pages.products-search', compact('products'));
     }
 }
