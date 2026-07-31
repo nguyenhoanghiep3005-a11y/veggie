@@ -172,6 +172,7 @@ class DonHangController extends Controller
         $donHang->ly_do_giao_that_bai =
             trim($data['ly_do_giao_that_bai']);
         $donHang->giao_that_bai_luc = now();
+        $donHang->so_lan_giao_that_bai = (int) $donHang->so_lan_giao_that_bai + 1;
         $donHang->save();
 
         if (

@@ -12,7 +12,7 @@
                 <div class="text-muted">Ngày đặt: {{ $donHang->created_at->format('d/m/Y H:i') }}</div>
             </div>
             <span class="badge {{ $donHang->lopTrangThaiKhachHang() }}">
-                {{ $donHang->tenTrangThai() }}
+                {{ $donHang->tenTrangThaiKhachHang() }}
             </span>
         </div>
 
@@ -30,17 +30,12 @@
             </div>
         @endif
 
-        @if (in_array($donHang->trang_thai, ['giao_that_bai', 'dang_hoan_hang', 'da_hoan_ve_kho']))
+        @if ($donHang->ghiChuTrangThaiKhachHang() != '' && $donHang->maTrangThaiHienThiKhachHang() == 'giao_that_bai')
             <div class="alert alert-warning">
-                <strong>{{ $donHang->tenTrangThai() }}</strong>
+                <strong>{{ $donHang->tenTrangThaiKhachHang() }}</strong>
+                <div>{{ $donHang->ghiChuTrangThaiKhachHang() }}</div>
                 @if ($donHang->ly_do_giao_that_bai)
                     <div>Lý do: {{ $donHang->ly_do_giao_that_bai }}</div>
-                @endif
-                @if ($donHang->trang_thai == 'da_hoan_ve_kho')
-                    <div>
-                        Tình trạng hàng hoàn:
-                        {{ $donHang->tinh_trang_hang_hoan == 'nguyen_ven' ? 'Nguyên vẹn' : 'Hư hỏng' }}
-                    </div>
                 @endif
             </div>
         @endif
@@ -91,10 +86,21 @@
                     @endif
 
                     <div class="row text-center mt-3">
-                        <div class="col-md-3 mb-2"><div class="p-2 bg-success text-white">1. Đã gửi yêu cầu</div></div>
-                        <div class="col-md-3 mb-2"><div class="p-2 {{ $yeuCauDoiTra->trang_thai == 'cho_duyet' ? 'bg-warning' : 'bg-success text-white' }}">2. Duyệt yêu cầu</div></div>
-                        <div class="col-md-3 mb-2"><div class="p-2 {{ $daNhanHangDoiTra ? 'bg-success text-white' : 'bg-light' }}">3. Nhận hàng lỗi</div></div>
-                        <div class="col-md-3 mb-2"><div class="p-2 {{ $daHoanTatDoiTra ? 'bg-success text-white' : 'bg-light' }}">4. Hoàn tất đổi trả</div></div>
+                        <div class="col-md-2 mb-2">
+                            <div class="p-2 bg-success text-white">1. &#272;&#227; g&#7917;i y&#234;u c&#7847;u</div>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <div class="p-2 {{ $yeuCauDoiTra->trang_thai == 'cho_duyet' ? 'bg-warning text-white' : 'bg-success text-white' }}">2. Duy&#7879;t y&#234;u c&#7847;u</div>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <div class="p-2 {{ in_array($yeuCauDoiTra->trang_thai, ['dang_xu_ly', 'dang_giao_hang_doi', 'hoan_tat']) ? 'bg-success text-white' : 'bg-light' }}">3. Nh&#7853;n h&#224;ng l&#7895;i</div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="p-2 {{ in_array($yeuCauDoiTra->trang_thai, ['dang_xu_ly', 'dang_giao_hang_doi', 'hoan_tat']) ? 'bg-info text-white' : 'bg-light' }}">4. &#272;ang x&#7917; l&#253; &#273;&#7893;i tr&#7843;</div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="p-2 {{ $yeuCauDoiTra->trang_thai == 'dang_giao_hang_doi' ? 'bg-primary text-white' : ($yeuCauDoiTra->trang_thai == 'hoan_tat' ? 'bg-success text-white' : 'bg-light') }}">5. &#272;ang giao h&#224;ng &#273;&#7893;i / Ho&#224;n t&#7845;t</div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -45,7 +45,7 @@ class DonHangController extends Controller
         $coTheYeuCauDoiTra = $donHang->conHanDoiTra();
         $daNhanHangDoiTra = $yeuCauDoiTra && in_array(
             $yeuCauDoiTra->trang_thai,
-            ['da_nhan_hang', 'hoan_tat']
+            ['dang_xu_ly', 'dang_giao_hang_doi', 'hoan_tat']
         );
         $daHoanTatDoiTra = $yeuCauDoiTra && $yeuCauDoiTra->trang_thai == 'hoan_tat';
         $thoiGianYeuCau = $yeuCauDoiTra && $yeuCauDoiTra->yeu_cau_luc

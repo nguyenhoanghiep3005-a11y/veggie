@@ -63,7 +63,7 @@
                                                                     <td>{{ $donHang->created_at->format('d/m/Y') }}</td>
                                                                     <td>
                                                                         <span class="badge {{ $donHang->lopTrangThaiKhachHang() }}">
-                                                                            {{ $donHang->tenTrangThai() }}
+                                                                            {{ $donHang->tenTrangThaiKhachHang() }}
                                                                         </span>                                                                    </td>
                                                                     <td>{{ number_format($donHang->tong_tien, 0, ',', '.') }} đ</td>
                                                                     <td>

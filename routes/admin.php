@@ -99,6 +99,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/don-hang/giao-hang', [DonHangController::class, 'giaoDonHang'])->name('admin.don-hang.giao-hang');
         Route::post('/don-hang/hoan-tat', [DonHangController::class, 'capNhatTrangThaiDonHang'])->name('admin.don-hang.hoan-tat');
         Route::post('/don-hang/giao-that-bai', [DonHangController::class, 'ghiNhanGiaoHangThatBai'])->name('admin.don-hang.giao-that-bai');
+        Route::post('/don-hang/giao-lai', [DonHangController::class, 'giaoLaiDonHang'])->name('admin.don-hang.giao-lai');
         Route::post('/don-hang/hoan-ve-cua-hang', [DonHangController::class, 'chuyenHangHoanVeCuaHang'])->name('admin.don-hang.hoan-ve-cua-hang');
         Route::post('/don-hang/nhan-hang-hoan', [DonHangController::class, 'xacNhanNhanHangHoan'])->name('admin.don-hang.nhan-hang-hoan');
         Route::post('/don-hang/hoan-tien-paypal', [DonHangController::class, 'xacNhanHoanTienPayPal'])->name('admin.don-hang.hoan-tien-paypal');
@@ -106,6 +107,7 @@ Route::prefix('admin')->group(function () {
 
         Route::post('/doi-tra/{maYeuCauDoiTra}/duyet', [DoiTraController::class, 'duyetYeuCau'])->name('admin.doi-tra.duyet');
         Route::post('/doi-tra/{maYeuCauDoiTra}/nhan-hang', [DoiTraController::class, 'nhanHangDoiTra'])->name('admin.doi-tra.nhan-hang');
+        Route::post('/doi-tra/{maYeuCauDoiTra}/giao-hang-doi', [DoiTraController::class, 'giaoHangDoi'])->name('admin.doi-tra.giao-hang-doi');
         Route::post('/doi-tra/{maYeuCauDoiTra}/hoan-tat', [DoiTraController::class, 'hoanTatDoiTra'])->name('admin.doi-tra.hoan-tat');
     });
 });

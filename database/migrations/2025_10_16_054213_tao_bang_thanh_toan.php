@@ -19,8 +19,10 @@ return new class extends Migration
             $table->enum('phuong_thuc', ['tien_mat', 'paypal']);
             $table->string('ma_giao_dich')->nullable();
             $table->enum('trang_thai', [
+                'cho_thanh_toan',
                 'chua_thanh_toan',
                 'da_thanh_toan',
+                'that_bai',
                 'da_hoan_tien',
             ])->default('chua_thanh_toan');
             $table->timestamp('thanh_toan_luc')->nullable();

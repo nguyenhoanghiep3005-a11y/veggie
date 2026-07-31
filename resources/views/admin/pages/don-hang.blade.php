@@ -93,8 +93,11 @@
                                                                     <a class="dropdown-item nut-mo-giao-that-bai text-danger" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Giao thất bại</a>
                                                                 @endif
 
-                                                                @if ($donHang->trang_thai == 'giao_that_bai')
+                                                                @if ($donHang->coTheGiaoLai())
                                                                     <a class="dropdown-item nut-giao-lai" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Giao lại</a>
+                                                                @endif
+
+                                                                @if ($donHang->coTheHoanVeCuaHang())
                                                                     <a class="dropdown-item nut-hoan-ve" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Hoàn về cửa hàng</a>
                                                                 @endif
 

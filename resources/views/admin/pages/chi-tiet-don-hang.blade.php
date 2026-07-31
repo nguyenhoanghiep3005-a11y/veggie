@@ -64,7 +64,7 @@
                             <div class="row">
                                 <div class="col-md-8">
                                     <p><strong>Loại:</strong> {{ $yeuCauDoiTra->tenLoai() }}</p>
-                                    <p><strong>Trạng thái:</strong> {{ $yeuCauDoiTra->tenTrangThai() }}</p>
+                                    <p><strong>Trạng thái:</strong> <span class="{{ $yeuCauDoiTra->lopTrangThai() }}">{{ $yeuCauDoiTra->tenTrangThai() }}</span></p>
                                     <p><strong>Mô tả:</strong> {{ $yeuCauDoiTra->mo_ta }}</p>
                                     <p><strong>Ngày gửi yêu cầu:</strong> {{ $ngayYeuCau }}</p>
                                     <p><strong>Ngày duyệt:</strong> {{ $ngayDuyet }}</p>
@@ -73,21 +73,32 @@
                                 <div class="col-md-4">
                                     @if ($yeuCauDoiTra->trang_thai == 'cho_duyet')
                                         <button type="button" class="btn btn-primary btn-block nut-duyet-doi-tra" data-ma-yeu-cau="{{ $yeuCauDoiTra->ma_yeu_cau_doi_tra }}">
-                                            <i class="fa fa-check"></i> Duyệt yêu cầu
+                                            <i class="fa fa-check"></i> Duy&#7879;t y&#234;u c&#7847;u
                                         </button>
                                     @elseif ($yeuCauDoiTra->trang_thai == 'da_duyet')
                                         <button type="button" class="btn btn-success btn-block nut-nhan-doi-tra" data-ma-yeu-cau="{{ $yeuCauDoiTra->ma_yeu_cau_doi_tra }}">
-                                            <i class="fa fa-inbox"></i> Xác nhận đã nhận hàng lỗi
+                                            <i class="fa fa-inbox"></i> X&#225;c nh&#7853;n &#273;&#227; nh&#7853;n h&#224;ng l&#7895;i
                                         </button>
-                                    @elseif ($yeuCauDoiTra->trang_thai == 'da_nhan_hang')
+                                    @elseif ($yeuCauDoiTra->trang_thai == 'dang_xu_ly')
+                                        <button type="button" class="btn btn-primary btn-block nut-giao-hang-doi" data-ma-yeu-cau="{{ $yeuCauDoiTra->ma_yeu_cau_doi_tra }}">
+                                            <i class="fa fa-truck"></i> B&#7855;t &#273;&#7847;u giao h&#224;ng &#273;&#7893;i
+                                        </button>
+                                    @elseif ($yeuCauDoiTra->trang_thai == 'dang_giao_hang_doi')
                                         <button type="button" class="btn btn-success btn-block nut-hoan-tat-doi-tra" data-ma-yeu-cau="{{ $yeuCauDoiTra->ma_yeu_cau_doi_tra }}">
-                                            <i class="fa fa-check-circle"></i> Hoàn tất đổi trả
+                                            <i class="fa fa-check-circle"></i> Ho&#224;n t&#7845;t &#273;&#7893;i tr&#7843;
                                         </button>
                                     @endif
                                 </div>
                             </div>
 
-                            <h4>Sản phẩm đổi trả</h4>
+                                                        <div class="row text-center return-flow-admin" style="margin: 20px 0 10px;">
+                                <div class="col-md-2 col-sm-4 col-xs-6" style="margin-bottom: 10px;"><div class="well well-sm" style="margin-bottom: 0; background: #5cb85c; color: #fff;">1. &#272;&#227; g&#7917;i</div></div>
+                                <div class="col-md-2 col-sm-4 col-xs-6" style="margin-bottom: 10px;"><div class="well well-sm" style="margin-bottom: 0; {{ $yeuCauDoiTra->trang_thai == 'cho_duyet' ? 'background: #f0ad4e; color: #fff;' : 'background: #5cb85c; color: #fff;' }}">2. &#272;&#227; duy&#7879;t</div></div>
+                                <div class="col-md-2 col-sm-4 col-xs-6" style="margin-bottom: 10px;"><div class="well well-sm" style="margin-bottom: 0; {{ in_array($yeuCauDoiTra->trang_thai, ['dang_xu_ly', 'dang_giao_hang_doi', 'hoan_tat']) ? 'background: #5cb85c; color: #fff;' : '' }}">3. &#272;&#227; nh&#7853;n h&#224;ng l&#7895;i</div></div>
+                                <div class="col-md-3 col-sm-6 col-xs-6" style="margin-bottom: 10px;"><div class="well well-sm" style="margin-bottom: 0; {{ in_array($yeuCauDoiTra->trang_thai, ['dang_xu_ly', 'dang_giao_hang_doi', 'hoan_tat']) ? 'background: #5bc0de; color: #fff;' : '' }}">4. &#272;ang x&#7917; l&#253; &#273;&#7893;i tr&#7843;</div></div>
+                                <div class="col-md-3 col-sm-6 col-xs-12" style="margin-bottom: 10px;"><div class="well well-sm" style="margin-bottom: 0; {{ $yeuCauDoiTra->trang_thai == 'dang_giao_hang_doi' ? 'background: #337ab7; color: #fff;' : ($yeuCauDoiTra->trang_thai == 'hoan_tat' ? 'background: #5cb85c; color: #fff;' : '') }}">5. &#272;ang giao h&#224;ng &#273;&#7893;i / Ho&#224;n t&#7845;t</div></div>
+                            </div>
+<h4>Sản phẩm đổi trả</h4>
                             <table class="table table-bordered text-center">
                                 <thead>
                                     <tr>
@@ -209,9 +220,16 @@
                                 <i class="fa fa-times"></i> Giao thất bại
                             </button>
                         @elseif ($donHang->trang_thai == 'giao_that_bai')
-                            <button class="btn btn-warning pull-right nut-hoan-ve" data-ma-don-hang="{{ $donHang->ma_don_hang }}">
-                                <i class="fa fa-undo"></i> Hoàn về cửa hàng
-                            </button>
+                            @if ($donHang->coTheGiaoLai())
+                                <button class="btn btn-primary pull-right nut-giao-lai" data-ma-don-hang="{{ $donHang->ma_don_hang }}">
+                                    <i class="fa fa-truck"></i> Giao lại
+                                </button>
+                            @endif
+                            @if ($donHang->coTheHoanVeCuaHang())
+                                <button class="btn btn-warning pull-right nut-hoan-ve" data-ma-don-hang="{{ $donHang->ma_don_hang }}">
+                                    <i class="fa fa-undo"></i> Hoàn về cửa hàng
+                                </button>
+                            @endif
                         @elseif ($donHang->trang_thai == 'dang_hoan_hang')
                             <button class="btn btn-warning pull-right nut-mo-nhan-hang-hoan" data-ma-don-hang="{{ $donHang->ma_don_hang }}">
                                 <i class="fa fa-inbox"></i> Nhận hàng hoàn

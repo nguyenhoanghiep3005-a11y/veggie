@@ -143,7 +143,7 @@ class GioHangService
     // Xoa toan bo gio hang sau khi dat hang thanh cong.
     public function xoaGioHang()
     {
-        session()->forget(['gio_hang', 'cart']);
+        session()->forget('gio_hang');
     }
 
     // Luu gio hang va tong so luong dung chung cho header.
@@ -158,10 +158,10 @@ class GioHangService
         session()->put('gio_hang', $gioHang);
         session()->put('so_luong_gio_hang', $tongSoLuong);
     }
-    // Chuan hoa du lieu gio hang cu ve mot cau truc duy nhat.
+    // Chuan hoa du lieu gio hang ve mot cau truc duy nhat.
     private function chuanHoaGioHang()
     {
-        $gioHang = session('gio_hang', session('cart', []));
+        $gioHang = session('gio_hang', []);
         $gioHangDaChuanHoa = [];
 
         foreach ((array) $gioHang as $khoaSanPham => $dongGioHang) {
@@ -188,7 +188,6 @@ class GioHangService
         }
 
         $this->luuGioHang($gioHangDaChuanHoa);
-        session()->forget('cart');
 
         return $gioHangDaChuanHoa;
     }

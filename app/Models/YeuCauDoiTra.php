@@ -35,13 +35,13 @@ class YeuCauDoiTra extends Model
         'nhan_hang_luc' => 'datetime',
     ];
 
-    // Lấy đơn hàng có yêu cầu đổi trả.
+    // Lay don hang co yeu cau doi tra.
     public function donHang()
     {
         return $this->belongsTo(DonHang::class, 'ma_don_hang');
     }
 
-    // Lấy tên loại yêu cầu đổi trả.
+    // Lay ten loai yeu cau doi tra.
     public function tenLoai()
     {
         if ($this->loai == self::LOAI_HANG_LOI) {
@@ -51,19 +51,23 @@ class YeuCauDoiTra extends Model
         return '-';
     }
 
-    // Lấy tên trạng thái xử lý yêu cầu đổi trả.
+    // Lay ten trang thai xu ly yeu cau doi tra.
     public function tenTrangThai()
     {
         if ($this->trang_thai == 'cho_duyet') {
-            return 'Chờ duyệt';
+            return 'Chờ duyệt yêu cầu';
         }
 
         if ($this->trang_thai == 'da_duyet') {
-            return 'Đã duyệt, chờ nhận hàng';
+            return 'Đã duyệt yêu cầu';
         }
 
-        if ($this->trang_thai == 'da_nhan_hang') {
-            return 'Đã nhận hàng đổi trả';
+        if ($this->trang_thai == 'dang_xu_ly') {
+            return 'Đang xử lý đổi trả';
+        }
+
+        if ($this->trang_thai == 'dang_giao_hang_doi') {
+            return 'Đang giao hàng đổi';
         }
 
         if ($this->trang_thai == 'hoan_tat') {
@@ -73,15 +77,19 @@ class YeuCauDoiTra extends Model
         return '-';
     }
 
-    // Lấy lớp màu hiển thị trạng thái đổi trả.
+    // Lay lop mau hien thi trang thai doi tra.
     public function lopTrangThai()
     {
         if ($this->trang_thai == 'cho_duyet') {
             return 'custom-badge badge badge-warning';
         }
 
-        if ($this->trang_thai == 'da_duyet' || $this->trang_thai == 'da_nhan_hang') {
+        if ($this->trang_thai == 'da_duyet' || $this->trang_thai == 'dang_xu_ly') {
             return 'custom-badge badge badge-info';
+        }
+
+        if ($this->trang_thai == 'dang_giao_hang_doi') {
+            return 'custom-badge badge badge-primary';
         }
 
         if ($this->trang_thai == 'hoan_tat') {
@@ -91,7 +99,7 @@ class YeuCauDoiTra extends Model
         return 'custom-badge badge badge-secondary';
     }
 
-    // Tính tổng số lượng sản phẩm khách yêu cầu đổi trả.
+    // Tinh tong so luong san pham khach yeu cau doi tra.
     public function tongSoLuong()
     {
         $tongSoLuong = 0;

@@ -13,8 +13,7 @@ class DoiTraController extends Controller
     // Duyet yeu cau doi tra dang cho xu ly.
     public function duyetYeuCau($maYeuCauDoiTra)
     {
-        $yeuCauDoiTra = YeuCauDoiTra::with('donHang')
-            ->find($maYeuCauDoiTra);
+        $yeuCauDoiTra = YeuCauDoiTra::with('donHang')->find($maYeuCauDoiTra);
 
         if (
             ! $yeuCauDoiTra
@@ -32,7 +31,7 @@ class DoiTraController extends Controller
         return $this->phanHoiThanhCong('Đã duyệt yêu cầu đổi trả.');
     }
 
-    // Nhan hang loi va xuat san pham thay the tu ton kho.
+    // Nhan hang loi va chuan bi san pham thay the.
     public function nhanHangDoiTra($maYeuCauDoiTra)
     {
         $yeuCauDoiTra = YeuCauDoiTra::with([
@@ -45,7 +44,7 @@ class DoiTraController extends Controller
             || $yeuCauDoiTra->trang_thai != 'da_duyet'
             || $yeuCauDoiTra->donHang->trang_thai != 'hoan_thanh'
         ) {
-            return $this->phanHoiLoi('Yêu cầu chưa sẵn sàng nhận hàng đổi trả.');
+            return $this->phanHoiLoi('Yêu cầu chưa sẵn sàng nhận hàng lỗi.');
         }
 
         try {
@@ -67,25 +66,22 @@ class DoiTraController extends Controller
                 $sanPham = SanPham::find($maSanPham);
 
                 if (! $sanPham || $sanPham->soLuongCoTheBan() < $soLuong) {
-                    throw new Exception('Không đủ tồn kho để xuất sản phẩm đổi.');
+                    throw new Exception('Không đủ tồn kho để chuẩn bị sản phẩm đổi.');
                 }
 
                 $sanPhamDoiTras[$viTri]['ma_san_pham'] = $maSanPham;
                 $sanPhamDoiTras[$viTri]['so_luong'] = $soLuong;
-                $sanPhamDoiTras[$viTri]['phan_bo_hang_doi'] =
-                    $sanPham->truTonKho($soLuong);
+                $sanPhamDoiTras[$viTri]['phan_bo_hang_doi'] = $sanPham->truTonKho($soLuong);
             }
 
             $yeuCauDoiTra->san_pham = $sanPhamDoiTras;
-            $yeuCauDoiTra->trang_thai = 'da_nhan_hang';
+            $yeuCauDoiTra->trang_thai = 'dang_xu_ly';
             $yeuCauDoiTra->nhan_hang_luc = now();
             $yeuCauDoiTra->save();
 
             DB::commit();
 
-            return $this->phanHoiThanhCong(
-                'Đã nhận hàng lỗi và xuất sản phẩm đổi.'
-            );
+            return $this->phanHoiThanhCong('Đã nhận hàng lỗi. Shop đang kiểm tra và chuẩn bị sản phẩm thay thế.');
         } catch (Exception $exception) {
             DB::rollBack();
 
@@ -93,19 +89,38 @@ class DoiTraController extends Controller
         }
     }
 
-    // Hoan tat yeu cau sau khi khach da nhan san pham doi.
-    public function hoanTatDoiTra($maYeuCauDoiTra)
+    // Chuyen sang giao san pham thay the cho khach.
+    public function giaoHangDoi($maYeuCauDoiTra)
     {
-        $yeuCauDoiTra = YeuCauDoiTra::with('donHang')
-            ->find($maYeuCauDoiTra);
+        $yeuCauDoiTra = YeuCauDoiTra::with('donHang')->find($maYeuCauDoiTra);
 
         if (
             ! $yeuCauDoiTra
             || ! $yeuCauDoiTra->donHang
-            || $yeuCauDoiTra->trang_thai != 'da_nhan_hang'
+            || $yeuCauDoiTra->trang_thai != 'dang_xu_ly'
             || $yeuCauDoiTra->donHang->trang_thai != 'hoan_thanh'
         ) {
             return $this->phanHoiLoi('Yêu cầu chưa ở trạng thái đang xử lý đổi trả.');
+        }
+
+        $yeuCauDoiTra->trang_thai = 'dang_giao_hang_doi';
+        $yeuCauDoiTra->save();
+
+        return $this->phanHoiThanhCong('Đã chuyển sang đang giao hàng đổi.');
+    }
+
+    // Hoan tat yeu cau sau khi khach da nhan san pham doi.
+    public function hoanTatDoiTra($maYeuCauDoiTra)
+    {
+        $yeuCauDoiTra = YeuCauDoiTra::with('donHang')->find($maYeuCauDoiTra);
+
+        if (
+            ! $yeuCauDoiTra
+            || ! $yeuCauDoiTra->donHang
+            || $yeuCauDoiTra->trang_thai != 'dang_giao_hang_doi'
+            || $yeuCauDoiTra->donHang->trang_thai != 'hoan_thanh'
+        ) {
+            return $this->phanHoiLoi('Yêu cầu chưa ở trạng thái đang giao hàng đổi.');
         }
 
         $yeuCauDoiTra->trang_thai = 'hoan_tat';

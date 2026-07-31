@@ -377,6 +377,13 @@ $(document).ready(function () {
         );
     });
 
+
+    $(document).on('click', '.nut-giao-lai', function () {
+        guiThaoTacDonHang(
+            '/admin/don-hang/giao-lai',
+            { ma_don_hang: $(this).data('ma-don-hang') }
+        );
+    });
     $(document).on('click', '.nut-hoan-ve', function () {
         guiThaoTacDonHang(
             '/admin/don-hang/hoan-ve-cua-hang',
@@ -526,6 +533,12 @@ $(document).ready(function () {
         );
     });
 
+    $(document).on('click', '.nut-giao-hang-doi', function () {
+        guiThaoTacDoiTra(
+            'giao-hang-doi',
+            $(this).data('ma-yeu-cau')
+        );
+    });
     $(document).on('click', '.nut-hoan-tat-doi-tra', function () {
         guiThaoTacDoiTra(
             'hoan-tat',
