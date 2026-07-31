@@ -7,22 +7,24 @@ use Illuminate\Support\Facades\DB;
 
 class PermissionsTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    // Them hoac cap nhat cac quyen quan tri mac dinh.
+    public function run()
     {
-        $permissions = [
-            1 => 'manage_user',
-            2 => 'manage_products',
-            3 => 'manage_order',
-            4 => 'manage_categories',
+        $quyens = [
+            1 => 'quan_ly_nguoi_dung',
+            2 => 'quan_ly_san_pham',
+            3 => 'quan_ly_don_hang',
+            4 => 'quan_ly_danh_muc',
         ];
 
-        foreach ($permissions as $id => $name) {
-            DB::table('permissions')->updateOrInsert(
-                ['id' => $id],
-                ['name' => $name, 'created_at' => now(), 'updated_at' => now()]
+        foreach ($quyens as $maQuyen => $tenQuyen) {
+            DB::table('quyen')->updateOrInsert(
+                ['ma_quyen' => $maQuyen],
+                [
+                    'ten' => $tenQuyen,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
             );
         }
     }

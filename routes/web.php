@@ -1,144 +1,118 @@
 <?php
 
-use App\Http\Controllers\Clients\AccountController;
-use App\Http\Controllers\Clients\AuthController;
-use App\Http\Controllers\Clients\CartController;
-use App\Http\Controllers\Clients\CheckoutController;
-use App\Http\Controllers\Clients\VoucherController;
-use App\Http\Controllers\Clients\ForgotPasswordController;
-use App\Http\Controllers\Clients\GhnLocationController;
-use App\Http\Controllers\Clients\HomeController;
-use App\Http\Controllers\Clients\OrderController;
-use App\Http\Controllers\Clients\ProductController;
-use App\Http\Controllers\Clients\ResetPasswordController;
-use App\Http\Controllers\Clients\ReviewController;
-use App\Http\Controllers\Clients\SearchController;
-use App\Http\Controllers\Clients\WishlistController;
+use App\Http\Controllers\Clients\DanhGiaController;
+use App\Http\Controllers\Clients\DatLaiMatKhauController;
+use App\Http\Controllers\Clients\DiaChiGhnController;
+use App\Http\Controllers\Clients\DonHangController;
+use App\Http\Controllers\Clients\GioHangController;
+use App\Http\Controllers\Clients\PhieuGiamGiaController;
+use App\Http\Controllers\Clients\QuenMatKhauController;
+use App\Http\Controllers\Clients\SanPhamController;
+use App\Http\Controllers\Clients\TaiKhoanController;
+use App\Http\Controllers\Clients\ThanhToanController;
+use App\Http\Controllers\Clients\TimKiemController;
+use App\Http\Controllers\Clients\TrangChuController;
+use App\Http\Controllers\Clients\XacThucController;
+use App\Http\Controllers\Clients\YeuThichController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('/')->group(function () {
-    Route::get('/', [HomeController::class, 'index'])
-        ->name('home');
-    Route::get('/about', function () {
-        return view('clients.pages.about');
-    })->name('about');
+// Trang chủ và các trang công khai.
+Route::get('/', [TrangChuController::class, 'hienThiTrangChu'])->name('trang-chu');
+Route::get('/phieu-giam-gia', [PhieuGiamGiaController::class, 'hienThiDanhSachPhieuGiamGia'])
+    ->name('phieu-giam-gia.danh-sach');
+Route::view('/lien-he', 'clients.pages.lien-he')->name('lien-he');
 
-    Route::get('/service', function () {
-        return view('clients.pages.service');
-    })->name('service');
+// Đăng ký, đăng nhập và đặt lại mật khẩu.
+Route::middleware('guest')->group(function () {
+    Route::get('/dang-ky', [XacThucController::class, 'hienThiFormDangKy'])
+        ->name('dang-ky.hien-thi');
+    Route::post('/dang-ky', [XacThucController::class, 'dangKy'])
+        ->name('dang-ky.xu-ly');
+    Route::get('/dang-nhap', [XacThucController::class, 'hienThiFormDangNhap'])
+        ->name('dang-nhap.hien-thi');
+    Route::post('/dang-nhap', [XacThucController::class, 'dangNhap'])
+        ->name('dang-nhap.xu-ly');
+    Route::get('/quen-mat-khau', [QuenMatKhauController::class, 'hienThiFormQuenMatKhau'])
+        ->name('quen-mat-khau.hien-thi');
+    Route::post('/quen-mat-khau', [QuenMatKhauController::class, 'guiLienKetDatLaiMatKhau'])
+        ->name('quen-mat-khau.gui-lien-ket');
+    Route::get('/dat-lai-mat-khau/{token}', [DatLaiMatKhauController::class, 'hienThiFormDatLaiMatKhau'])
+        ->name('password.reset');
+    Route::post('/dat-lai-mat-khau', [DatLaiMatKhauController::class, 'datLaiMatKhau'])
+        ->name('dat-lai-mat-khau.xu-ly');
+});
 
-    Route::get('/team', function () {
-        return view('clients.pages.team');
-    })->name('team');
+Route::get('/kich-hoat-tai-khoan/{token}', [XacThucController::class, 'kichHoatTaiKhoan'])
+    ->name('kich-hoat-tai-khoan');
 
-    Route::get('/faq', function () {
-        return view('clients.pages.faq');
-    })->name('faq');
+// Các chức năng yêu cầu đăng nhập.
+Route::middleware('auth.custom')->group(function () {
+    Route::get('/dang-xuat', [XacThucController::class, 'dangXuat'])->name('dang-xuat');
 
-    Route::get('/vouchers', [VoucherController::class, 'index'])->name('vouchers.index');
-
-    //  Không cho phép vào các trang này nếu đã đăng nhập
-    Route::middleware('guest')->group(function () {
-        Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-        Route::post('/register', [AuthController::class, 'register'])->name('post-register');
-        Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-        Route::post('/login', [AuthController::class, 'login'])->name('post-login');
-        Route::get('/forgot-password', [ForgotPasswordController::class, 'showForgotPasswordForm'])->name('password.request');
-        Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetlink'])->name('password.email');
-        Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
-        Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword'])->name('password.update');
+    Route::prefix('tai-khoan')->group(function () {
+        Route::get('/', [TaiKhoanController::class, 'hienThiTaiKhoan'])->name('tai-khoan.hien-thi');
+        Route::put('/cap-nhat', [TaiKhoanController::class, 'capNhatTaiKhoan'])->name('tai-khoan.cap-nhat');
+        Route::post('/doi-mat-khau', [TaiKhoanController::class, 'doiMatKhau'])->name('tai-khoan.doi-mat-khau');
+        Route::post('/dia-chi', [TaiKhoanController::class, 'themDiaChi'])->name('tai-khoan.dia-chi.them');
+        Route::put('/dia-chi/{maDiaChi}', [TaiKhoanController::class, 'datDiaChiMacDinh'])->name('tai-khoan.dia-chi.dat-mac-dinh');
+        Route::delete('/dia-chi/{maDiaChi}', [TaiKhoanController::class, 'xoaDiaChi'])->name('tai-khoan.dia-chi.xoa');
     });
 
-    //  KÍCH HOẠT TÀI KHOẢN QUA EMAIL
-    Route::get('/activate/{token}', [AuthController::class, 'activate'])->name('activate');
+    Route::get('/don-hang/{maDonHang}', [DonHangController::class, 'hienThiChiTietDonHang'])
+        ->name('don-hang.chi-tiet');
+    Route::post('/don-hang/{maDonHang}/huy', [DonHangController::class, 'huyDonHang'])
+        ->name('don-hang.huy');
+    Route::post('/don-hang/{maDonHang}/yeu-cau-doi-tra', [DonHangController::class, 'guiYeuCauDoiTra'])
+        ->name('don-hang.gui-yeu-cau-doi-tra');
 
-    Route::middleware(['auth.custom'])->group(function () {
-        //  ĐĂNG XUẤT
-        Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/phieu-giam-gia/{phieuGiamGia}/nhan', [PhieuGiamGiaController::class, 'nhanPhieuGiamGia'])
+        ->name('phieu-giam-gia.nhan');
 
-        Route::prefix('account')->group(function () {
-            Route::get('/', [AccountController::class, 'index'])->name('account');
-            Route::put('/update', [AccountController::class, 'update'])->name('account.update');
-            Route::post('/change-password', [AccountController::class, 'changePassword'])->name('account.change-password');
-            Route::post('/addresses', [AccountController::class, 'addAddress'])->name('account.addresses.add');
-            Route::put('/addresses/{id}', [AccountController::class, 'updatePrimaryAddress'])->name('account.addresses.update');
-            Route::delete('/addresses/{id}', [AccountController::class, 'deleteAddress'])->name('account.addresses.delete');
-        });
+    Route::post('/danh-gia', [DanhGiaController::class, 'themDanhGia'])->name('danh-gia.them');
+    Route::get('/danh-gia/{sanPham}', [DanhGiaController::class, 'hienThiDanhSachDanhGia'])->name('danh-gia.danh-sach');
 
-        // ========================
-        //  ĐƠN HÀNG
-        // ========================
-        Route::get('/order/{id}', [OrderController::class, 'showOrder'])->name('order.show');
-        Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('order.cancel');
-        Route::post('/order/{id}/return-request', [OrderController::class, 'requestReturn'])->name('order.return-request.store');
+    Route::get('/yeu-thich', [YeuThichController::class, 'hienThiDanhSachYeuThich'])->name('yeu-thich.danh-sach');
+    Route::post('/yeu-thich/them', [YeuThichController::class, 'themSanPhamYeuThich'])->name('yeu-thich.them');
+    Route::post('/yeu-thich/xoa', [YeuThichController::class, 'xoaSanPhamYeuThich'])->name('yeu-thich.xoa');
+});
 
-        Route::post('/vouchers/{coupon}/claim', [VoucherController::class, 'claim'])->name('vouchers.claim');
+// Địa giới dùng để tính phí Giao Hàng Nhanh.
+Route::get('/giao-hang-nhanh/tinh-thanh', [DiaChiGhnController::class, 'layTinhThanh'])
+    ->name('giao-hang-nhanh.tinh-thanh');
+Route::get('/giao-hang-nhanh/quan-huyen', [DiaChiGhnController::class, 'layHuyen'])
+    ->name('giao-hang-nhanh.quan-huyen');
+Route::get('/giao-hang-nhanh/phuong-xa', [DiaChiGhnController::class, 'layXa'])
+    ->name('giao-hang-nhanh.phuong-xa');
 
-        // ========================
-        //  ĐÁNH GIÁ SẢN PHẨM
-        // ========================
-        Route::post('/review', [ReviewController::class, 'store']);
-        Route::get('/review/{product}', [ReviewController::class, 'index']);
+// Thanh toán cho khách vãng lai và người dùng đã đăng nhập.
+Route::get('/thanh-toan', [ThanhToanController::class, 'hienThiThanhToan'])->name('thanh-toan.hien-thi');
+Route::post('/thanh-toan/phi-van-chuyen', [ThanhToanController::class, 'tinhPhiVanChuyen'])
+    ->name('thanh-toan.phi-van-chuyen');
+Route::get('/thanh-toan/dia-chi', [ThanhToanController::class, 'layDiaChi'])
+    ->name('thanh-toan.dia-chi');
+Route::post('/thanh-toan/phieu-giam-gia', [ThanhToanController::class, 'apDungMaGiamGia'])
+    ->name('thanh-toan.ap-dung-phieu-giam-gia');
+Route::post('/thanh-toan/dat-hang', [ThanhToanController::class, 'datHang'])
+    ->name('thanh-toan.dat-hang');
+Route::post('/thanh-toan/paypal', [ThanhToanController::class, 'datHangPayPal'])
+    ->name('thanh-toan.paypal');
 
-        // ========================
-        //  WISHLIST
-        // ========================
-        Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
-        Route::post('/wishlist/add', [WishlistController::class, 'store'])->name('wishlist.add');
-        Route::post('/wishlist/remove', [WishlistController::class, 'destroy'])->name('wishlist.remove');
+// Sản phẩm.
+Route::get('/san-pham', [SanPhamController::class, 'hienThiDanhSachSanPham'])->name('san-pham.danh-sach');
+Route::get('/san-pham/loc', [SanPhamController::class, 'locSanPham'])->name('san-pham.loc');
+Route::get('/san-pham/{slug}/bien-the', [SanPhamController::class, 'layThongTinBienTheSanPham'])
+    ->name('san-pham.bien-the');
+Route::get('/san-pham/{slug}', [SanPhamController::class, 'hienThiChiTietSanPham'])
+    ->name('san-pham.chi-tiet');
 
-    });
+// Giỏ hàng.
+Route::post('/gio-hang/them', [GioHangController::class, 'themVaoGioHang'])->name('gio-hang.them');
+Route::post('/gio-hang/xoa-nho', [GioHangController::class, 'xoaKhoiGioHangNho'])->name('gio-hang.xoa-nho');
+Route::get('/gio-hang/nho', [GioHangController::class, 'hienThiGioHangNho'])->name('gio-hang.nho');
+Route::get('/gio-hang', [GioHangController::class, 'hienThiGioHang'])->name('gio-hang.hien-thi');
+Route::post('/gio-hang/cap-nhat', [GioHangController::class, 'capNhatGioHang'])->name('gio-hang.cap-nhat');
+Route::post('/gio-hang/xoa', [GioHangController::class, 'xoaKhoiGioHang'])->name('gio-hang.xoa');
 
-    // ========================
-    //  GHN API (Cả guest và user đăng nhập đều dùng được)
-    // ========================
-    Route::get('/ghn/provinces', [GhnLocationController::class, 'provinces'])->name('ghn.provinces');
-    Route::get('/ghn/districts', [GhnLocationController::class, 'districts'])->name('ghn.districts');
-    Route::get('/ghn/wards', [GhnLocationController::class, 'wards'])->name('ghn.wards');
+Route::get('/tim-kiem', [TimKiemController::class, 'timKiem'])->name('tim-kiem');
 
-    // ========================
-    //  CHECKOUT (cả guest lẫn user đã đăng nhập)
-    // ========================
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-    Route::get('/checkout/shipping-fee', [CheckoutController::class, 'shippingFee'])->name('checkout.shippingFee');
-    Route::get('/checkout/shipping-fee-guest', [CheckoutController::class, 'shippingFeeGuest'])->name('checkout.shippingFeeGuest');
-    Route::get('/checkout/get-address', [CheckoutController::class, 'getAddress']);
-    Route::post('/checkout/coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.coupon.apply');
-    Route::post('/checkout', [CheckoutController::class, 'placeOrder'])->name('checkout.placeOrder');
-    Route::post('/checkout/paypal', [CheckoutController::class, 'placeOrderPayPal'])->name('checkout.placeOrderPayPal');
-
-    // =======================================================
-    //  SẢN PHẨM
-    // =======================================================
-    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-    Route::get('products/filter', [ProductController::class, 'filter'])->name('products.filter');
-    Route::get('/products/{slug}/variant', [ProductController::class, 'variant'])->name('product.variant');
-    Route::get('/products/{slug}', [ProductController::class, 'detail'])->name('product.detail');
-
-    // =======================================================
-    //  GIỎ HÀNG
-    // =======================================================
-    Route::post('/cart/add', [CartController::class, 'store'])->name('cart.add');
-    Route::post('/cart/remove', [CartController::class, 'removeMiniCart'])->name('cart.remove');
-    Route::get('/mini-cart', [CartController::class, 'miniCart'])->name('cart.mini');
-    Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.index');
-    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-    Route::post('/cart/remove-cart', [CartController::class, 'destroy']);
-
-    // =======================================================
-    //  TÌM KIẾM
-    // =======================================================
-    Route::get('/search', [SearchController::class, 'index'])->name('search');
-
-    // =======================================================
-    //  LIÊN HỆ
-    // =======================================================
-    Route::view('/contact', 'clients.pages.contact')->name('contact.index');
-});  // END PREFIX /
-
-/*
-|--------------------------------------------------------------------------
-| Nhúng route admin (tách file riêng)
-|--------------------------------------------------------------------------
-*/
 require __DIR__.'/admin.php';

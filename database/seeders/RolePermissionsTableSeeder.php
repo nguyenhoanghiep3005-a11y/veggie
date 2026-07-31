@@ -2,40 +2,35 @@
 
 namespace Database\Seeders;
 
-use App\Models\Permission;
-use App\Models\Role;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class RolePermissionsTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    // Gan quyen mac dinh cho admin va nhan vien.
+    public function run()
     {
-        // Lấy role admin và staff từ database
-        $adminRole = Role::where('name', 'admin')->first();
-        $staffRole = Role::where('name', 'staff')->first();
+        $quyenAdmin = [1, 2, 3, 4];
+        $quyenNhanVien = [2, 3];
 
-        // Lấy toàn bộ quyền
-        $permissions = Permission::all();
+        $this->ganQuyenChoVaiTro(1, $quyenAdmin);
+        $this->ganQuyenChoVaiTro(2, $quyenNhanVien);
+    }
 
-        if (! $adminRole || ! $staffRole) {
-            return;
+    // Gan danh sach quyen cho mot vai tro.
+    private function ganQuyenChoVaiTro($maVaiTro, $maQuyens)
+    {
+        foreach ($maQuyens as $maQuyen) {
+            DB::table('vai_tro_quyen')->updateOrInsert(
+                [
+                    'ma_vai_tro' => $maVaiTro,
+                    'ma_quyen' => $maQuyen,
+                ],
+                [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
         }
-
-        // Gán tất cả quyền cho admin (nếu tồn tại)
-
-        $adminRole->permissions()->sync($permissions);
-
-        // Gán một số quyền cho nhân viên (nếu tồn tại)
-
-        $staffPermissions = $permissions->whereIn('name', [
-            'manage_products',
-            'manage_order',
-        ]);
-
-        $staffRole->permissions()->sync($staffPermissions);
-
     }
 }

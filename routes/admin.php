@@ -1,220 +1,111 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\CouponController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\OrderReturnController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController;
-use App\Http\Controllers\Admin\PurchaseOrderController;
-use App\Http\Controllers\Admin\SupplierController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\WarehouseController;
+use App\Http\Controllers\Admin\DanhMucController;
+use App\Http\Controllers\Admin\DoiTraController;
+use App\Http\Controllers\Admin\DonHangController;
+use App\Http\Controllers\Admin\KhoController;
+use App\Http\Controllers\Admin\NguoiDungController;
+use App\Http\Controllers\Admin\NhaCungCapController;
+use App\Http\Controllers\Admin\NhapKhoController;
+use App\Http\Controllers\Admin\PhieuGiamGiaController;
+use App\Http\Controllers\Admin\SanPhamController;
+use App\Http\Controllers\Admin\TongQuanController;
+use App\Http\Controllers\Admin\XacThucQuanTriController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| ROUTES ADMIN
-| Tất cả route dành cho trang quản trị nằm trong prefix 'admin'
-|--------------------------------------------------------------------------
-*/
-
 Route::prefix('admin')->group(function () {
-
-    /*
-    |--------------------------------------------------------------------------
-    | NHÓM ROUTE DÀNH CHO ADMIN CHƯA ĐĂNG NHẬP
-    | Middleware: check.auth.admin
-    | - Nếu đã đăng nhập rồi → không cho vào login nữa
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['check.auth.admin'])->group(function () {
-
-        // Hiển thị form đăng nhập admin
-        Route::get('/login', [AdminAuthController::class, 'showLoginForm'])
+    // Đăng nhập và đăng xuất admin.
+    Route::middleware('check.auth.admin')->group(function () {
+        Route::get('/dang-nhap', [XacThucQuanTriController::class, 'hienThiFormDangNhap'])
+            ->name('admin.dang-nhap.hien-thi');
+        Route::post('/dang-nhap', [XacThucQuanTriController::class, 'dangNhap'])
+            ->name('admin.dang-nhap.xu-ly');
+        Route::get('/login', [XacThucQuanTriController::class, 'hienThiFormDangNhap'])
             ->name('admin.login');
+        Route::post('/login', [XacThucQuanTriController::class, 'dangNhap'])
+            ->name('admin.login.xu-ly');
+    });
+    Route::get('/dang-xuat', [XacThucQuanTriController::class, 'dangXuat'])
+        ->name('admin.dang-xuat');
 
-        // Xử lý đăng nhập admin
-        Route::post('/login', [AdminAuthController::class, 'login'])
-            ->name('admin.login.post');
+    Route::middleware('auth.custom')->group(function () {
+        Route::get('/tong-quan', [TongQuanController::class, 'hienThiTongQuan'])
+            ->name('admin.tong-quan');
     });
 
-    // Đăng xuất admin
-    Route::get('/logout', [AdminAuthController::class, 'logout'])
-        ->name('admin.logout');
-
-    /*
-    |--------------------------------------------------------------------------
-    | NHÓM ROUTE DÀNH CHO ADMIN ĐÃ ĐĂNG NHẬP
-    | Middleware: auth.custom
-    | - Bảo vệ các trang chỉ dành cho admin
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['auth.custom'])->group(function () {
-
-        // Dashboard quản trị (trang tổng quan)
-        Route::get('/dashboard', [DashboardController::class, 'index'])
-            ->name('admin.dashboard');
+    // Quản lý người dùng.
+    Route::middleware('permission:quan_ly_nguoi_dung')->group(function () {
+        Route::get('/nguoi-dung', [NguoiDungController::class, 'hienThiDanhSachNguoiDung'])
+            ->name('admin.nguoi-dung.danh-sach');
+        Route::post('/nguoi-dung/cap-nhat-trang-thai', [NguoiDungController::class, 'capNhatTrangThaiNguoiDung'])
+            ->name('admin.nguoi-dung.cap-nhat-trang-thai');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | QUẢN LÝ NGƯỜI DÙNG (User Management)
-    | Middleware: permission:manage_user
-    | - Chỉ admin có quyền manage_user mới được sử dụng chức năng
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['permission:manage_user'])->group(function () {
-
-        // Danh sách người dùng
-        Route::get('/users', [UserController::class, 'index'])
-            ->name('admin.users.index');
-
-        // Chặn hoặc bỏ chặn tài khoản khách hàng
-        Route::post('/user/updateStatus', [UserController::class, 'updateStatus'])
-            ->name('admin.users.update-status');
+    // Quản lý danh mục.
+    Route::middleware('permission:quan_ly_danh_muc')->group(function () {
+        Route::get('/danh-muc/them', [DanhMucController::class, 'hienThiFormThemDanhMuc'])
+            ->name('admin.danh-muc.them');
+        Route::post('/danh-muc/them', [DanhMucController::class, 'themDanhMuc'])
+            ->name('admin.danh-muc.luu');
+        Route::get('/danh-muc', [DanhMucController::class, 'hienThiDanhSachDanhMuc'])
+            ->name('admin.danh-muc.danh-sach');
+        Route::post('/danh-muc/cap-nhat', [DanhMucController::class, 'capNhatDanhMuc'])
+            ->name('admin.danh-muc.cap-nhat');
+        Route::post('/danh-muc/xoa', [DanhMucController::class, 'xoaDanhMuc'])
+            ->name('admin.danh-muc.xoa');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | QUẢN LÝ DANH MỤC (Category)
-    | Middleware: permission:manage_categories
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['permission:manage_categories'])->group(function () {
+    // Quản lý sản phẩm, kho và nhập hàng.
+    Route::middleware('permission:quan_ly_san_pham')->group(function () {
+        Route::get('/san-pham/them', [SanPhamController::class, 'hienThiFormThemSanPham'])->name('admin.san-pham.them');
+        Route::post('/san-pham/them', [SanPhamController::class, 'themSanPham'])->name('admin.san-pham.luu');
+        Route::get('/san-pham', [SanPhamController::class, 'hienThiDanhSachSanPham'])->name('admin.san-pham.danh-sach');
+        Route::post('/san-pham/cap-nhat', [SanPhamController::class, 'capNhatSanPham'])->name('admin.san-pham.cap-nhat');
+        Route::post('/san-pham/xoa', [SanPhamController::class, 'xoaSanPham'])->name('admin.san-pham.xoa');
 
-        // Hiển thị form thêm danh mục
-        Route::get('/categories/add', [CategoryController::class, 'create'])
-            ->name('admin.categories.add');
+        Route::get('/kho-hang', [KhoController::class, 'hienThiDanhSachKho'])->name('admin.kho-hang.danh-sach');
+        Route::get('/kho-hang/hang-hu', [KhoController::class, 'hienThiDanhSachHangHu'])->name('admin.kho-hang.hang-hu');
+        Route::post('/kho-hang/{loHangKho}/dieu-chinh', [KhoController::class, 'dieuChinhLoHang'])->name('admin.kho-hang.dieu-chinh');
 
-        // Xử lý thêm danh mục
-        Route::post('/categories/add', [CategoryController::class, 'store'])
-            ->name('admin.categories.store');
+        Route::get('/phieu-giam-gia', [PhieuGiamGiaController::class, 'hienThiDanhSachPhieuGiamGia'])->name('admin.phieu-giam-gia.danh-sach');
+        Route::post('/phieu-giam-gia', [PhieuGiamGiaController::class, 'themPhieuGiamGia'])->name('admin.phieu-giam-gia.luu');
+        Route::put('/phieu-giam-gia/{phieuGiamGia}', [PhieuGiamGiaController::class, 'capNhatPhieuGiamGia'])->name('admin.phieu-giam-gia.cap-nhat');
+        Route::delete('/phieu-giam-gia/{phieuGiamGia}', [PhieuGiamGiaController::class, 'xoaPhieuGiamGia'])->name('admin.phieu-giam-gia.xoa');
 
-        // Danh sách danh mục
-        Route::get('/categories', [CategoryController::class, 'index'])
-            ->name('admin.categories.index');
+        Route::get('/nha-cung-cap', [NhaCungCapController::class, 'hienThiDanhSachNhaCungCap'])->name('admin.nha-cung-cap.danh-sach');
+        Route::post('/nha-cung-cap', [NhaCungCapController::class, 'themNhaCungCap'])->name('admin.nha-cung-cap.luu');
+        Route::put('/nha-cung-cap/{nhaCungCap}', [NhaCungCapController::class, 'capNhatNhaCungCap'])->name('admin.nha-cung-cap.cap-nhat');
+        Route::delete('/nha-cung-cap/{nhaCungCap}', [NhaCungCapController::class, 'xoaNhaCungCap'])->name('admin.nha-cung-cap.xoa');
 
-        // Cập nhật danh mục (AJAX)
-        Route::post('/categories/update', [CategoryController::class, 'update']);
+        Route::get('/don-dat-nhap', [NhapKhoController::class, 'hienThiDanhSachDonDatNhap'])->name('admin.don-dat-nhap.danh-sach');
+        Route::get('/don-dat-nhap/them', [NhapKhoController::class, 'hienThiFormThemDonDatNhap'])->name('admin.don-dat-nhap.them');
+        Route::post('/don-dat-nhap', [NhapKhoController::class, 'themDonDatNhap'])->name('admin.don-dat-nhap.luu');
+        Route::get('/don-dat-nhap/{maDonDatNhap}', [NhapKhoController::class, 'hienThiChiTietDonDatNhap'])->name('admin.don-dat-nhap.chi-tiet');
+        Route::get('/don-dat-nhap/{maDonDatNhap}/nhap-kho', [NhapKhoController::class, 'hienThiFormNhapKho'])->name('admin.don-dat-nhap.nhap-kho');
+        Route::post('/don-dat-nhap/{maDonDatNhap}/nhap-kho', [NhapKhoController::class, 'nhapKho'])->name('admin.don-dat-nhap.xu-ly-nhap-kho');
+        Route::post('/don-dat-nhap/{maDonDatNhap}/xoa', [NhapKhoController::class, 'xoaDonDatNhap'])->name('admin.don-dat-nhap.xoa');
 
-        // Xóa danh mục
-        Route::post('/categories/delete', [CategoryController::class, 'destroy']);
+        Route::get('/phieu-nhap', [NhapKhoController::class, 'hienThiDanhSachPhieuNhap'])->name('admin.phieu-nhap.danh-sach');
+        Route::get('/phieu-nhap/{phieuNhap}', [NhapKhoController::class, 'hienThiChiTietPhieuNhap'])->name('admin.phieu-nhap.chi-tiet');
+        Route::get('/phieu-hang-hu', [NhapKhoController::class, 'hienThiDanhSachPhieuHangHu'])->name('admin.phieu-hang-hu.danh-sach');
+        Route::get('/phieu-hang-hu/{phieuHangHu}', [NhapKhoController::class, 'hienThiChiTietPhieuHangHu'])->name('admin.phieu-hang-hu.chi-tiet');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | QUẢN LÝ SẢN PHẨM (Product)
-    | Middleware: permission:manage_products
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['permission:manage_products'])->group(function () {
+    // Quản lý đơn hàng và đổi trả.
+    Route::middleware('permission:quan_ly_don_hang')->group(function () {
+        Route::get('/don-hang', [DonHangController::class, 'hienThiDanhSachDonHang'])->name('admin.don-hang.danh-sach');
+        Route::get('/don-hang/{maDonHang}', [DonHangController::class, 'hienThiChiTietDonHang'])->name('admin.don-hang.chi-tiet');
+        Route::post('/don-hang/xac-nhan', [DonHangController::class, 'xacNhanDonHang'])->name('admin.don-hang.xac-nhan');
+        Route::post('/don-hang/giao-hang', [DonHangController::class, 'giaoDonHang'])->name('admin.don-hang.giao-hang');
+        Route::post('/don-hang/hoan-tat', [DonHangController::class, 'capNhatTrangThaiDonHang'])->name('admin.don-hang.hoan-tat');
+        Route::post('/don-hang/giao-that-bai', [DonHangController::class, 'ghiNhanGiaoHangThatBai'])->name('admin.don-hang.giao-that-bai');
+        Route::post('/don-hang/hoan-ve-cua-hang', [DonHangController::class, 'chuyenHangHoanVeCuaHang'])->name('admin.don-hang.hoan-ve-cua-hang');
+        Route::post('/don-hang/nhan-hang-hoan', [DonHangController::class, 'xacNhanNhanHangHoan'])->name('admin.don-hang.nhan-hang-hoan');
+        Route::post('/don-hang/hoan-tien-paypal', [DonHangController::class, 'xacNhanHoanTienPayPal'])->name('admin.don-hang.hoan-tien-paypal');
+        Route::post('/don-hang/huy', [DonHangController::class, 'huyDonHang'])->name('admin.don-hang.huy');
 
-        // Hiển thị form thêm sản phẩm
-        Route::get('/product/add', [AdminProductController::class, 'create'])
-            ->name('admin.product.add');
-
-        // Xử lý thêm sản phẩm
-        Route::post('/product/add', [AdminProductController::class, 'store'])
-            ->name('admin.product.store');
-
-        // Danh sách sản phẩm
-        Route::get('/products', [AdminProductController::class, 'index'])
-            ->name('admin.products.index');
-
-        Route::get('/warehouses', [WarehouseController::class, 'index'])
-            ->name('admin.warehouses.index');
-
-        Route::get('/warehouses/damages', [WarehouseController::class, 'damages'])
-            ->name('admin.warehouses.damages');
-
-        Route::post('/warehouses/{stock}/adjust', [WarehouseController::class, 'adjust'])
-            ->name('admin.warehouses.adjust');
-
-        // Cập nhật sản phẩm (AJAX)
-        Route::post('/product/update', [AdminProductController::class, 'update'])
-            ->name('admin.product.update');
-
-        // Xoá sản phẩm
-        Route::post('/product/delete', [AdminProductController::class, 'destroy']);
-
-        Route::get('/coupons', [CouponController::class, 'index'])->name('admin.coupons.index');
-        Route::post('/coupons', [CouponController::class, 'store'])->name('admin.coupons.store');
-        Route::put('/coupons/{coupon}', [CouponController::class, 'update'])->name('admin.coupons.update');
-        Route::delete('/coupons/{coupon}', [CouponController::class, 'destroy'])->name('admin.coupons.destroy');
-
-        Route::get('/suppliers', [SupplierController::class, 'index'])->name('admin.suppliers.index');
-        Route::post('/suppliers', [SupplierController::class, 'store'])->name('admin.suppliers.store');
-        Route::put('/suppliers/{supplier}', [SupplierController::class, 'update'])->name('admin.suppliers.update');
-        Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('admin.suppliers.destroy');
-
-        // Phiếu đặt mua là chứng từ gốc; khi nhập hàng sẽ cộng trực tiếp vào tồn sản phẩm.
-        Route::get('/purchase-orders', [PurchaseOrderController::class, 'index'])
-            ->name('admin.purchase-orders.index');
-        Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])
-            ->name('admin.purchase-orders.create');
-        Route::post('/purchase-orders', [PurchaseOrderController::class, 'store'])
-            ->name('admin.purchase-orders.store');
-        Route::get('/purchase-orders/{id}', [PurchaseOrderController::class, 'show'])
-            ->name('admin.purchase-orders.show');
-        Route::get('/purchase-orders/{id}/import', [PurchaseOrderController::class, 'showImportForm'])
-            ->name('admin.purchase-orders.import.form');
-        Route::post('/purchase-orders/{id}/import', [PurchaseOrderController::class, 'processImport'])
-            ->name('admin.purchase-orders.import.process');
-        Route::post('/purchase-orders/{id}/destroy', [PurchaseOrderController::class, 'destroy'])
-            ->name('admin.purchase-orders.destroy');
-
-        Route::get('/import-receipts', [PurchaseOrderController::class, 'importReceipts'])
-            ->name('admin.import-receipts.index');
-        Route::get('/import-receipts/{receipt}', [PurchaseOrderController::class, 'showImportReceipt'])
-            ->name('admin.import-receipts.show');
-
-        Route::get('/damage-slips', [PurchaseOrderController::class, 'damageSlips'])
-            ->name('admin.damage-slips.index');
-        Route::get('/damage-slips/{damageSlip}', [PurchaseOrderController::class, 'showDamageSlip'])
-            ->name('admin.damage-slips.show');
-
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | QUẢN LÝ ĐƠN HÀNG (Order)
-    | Middleware: permission:manage_order
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['permission:manage_order'])->group(function () {
-
-        // Danh sách đơn hàng
-        Route::get('/orders', [OrderController::class, 'index'])
-            ->name('admin.orders.index');
-
-        // Chi tiết đơn hàng
-        Route::get('order/order-detail/{id}', [OrderController::class, 'showOrderDetail'])
-            ->name('admin.order-detail');
-
-        // Xác nhận đơn hàng (pending → confirmed)
-        Route::post('/order/confirm', [OrderController::class, 'confirmOrder'])
-            ->name('admin.order.confirm');
-
-        // Giao hàng (confirmed → shipping)
-        Route::post('/order/ship', [OrderController::class, 'shipOrder'])
-            ->name('admin.order.ship');
-
-        // Cập nhật trạng thái đơn hàng (shipping → completed)
-        Route::post('/order/update-status', [OrderController::class, 'updateStatus'])
-            ->name('admin.order.updateStatus');
-
-        // Hủy đơn hàng + hoàn lại số lượng sản phẩm
-        Route::post('/order/cancel', [OrderController::class, 'cancelOrder'])
-            ->name('admin.order.cancel');
-
-        // Xử lý đổi/trả hàng lỗi ngay trong chi tiết đơn hàng.
-        Route::post('/order-returns/{orderReturn}/approve', [OrderReturnController::class, 'approve'])
-            ->name('admin.order-returns.approve');
-        Route::post('/order-returns/{orderReturn}/receive', [OrderReturnController::class, 'receive'])
-            ->name('admin.order-returns.receive');
-        Route::post('/order-returns/{orderReturn}/complete', [OrderReturnController::class, 'complete'])
-            ->name('admin.order-returns.complete');
+        Route::post('/doi-tra/{maYeuCauDoiTra}/duyet', [DoiTraController::class, 'duyetYeuCau'])->name('admin.doi-tra.duyet');
+        Route::post('/doi-tra/{maYeuCauDoiTra}/nhan-hang', [DoiTraController::class, 'nhanHangDoiTra'])->name('admin.doi-tra.nhan-hang');
+        Route::post('/doi-tra/{maYeuCauDoiTra}/hoan-tat', [DoiTraController::class, 'hoanTatDoiTra'])->name('admin.doi-tra.hoan-tat');
     });
 });

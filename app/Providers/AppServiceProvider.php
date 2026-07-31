@@ -7,18 +7,13 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
+    // Dang ky cac dich vu cua ung dung.
+    public function register()
     {
-        //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
+    // Khoi tao cau hinh chung cua ung dung.
+    public function boot()
     {
         Schema::defaultStringLength(191);
     }

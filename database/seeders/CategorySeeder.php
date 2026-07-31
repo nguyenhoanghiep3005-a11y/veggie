@@ -2,28 +2,45 @@
 
 namespace Database\Seeders;
 
-use App\Models\Category;
+use App\Models\DanhMuc;
 use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
-    public function run(): void
+    // Them hoac cap nhat danh muc mau.
+    public function run()
     {
-        $categories = [
-            ['name' => 'Thực Phẩm Khô', 'slug' => 'thuc-pham-kho', 'description' => 'Các loại thực phẩm khô đóng gói, dễ bảo quản.', 'image' => 'uploads/categories/1782975650_6a460ca274db3.png'],
-            ['name' => 'Gia vị', 'slug' => 'gia-vi', 'description' => 'Gia vị nấu ăn dùng hằng ngày.', 'image' => 'uploads/categories/1782975699_6a460cd39b937.png'],
-            ['name' => 'Gạo', 'slug' => 'gao', 'description' => 'Các loại gạo trắng, gạo lứt và gạo đặc sản.', 'image' => 'uploads/categories/1782975722_6a460cea6a2c9.png'],
-            ['name' => 'Hạt Dinh Dưỡng', 'slug' => 'hat-dinh-duong', 'description' => 'Hạt ăn vặt và hạt dinh dưỡng tốt cho sức khỏe.', 'image' => 'uploads/categories/1782975680_6a460cc07b6a4.png'],
+        $danhMucs = [
+            [
+                'ten' => 'Thuc Pham Kho',
+                'duong_dan' => 'thuc-pham-kho',
+                'mo_ta' => 'Cac loai thuc pham kho dong goi, de bao quan.',
+                'hinh_anh' => 'uploads/categories/1782975650_6a460ca274db3.png',
+            ],
+            [
+                'ten' => 'Gia vi',
+                'duong_dan' => 'gia-vi',
+                'mo_ta' => 'Gia vi nau an dung hang ngay.',
+                'hinh_anh' => 'uploads/categories/1782975699_6a460cd39b937.png',
+            ],
+            [
+                'ten' => 'Gao',
+                'duong_dan' => 'gao',
+                'mo_ta' => 'Cac loai gao trang, gao lut va gao dac san.',
+                'hinh_anh' => 'uploads/categories/1782975722_6a460cea6a2c9.png',
+            ],
+            [
+                'ten' => 'Hat Dinh Duong',
+                'duong_dan' => 'hat-dinh-duong',
+                'mo_ta' => 'Hat an vat va hat dinh duong tot cho suc khoe.',
+                'hinh_anh' => 'uploads/categories/1782975680_6a460cc07b6a4.png',
+            ],
         ];
 
-        Category::whereNotIn('slug', collect($categories)->pluck('slug')->all())
-            ->doesntHave('products')
-            ->delete();
-
-        foreach ($categories as $category) {
-            Category::updateOrCreate(
-                ['slug' => $category['slug']],
-                $category
+        foreach ($danhMucs as $danhMuc) {
+            DanhMuc::updateOrCreate(
+                ['duong_dan' => $danhMuc['duong_dan']],
+                $danhMuc
             );
         }
     }

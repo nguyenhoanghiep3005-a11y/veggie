@@ -88,12 +88,6 @@
         margin: 0;
     }
 }
-#voice-search{
-    position: absolute;
-    right: 50px;
-    text-align: center;
-    top: 20px;
-}
 
 .product-stock-detail {
     color: var(--client-text);
@@ -837,14 +831,14 @@
 .product-card-price del,
 .product-detail-old-price {
     color: #999;
-    font-size: 14px;
+    font-size: 32px;
     font-weight: 400;
 }
 
 .product-card-price span,
 .product-detail-price {
     color: #80B500;
-    font-size: 18px;
+    font-size: 32px;
     font-weight: 600;
 }
 
@@ -1045,4 +1039,116 @@
 .home-best-seller-section .section-title-area {
     margin-top: 0 !important;
     margin-bottom: 18px !important;
+}
+/* Thu gọn modal và hiển thị trạng thái chọn một voucher. */
+.checkout-voucher-dialog {
+    width: calc(100% - 30px);
+    max-width: 720px;
+}
+
+.checkout-voucher-modal .modal-header,
+.checkout-voucher-modal .modal-body {
+    padding: 16px 18px;
+}
+
+.checkout-voucher-modal .input-group input,
+.checkout-voucher-modal .input-group .btn {
+    height: 46px;
+}
+
+.checkout-voucher-list {
+    max-height: 300px;
+}
+
+.checkout-voucher-item {
+    min-height: 80px;
+    margin-bottom: 8px;
+}
+
+.checkout-voucher-ticket {
+    flex-basis: 105px;
+}
+
+.checkout-voucher-ticket strong {
+    font-size: 22px;
+}
+
+.checkout-voucher-info {
+    padding: 10px 12px;
+}
+
+.checkout-voucher-radio {
+    display: flex;
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    margin: auto 14px;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #b8b8b8;
+    border-radius: 50%;
+    color: transparent;
+}
+
+.checkout-voucher-item.active .checkout-voucher-radio {
+    border-color: #80b500;
+    background: #80b500;
+    color: #fff;
+}
+
+.checkout-voucher-item.is-disabled {
+    opacity: .35;
+    filter: grayscale(1);
+}
+
+@media (max-width: 575px) {
+    .checkout-voucher-dialog {
+        width: calc(100% - 20px);
+    }
+
+    .checkout-voucher-ticket {
+        flex-basis: 82px;
+    }
+
+    .checkout-voucher-radio {
+        margin-right: 8px;
+        margin-left: 8px;
+    }
+}
+/* Giữ tên tỉnh, huyện, xã trong đúng chiều rộng của ô chọn. */
+#khu-vuc-dia-chi-moi .nice-select {
+    min-width: 0;
+}
+
+#khu-vuc-dia-chi-moi .nice-select .current {
+    display: block;
+    width: calc(100% - 18px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* Sap xep cac nut danh gia trong chi tiet don hang. */
+.order-review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+    margin-top: 18px;
+}
+
+.order-review-actions .order-review-button {
+    display: inline-flex;
+    width: 300px;
+    min-height: 58px;
+    padding: 12px 18px;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.35;
+    white-space: normal;
+    text-align: center;
+}
+
+@media (max-width: 767px) {
+    .order-review-actions .order-review-button {
+        width: 100%;
+    }
 }

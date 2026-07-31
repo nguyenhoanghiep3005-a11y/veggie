@@ -9,10 +9,8 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
-    public function run(): void
+    // Goi cac seeder du lieu mau dang duoc su dung.
+    public function run()
     {
         $this->call([
             RolesTableSeeder::class,
@@ -22,7 +20,6 @@ class DatabaseSeeder extends Seeder
             AdminStaffTableSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
-            PurchaseWorkflowSeeder::class,
         ]);
     }
 }

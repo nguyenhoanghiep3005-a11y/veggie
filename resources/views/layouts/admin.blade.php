@@ -33,10 +33,7 @@
 
   <!-- toastr css -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-  @php
-  $dataTableRoutes= ['admin.categories.index', 'admin.products.index', 'admin.orders.index'];
-  @endphp
-  @if(in_array(Route::currentRouteName(), $dataTableRoutes))
+@if(in_array(Route::currentRouteName(), ['admin.danh-muc.danh-sach', 'admin.san-pham.danh-sach', 'admin.don-hang.danh-sach']))
   <!-- Datatables -->
   <link href="{{asset('assets/admin/vendors/datatables.net-bs/css/dataTables.bootstrap.min.css')}}" rel="stylesheet">
   <link href="{{asset('assets/admin/vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css')}}"
@@ -55,13 +52,13 @@
 <body class="nav-md">
   <div class="container body">
     <div class="main_container">
-      @include('admin.partials.side-bar')
-      @include('admin.partials.top-nagivation')
+      @include('admin.partials.thanh-ben', ['nguoiDungQuanTri' => Auth::guard('admin')->user()])
+      @include('admin.partials.thanh-dieu-huong')
       <main>
         @yield('content')
       </main>
 
-      @include('admin.partials.footer')
+      @include('admin.partials.chan-trang')
 
     </div>
   </div>
@@ -105,7 +102,7 @@
   <script src="{{asset('assets/admin/vendors/bootstrap-daterangepicker/daterangepicker.js')}}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   {{-- bootrap --}}
-  @if(in_array(Route::currentRouteName(), $dataTableRoutes))
+  @if(in_array(Route::currentRouteName(), ['admin.danh-muc.danh-sach', 'admin.san-pham.danh-sach', 'admin.don-hang.danh-sach']))
     <!-- Datatables -->
   <script src="{{asset('assets/admin/vendors/datatables.net/js/jquery.dataTables.min.js')}}"></script>
   <script src="{{asset('assets/admin/vendors/datatables.net-bs/js/dataTables.bootstrap.min.js')}}"></script>

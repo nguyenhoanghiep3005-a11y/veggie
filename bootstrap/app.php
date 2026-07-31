@@ -10,13 +10,13 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
+    ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'auth.custom' => \App\Http\Middleware\RedirectIfNotAuthenticated::class,
             'check.auth.admin' => \App\Http\Middleware\RedirectIfAuthenticatedAdmin::class,
             'permission' => \App\Http\Middleware\CheckPermisson::class,
         ]);
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

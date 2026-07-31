@@ -50,10 +50,10 @@
                                 <h4 class="footer-title">Công ty</h4>
                                 <div class="footer-menu">
                                     <ul>
-                                        <li><a href="{{route('about')}}">Về chúng tôi</a></li>
-                                        <li><a href="{{route('products.index')}}">Sản phẩm</a></li>
-                                        <li><a href="{{route('faq')}}">FAQ</a></li>
-                                        <li><a href="{{route('contact.index')}}">Liên hệ</a></li>
+                                        <li><a href="{{route('lien-he')}}">Về chúng tôi</a></li>
+                                        <li><a href="{{route('san-pham.danh-sach')}}">Sản phẩm</a></li>
+                                        <li><a href="{{route('lien-he')}}">FAQ</a></li>
+                                        <li><a href="{{route('lien-he')}}">Liên hệ</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -63,10 +63,10 @@
                                 <h4 class="footer-title">Dịch vụ</h4>
                                 <div class="footer-menu">
                                     <ul>
-                                        <li><a href="{{route('account')}}">Theo dõi đơn hàng</a></li>
-                                        <li><a href="{{route('wishlist')}}">Danh sách yêu thích</a></li>
-                                        <li><a href="{{route('login')}}">Đăng nhập</a></li>
-                                        <li><a href="{{route('account')}}">Tài khoản</a></li>
+                                        <li><a href="{{route('tai-khoan.hien-thi')}}">Theo dõi đơn hàng</a></li>
+                                        <li><a href="{{route('yeu-thich.danh-sach')}}">Danh sách yêu thích</a></li>
+                                        <li><a href="{{route('dang-nhap.hien-thi')}}">Đăng nhập</a></li>
+                                        <li><a href="{{route('tai-khoan.hien-thi')}}">Tài khoản</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -76,12 +76,12 @@
                                 <h4 class="footer-title">Hỗ trợ khách hàng</h4>
                                 <div class="footer-menu">
                                     <ul>
-                                        <li><a href="{{route('login')}}">Đăng nhập</a></li>
-                                        <li><a href="{{route('account')}}">Tài khoản</a></li>
-                                        <li><a href="{{route('wishlist')}}">Danh sách yêu thích</a></li>
-                                        <li><a href="{{route('account')}}">Theo dõi đơn hàng</a></li>
-                                        <li><a href="{{route('faq')}}">FAQ</a></li>
-                                        <li><a href="{{route('contact.index')}}">Liên hệ</a></li>
+                                        <li><a href="{{route('dang-nhap.hien-thi')}}">Đăng nhập</a></li>
+                                        <li><a href="{{route('tai-khoan.hien-thi')}}">Tài khoản</a></li>
+                                        <li><a href="{{route('yeu-thich.danh-sach')}}">Danh sách yêu thích</a></li>
+                                        <li><a href="{{route('tai-khoan.hien-thi')}}">Theo dõi đơn hàng</a></li>
+                                        <li><a href="{{route('lien-he')}}">FAQ</a></li>
+                                        <li><a href="{{route('lien-he')}}">Liên hệ</a></li>
                                     </ul>
                                 </div>
                             </div>

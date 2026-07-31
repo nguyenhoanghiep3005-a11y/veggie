@@ -7,21 +7,23 @@ use Illuminate\Support\Facades\DB;
 
 class RolesTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    // Them hoac cap nhat cac vai tro mac dinh.
+    public function run()
     {
-        $roles = [
+        $vaiTros = [
             1 => 'admin',
             2 => 'staff',
             3 => 'customer',
         ];
 
-        foreach ($roles as $id => $name) {
-            DB::table('roles')->updateOrInsert(
-                ['id' => $id],
-                ['name' => $name, 'created_at' => now(), 'updated_at' => now()]
+        foreach ($vaiTros as $maVaiTro => $tenVaiTro) {
+            DB::table('vai_tro')->updateOrInsert(
+                ['ma_vai_tro' => $maVaiTro],
+                [
+                    'ten' => $tenVaiTro,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
             );
         }
     }

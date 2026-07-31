@@ -1,791 +1,815 @@
 $(document).ready(function () {
 
-    // =============== QUẢN LÝ NGƯỜI DÙNG (MANAGEMENT USER) ===============
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
 
-    // Chặn hoặc bỏ chặn tài khoản khách hàng
-    $(document).on('click', '.changeStatus', function (e) {
-        let button = $(this);
-        let userId = button.data('userid');
-        let status = button.data('status');
+    // Cap nhat trang thai tai khoan khach hang.
+    $(document).on('click', '.changeStatus', function () {
+        var nutBam = $(this);
+        var maNguoiDung = nutBam.data('userid');
+        var trangThai = nutBam.data('status');
 
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
         $.ajax({
             type: 'POST',
-            url: button.data('url'),
+            url: '/admin/nguoi-dung/cap-nhat-trang-thai',
             data: {
-                user_id: userId,
-                status: status,
+                ma_nguoi_dung: maNguoiDung,
+                trang_thai: trangThai
             },
-
             success: function (response) {
-
-                if (response.status) {
-                    toastr.success(response.message);
-
-                    let isBanned = status === 'banned';
-                    let nextStatus = isBanned ? 'active' : 'banned';
-                    let buttonLabel = isBanned
-                        ? '<i class="fa fa-check"></i> Bỏ chặn'
-                        : '<i class="fa fa-ban"></i> Chặn';
-
-                    button
-                        .data('status', nextStatus)
-                        .attr('data-status', nextStatus)
-                        .toggleClass('btn-warning', !isBanned)
-                        .toggleClass('btn-success', isBanned)
-                        .html(buttonLabel);
-
-                    button.closest('.profile_view')
-                        .find('.user-status')
-                        .text(isBanned ? 'Đã chặn' : 'Đang hoạt động');
-                } else {
-                    toastr.error(response.message);
-                }
-            },
-
-            error: function (xhr) {
-                toastr.error(xhr.responseJSON?.message || 'Không thể cập nhật trạng thái tài khoản.');
-            }
-        });
-    });
-
-    // =============== QUẢN LÝ DANH MỤC (MANAGEMENT CATEGORY) ============
-
-    //  Xem trước ảnh khi thêm danh mục mới
-    $("#category-image").change(function () {
-        let file = this.files[0];
-
-        if (file) {
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                $('#image-preview').attr('src', e.target.result).show();
-            }
-            reader.readAsDataURL(file);
-        } else {
-            $('#image-preview').hide();
-        }
-    });
-
-    //  Xem trước ảnh khi cập nhật danh mục (đúng theo ID danh mục)
-    $('.category-image').on('change', function () {
-        let categoryId = $(this).data('id');
-        let file = this.files[0];
-
-        if (file) {
-            let reader = new FileReader();
-            reader.onload = function (event) {
-                $('#image-preview-' + categoryId)
-                    .attr('src', event.target.result)
-                    .show();
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    //  Cập nhật danh mục bằng AJAX
-    $(document).on('click', '.btn-update-submit-category', function (e) {
-        e.preventDefault();
-
-        let button = $(this);
-        let categoryId = button.data('id');
-        let form = button.closest(".modal").find('form');
-        let formData = new FormData(form[0]);
-        formData.append('category_id', categoryId);
-
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-
-        $.ajax({
-            type: 'POST',
-            url: 'categories/update',
-            data: formData,
-            processData: false,
-            contentType: false,
-
-            beforeSend: function () {
-                button.prop('disabled', true).text('Đang cập nhật...');
-            },
-
-            success: function (response) {
-
-                if (response.status) {
-                    toastr.success(response.message);
-
-                    let id = response.data.id;
-
-                    let row = $('#category-row-' + id);
-
-                    row.find('td:eq(0) img').attr('src', response.data.image);
-                    row.find('td:eq(1)').text(response.data.name);
-                    row.find('td:eq(2)').text(response.data.slug);
-                    row.find('td:eq(3)').text(response.data.description);
-
-                    // Đóng modal
-                    $('#modalupdate-' + id).modal('hide');
-
-                } else {
-                    toastr.error(response.message);
-                }
-            },
-
-            error: function (xhr) {
-                alert(xhr.responseText);
-            },
-
-            complete: function () {
-                button.prop('disabled', false).text('Cập nhật danh mục');
-            }
-        });
-    });
-
-    //  Xóa danh mục
-    $(document).on('click', '.btn-delete-category', function (e) {
-
-        e.preventDefault();
-
-        let button = $(this);
-        let categoryId = button.data('id');
-        let row = button.closest('tr');
-
-        if (confirm('Bạn có chắc chắn muốn xóa danh mục này không?')) {
-
-            $.ajaxSetup({
-                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
-            });
-
-            $.ajax({
-                type: 'POST',
-                url: 'categories/delete',
-                data: { category_id: categoryId },
-
-                success: function (response) {
-
-                    if (response.status) {
-                        toastr.success(response.message);
-
-                        // Xóa hàng khỏi bảng
-                        row.fadeOut(300, function () {
-                            $(this).remove();
-                        });
-
-                    } else {
-                        toastr.error(response.message);
-                    }
-                },
-
-                error: function (xhr, status, error) {
-                    alert('Có lỗi xảy ra ' + error);
-                }
-            });
-        }
-    });
-
-    // =============== QUẢN LÝ SẢN PHẨM (MANAGEMENT PRODUCT) =============
-
-    //  Xem trước ảnh khi thêm sản phẩm mới
-    $("#product-images").change(function (e) {
-        let files = e.target.files;
-        let previewContainer = $("#image-preview-container");
-
-        previewContainer.empty(); // xóa ảnh cũ
-
-        if (files.length > 0) {
-
-            for (let i = 0; i < files.length; i++) {
-
-                let file = files[i];
-                let reader = new FileReader();
-
-                reader.onload = function (event) {
-                    let img = $('<img>')
-                        .attr('src', event.target.result)
-                        .addClass("image-preview");
-
-                    previewContainer.append(img);
-                };
-
-                reader.readAsDataURL(file);
-            }
-        }
-    });
-
-    //  Xem trước ảnh khi update sản phẩm (dùng event delegation để hoạt động trong modal)
-    $(document).on('change', '.product-images', function (e) {
-        let files = e.target.files;
-        let productId = $(this).data("id");
-        let previewContainer = $("#image-preview-container-" + productId);
-
-        previewContainer.empty();
-
-        if (files.length > 0) {
-
-            for (let i = 0; i < files.length; i++) {
-
-                let file = files[i];
-                let reader = new FileReader();
-
-                reader.onload = function (event) {
-                    let img = $('<img>')
-                        .attr('src', event.target.result)
-                        .css({ width: '100px', height: '100px', objectFit: 'cover', marginRight: '10px', marginTop: '10px' });
-
-                    previewContainer.append(img);
-                };
-
-                reader.readAsDataURL(file);
-            }
-        }
-    });
-
-    //  Update sản phẩm
-    $(document).on('click', '.btn-update-submit-product', function (e) {
-
-        e.preventDefault();
-
-        let button = $(this);
-        let productId = button.data("id");
-        let form = button.closest(".modal").find('form');
-
-        // FormData đã lấy trực tiếp file từ input trong form.
-        // Không xoá rồi append lại vì có thể làm mất file trên một số trình duyệt.
-        let formData = new FormData(form[0]);
-        formData.append('product_id', productId);
-
-        let imageInput = form.find('.product-images')[0];
-        let allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
-        let allowedImageExtensions = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
-
-        if (imageInput && imageInput.files.length > 0) {
-            for (let i = 0; i < imageInput.files.length; i++) {
-                let file = imageInput.files[i];
-                let extension = file.name.split('.').pop().toLowerCase();
-
-                if ((!file.type || !allowedImageTypes.includes(file.type)) && !allowedImageExtensions.includes(extension)) {
-                    toastr.error('Ảnh sản phẩm chỉ được dùng file jpeg, jpg, png, gif hoặc webp.');
+                if (!response.trang_thai) {
+                    toastr.error(response.thong_bao);
                     return;
                 }
+
+                var dangBiKhoa = response.du_lieu.trang_thai === 'bi_khoa';
+                var trangThaiTiepTheo = 'bi_khoa';
+                var noiDungNut = '<i class="fa fa-ban"></i> Chặn';
+
+                if (dangBiKhoa) {
+                    trangThaiTiepTheo = 'hoat_dong';
+                    noiDungNut = '<i class="fa fa-check"></i> Bỏ chặn';
+                }
+
+                nutBam
+                    .data('status', trangThaiTiepTheo)
+                    .attr('data-status', trangThaiTiepTheo)
+                    .toggleClass('btn-warning', !dangBiKhoa)
+                    .toggleClass('btn-success', dangBiKhoa)
+                    .html(noiDungNut);
+
+                nutBam.closest('.profile_view')
+                    .find('.user-status')
+                    .text(dangBiKhoa ? 'Đã chặn' : 'Đang hoạt động');
+
+                toastr.success(response.thong_bao);
+            },
+            error: function (xhr) {
+                var thongBao = 'Không thể cập nhật trạng thái tài khoản.';
+
+                if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+                    thongBao = xhr.responseJSON.thong_bao;
+                }
+
+                toastr.error(thongBao);
             }
+        });
+    });
+
+    // Xem truoc hinh anh khi them danh muc.
+    $('#category-image').on('change', function () {
+        var tepHinhAnh = this.files[0];
+
+        if (!tepHinhAnh) {
+            $('#image-preview').hide();
+            return;
         }
 
-        $.ajaxSetup({
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
+        var docTep = new FileReader();
+        docTep.onload = function (suKien) {
+            $('#image-preview').attr('src', suKien.target.result).show();
+        };
+        docTep.readAsDataURL(tepHinhAnh);
+    });
+
+    // Xem truoc hinh anh khi cap nhat danh muc.
+    $('.category-image').on('change', function () {
+        var maDanhMuc = $(this).data('id');
+        var tepHinhAnh = this.files[0];
+
+        if (!tepHinhAnh) {
+            return;
+        }
+
+        var docTep = new FileReader();
+        docTep.onload = function (suKien) {
+            $('#image-preview-' + maDanhMuc)
+                .attr('src', suKien.target.result)
+                .show();
+        };
+        docTep.readAsDataURL(tepHinhAnh);
+    });
+
+    // Cap nhat danh muc.
+    $(document).on('click', '.btn-update-submit-category', function (suKien) {
+        suKien.preventDefault();
+
+        var nutBam = $(this);
+        var maDanhMuc = nutBam.data('id');
+        var form = nutBam.closest('.modal').find('form');
+        var data = new FormData(form[0]);
+        data.append('ma_danh_muc', maDanhMuc);
+
+        $.ajax({
+            type: 'POST',
+            url: '/admin/danh-muc/cap-nhat',
+            data: data,
+            processData: false,
+            contentType: false,
+            beforeSend: function () {
+                nutBam.prop('disabled', true).text('Đang cập nhật...');
+            },
+            success: function (response) {
+                if (!response.trang_thai) {
+                    toastr.error(response.thong_bao);
+                    return;
+                }
+
+                var danhMuc = response.du_lieu;
+                var dong = $('#category-row-' + danhMuc.ma_danh_muc);
+
+                dong.find('td:eq(0) img').attr('src', danhMuc.duong_dan_hinh_anh);
+                dong.find('td:eq(1)').text(danhMuc.ten);
+                dong.find('td:eq(2)').text(danhMuc.duong_dan);
+                dong.find('td:eq(3)').text(danhMuc.mo_ta);
+                $('#modalupdate-' + danhMuc.ma_danh_muc).modal('hide');
+
+                toastr.success(response.thong_bao);
+            },
+            error: function (xhr) {
+                var thongBao = 'Không thể cập nhật danh mục.';
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    thongBao = xhr.responseJSON.message;
+                }
+
+                toastr.error(thongBao);
+            },
+            complete: function () {
+                nutBam.prop('disabled', false).text('Cập nhật danh mục');
+            }
         });
+    });
+
+    // Xoa danh muc.
+    $(document).on('click', '.btn-delete-category', function (suKien) {
+        suKien.preventDefault();
+
+        if (!confirm('Bạn có chắc chắn muốn xóa danh mục này không?')) {
+            return;
+        }
+
+        var nutBam = $(this);
+        var maDanhMuc = nutBam.data('id');
+        var dong = nutBam.closest('tr');
+
+        $.ajax({
+            type: 'POST',
+            url: '/admin/danh-muc/xoa',
+            data: { ma_danh_muc: maDanhMuc },
+            success: function (response) {
+                if (!response.trang_thai) {
+                    toastr.error(response.thong_bao);
+                    return;
+                }
+
+                toastr.success(response.thong_bao);
+                dong.fadeOut(300, function () {
+                    $(this).remove();
+                });
+            },
+            error: function (xhr) {
+                var thongBao = 'Không thể xóa danh mục.';
+
+                if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+                    thongBao = xhr.responseJSON.thong_bao;
+                }
+
+                toastr.error(thongBao);
+            }
+        });
+    });
+
+    // Xem truoc cac hinh anh khi them san pham.
+    $('#product-images').on('change', function (suKien) {
+        var tepHinhAnhs = suKien.target.files;
+        var khuVucXemTruoc = $('#image-preview-container');
+        khuVucXemTruoc.empty();
+
+        for (var viTri = 0; viTri < tepHinhAnhs.length; viTri++) {
+            var docTep = new FileReader();
+
+            docTep.onload = function (suKienDocTep) {
+                var hinhAnh = $('<img>')
+                    .attr('src', suKienDocTep.target.result)
+                    .addClass('image-preview');
+
+                khuVucXemTruoc.append(hinhAnh);
+            };
+
+            docTep.readAsDataURL(tepHinhAnhs[viTri]);
+        }
+    });
+
+    // Xem truoc cac hinh anh khi cap nhat san pham.
+    $(document).on('change', '.product-images', function (suKien) {
+        var tepHinhAnhs = suKien.target.files;
+        var maSanPham = $(this).data('id');
+        var khuVucXemTruoc = $('#image-preview-container-' + maSanPham);
+        khuVucXemTruoc.empty();
+
+        for (var viTri = 0; viTri < tepHinhAnhs.length; viTri++) {
+            var docTep = new FileReader();
+
+            docTep.onload = function (suKienDocTep) {
+                var hinhAnh = $('<img>')
+                    .attr('src', suKienDocTep.target.result)
+                    .addClass('image-preview');
+
+                khuVucXemTruoc.append(hinhAnh);
+            };
+
+            docTep.readAsDataURL(tepHinhAnhs[viTri]);
+        }
+    });
+
+    // Cap nhat san pham.
+    $(document).on('click', '.btn-update-submit-product', function (suKien) {
+        suKien.preventDefault();
+
+        var nutBam = $(this);
+        var maSanPham = nutBam.data('id');
+        var form = nutBam.closest('.modal').find('form');
+        var data = new FormData(form[0]);
+        data.append('ma_san_pham', maSanPham);
 
         $.ajax({
             type: 'POST',
             url: form.attr('action'),
-            data: formData,
+            data: data,
             processData: false,
             contentType: false,
-
             beforeSend: function () {
-                button.prop('disabled', true).text('Đang cập nhật...');
+                nutBam.prop('disabled', true).text('Đang cập nhật...');
             },
-
             success: function (response) {
-
-                if (response.status) {
-
-                    let product = response.data;
-
-                    let imageSrc = product.image_url || (product.images && product.images.length > 0
-                        ? product.images[0]
-                        : "/storage/uploads/products/default.png");
-
-                    let row = $('#product-row-' + product.id);
-                    row.find('td:eq(0) img').attr('src', imageSrc);
-                    row.find('td:eq(1)').html('<strong>' + product.display_name + '</strong>');
-                    row.find('td:eq(2)').text(product.category_name);
-                    row.find('td:eq(3)').text(new Intl.NumberFormat('vi-VN').format(product.price) + ' đ');
-                    row.find('td:eq(4)').text(product.unit);
-
-                    toastr.success(response.message);
-                    $('#modalupdate-' + product.id).modal('hide');
-
-                } else {
-                    toastr.error(response.message);
+                if (!response.trang_thai) {
+                    toastr.error(response.thong_bao);
+                    return;
                 }
-            },
 
+                var sanPham = response.du_lieu;
+                var dong = $('#product-row-' + sanPham.ma_san_pham);
+
+                dong.find('td:eq(0) img').attr('src', sanPham.duong_dan_hinh_anh);
+                dong.find('td:eq(1)').html('<strong>' + sanPham.ten_hien_thi + '</strong>');
+                dong.find('td:eq(2)').text(sanPham.ten_danh_muc);
+                dong.find('td:eq(3)').text(new Intl.NumberFormat('vi-VN').format(sanPham.gia) + ' đ');
+                dong.find('td:eq(4)').text(sanPham.don_vi);
+
+                $('#modalupdate-' + sanPham.ma_san_pham).modal('hide');
+                toastr.success(response.thong_bao);
+            },
             error: function (xhr) {
+                var thongBao = 'Không thể cập nhật sản phẩm.';
+
                 if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
-                    let messages = [];
-
-                    Object.values(xhr.responseJSON.errors).forEach(function (errors) {
-                        messages = messages.concat(errors);
-                    });
-
-                    alert(messages.join('\n'));
-                    return;
-                }
-
-                alert('Có lỗi xảy ra khi cập nhật sản phẩm.');
-            },
-
-            complete: function () {
-                button.prop('disabled', false).text('Cập nhật sản phẩm');
-            }
-        });
-    });
-
-    //  Xóa sản phẩm
-    $(document).on('click', '.btn-delete-product', function (e) {
-        e.preventDefault();
-
-        let button = $(this);
-        let productId = button.data('id');
-        let row = button.closest('tr');
-
-        if (confirm('Bạn có chắc muốn xóa sản phẩm này không?')) {
-
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                }
-            });
-
-            $.ajax({
-                type: 'POST',
-                url: 'product/delete',
-                data: { product_id: productId },
-
-                success: function (response) {
-
-                    if (response.status) {
-
-                        toastr.success(response.message);
-
-                        row.fadeOut(300, function () {
-                            $(this).remove();
-                        });
-                    } else {
-                        toastr.error(response.message);
+                    for (var tenTruong in xhr.responseJSON.errors) {
+                        if (xhr.responseJSON.errors[tenTruong].length > 0) {
+                            thongBao = xhr.responseJSON.errors[tenTruong][0];
+                            break;
+                        }
                     }
-                },
-
-                error: function (xhr, status, error) {
-                    alert('Có lỗi xảy ra: ' + error);
-                }
-            });
-        }
-    });
-
-    // =============== DANH SÁCH ĐƠN HÀNG ===============
-    function ordersPage() {
-        return $('.admin-orders-page');
-    }
-
-    function orderListUrl(name) {
-        return ordersPage().data(name);
-    }
-
-    function orderCsrfToken() {
-        return $('meta[name="csrf-token"]').attr('content');
-    }
-
-    function disableOrderButton(button, text) {
-        button.addClass('disabled')
-            .css('pointer-events', 'none')
-            .text(text);
-    }
-
-    function enableOrderButton(button, text) {
-        button.removeClass('disabled')
-            .css('pointer-events', '')
-            .text(text);
-    }
-
-    $(document).on('click', '.confirm-order', function (event) {
-        if (!ordersPage().length) {
-            return;
-        }
-
-        event.preventDefault();
-
-        let button = $(this);
-        let orderId = button.data('id');
-
-        if (!confirm('Bạn có chắc muốn xác nhận đơn hàng #' + orderId + ' không?')) {
-            return;
-        }
-
-        $.ajax({
-            url: orderListUrl('confirmUrl'),
-            type: 'POST',
-            data: {
-                id: orderId,
-                _token: orderCsrfToken()
-            },
-            beforeSend: function () {
-                disableOrderButton(button, 'Đang xác nhận...');
-            },
-            success: function (response) {
-                if (!response.status) {
-                    toastr.error(response.message || 'Không thể xác nhận đơn hàng.');
-                    enableOrderButton(button, 'Xác nhận');
-                    return;
                 }
 
-                toastr.success(response.message);
-                button.closest('tr').find('.order-status').html('<span class="custom-badge badge badge-primary">Đã xác nhận</span>');
-                button.remove();
-            },
-            error: function (xhr) {
-                let message = xhr.responseJSON && xhr.responseJSON.message
-                    ? xhr.responseJSON.message
-                    : 'Không thể xác nhận đơn hàng. Vui lòng kiểm tra lại trạng thái đơn.';
-                toastr.error(message);
-                enableOrderButton(button, 'Xác nhận');
-            }
-        });
-    });
-
-    // Giao hàng (confirmed → shipping) — danh sách
-    $(document).on('click', '.ship-order', function (event) {
-        if (!ordersPage().length) {
-            return;
-        }
-
-        event.preventDefault();
-
-        let button = $(this);
-        let orderId = button.data('id');
-
-        if (!confirm('Bạn có chắc muốn giao đơn hàng #' + orderId + ' không?')) {
-            return;
-        }
-
-        $.ajax({
-            url: orderListUrl('shipUrl'),
-            type: 'POST',
-            data: {
-                id: orderId,
-                _token: orderCsrfToken()
-            },
-            success: function (response) {
-                if (!response.status) {
-                    toastr.error(response.message || 'Không thể giao đơn hàng.');
-                    return;
-                }
-
-                toastr.success(response.message);
-                let row = button.closest('tr');
-                row.find('.order-status').html('<span class="custom-badge badge badge-info">Đang giao</span>');
-                row.find('.confirm-order, .ship-order, .cancel-order').remove();
-            },
-            error: function () {
-                toastr.error('Có lỗi xảy ra khi giao đơn hàng.');
-            }
-        });
-    });
-
-    // Hủy đơn hàng — mở modal nhập lý do (danh sách)
-    $(document).on('click', '.cancel-order', function (event) {
-        if (!ordersPage().length) {
-            return;
-        }
-
-        event.preventDefault();
-
-        let orderId = $(this).data('id');
-        $('#cancel-order-id').val(orderId);
-        $('#cancel-reason').val('');
-        $('#cancel-reason-error').addClass('d-none');
-        $('#cancelOrderModal').modal('show');
-    });
-
-    // Xác nhận hủy đơn hàng sau khi nhập lý do (danh sách + chi tiết)
-    $(document).on('click', '#confirm-cancel-order', function () {
-        let orderId = $('#cancel-order-id').val();
-        let cancelReason = $('#cancel-reason').val().trim();
-
-        if (!cancelReason) {
-            $('#cancel-reason-error').removeClass('d-none');
-            return;
-        }
-
-        $('#cancel-reason-error').addClass('d-none');
-        let cancelBtn = $(this);
-        cancelBtn.prop('disabled', true).text('Đang xử lý...');
-
-        let cancelUrl = ordersPage().length
-            ? orderListUrl('cancelUrl')
-            : orderDetailUrl('cancelUrl');
-
-        $.ajax({
-            url: cancelUrl,
-            type: 'POST',
-            data: {
-                id: orderId,
-                cancel_reason: cancelReason,
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function (response) {
-                $('#cancelOrderModal').modal('hide');
-                if (!response.status) {
-                    toastr.error(response.message || 'Không thể hủy đơn hàng.');
-                    cancelBtn.prop('disabled', false).text('Xác nhận hủy');
-                    return;
-                }
-
-                toastr.success(response.message);
-
-                if (ordersPage().length) {
-                    // Cập nhật trên danh sách
-                    let row = $('[data-id="' + orderId + '"]').closest('tr');
-                    row.find('.order-status').html('<span class="custom-badge badge badge-danger">QTV hủy đơn</span>');
-                    row.find('.confirm-order, .ship-order, .cancel-order').remove();
-                } else {
-                    // Cập nhật trên chi tiết
-                    setTimeout(function () { location.reload(); }, 1200);
-                }
-            },
-            error: function (xhr) {
-                $('#cancelOrderModal').modal('hide');
-                toastr.error(xhr.responseJSON?.message || 'Có lỗi xảy ra khi hủy đơn hàng.');
+                toastr.error(thongBao);
             },
             complete: function () {
-                cancelBtn.prop('disabled', false).text('Xác nhận hủy');
+                nutBam.prop('disabled', false).text('Cập nhật sản phẩm');
             }
         });
     });
 
-    // =============== CHI TIẾT ĐƠN HÀNG ===============
-    function orderDetailPage() {
-        return $('.admin-order-detail-page');
+    // Xoa san pham.
+    $(document).on('click', '.btn-delete-product', function (suKien) {
+        suKien.preventDefault();
+
+        if (!confirm('Bạn có chắc muốn xóa sản phẩm này không?')) {
+            return;
+        }
+
+        var nutBam = $(this);
+        var maSanPham = nutBam.data('id');
+        var dong = nutBam.closest('tr');
+
+        $.ajax({
+            type: 'POST',
+            url: '/admin/san-pham/xoa',
+            data: { ma_san_pham: maSanPham },
+            success: function (response) {
+                if (!response.trang_thai) {
+                    toastr.error(response.thong_bao);
+                    return;
+                }
+
+                toastr.success(response.thong_bao);
+                dong.fadeOut(300, function () {
+                    $(this).remove();
+                });
+            },
+            error: function (xhr) {
+                var thongBao = 'Không thể xóa sản phẩm.';
+
+                if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+                    thongBao = xhr.responseJSON.thong_bao;
+                }
+
+                toastr.error(thongBao);
+            }
+        });
+    });
+    // Xu ly cac thao tac don hang o trang danh sach va chi tiet.
+    // Gui thao tac don hang va tai lai trang khi thanh cong.
+    function guiThaoTacDonHang(duongDan, data) {
+        if (!duongDan) {
+            toastr.error('Không tìm thấy đường dẫn xử lý.');
+            return;
+        }
+
+        $.ajax({
+            url: duongDan,
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: data,
+            success: function (response) {
+                if (!response.trang_thai) {
+                    toastr.error(response.thong_bao);
+                    return;
+                }
+
+                toastr.success(response.thong_bao);
+                setTimeout(function () {
+                    window.location.reload();
+                }, 500);
+            },
+            error: function (xhr) {
+                var thongBao = xhr.responseJSON && xhr.responseJSON.thong_bao
+                    ? xhr.responseJSON.thong_bao
+                    : 'Không thể xử lý đơn hàng.';
+                toastr.error(thongBao);
+            }
+        });
     }
 
-    function orderReturnPage() {
-        return $('.admin-order-detail-page');
-    }
-
-    function orderDetailUrl(name, id) {
-        let page = orderDetailPage();
-        let url = page.data(name);
-
-        return id ? String(url).replace('__ID__', id) : url;
-    }
-
-    function orderReturnUrl(name, id) {
-        let page = orderReturnPage();
-        let url = page.data(name);
-
-        return id ? String(url).replace('__ID__', id) : url;
-    }
-
-    function showOrderDetailAlert(type, message) {
-        let cssClass = type === 'success' ? 'alert-success' : 'alert-danger';
-        $('#alert-box').html(
-            '<div class="alert ' + cssClass + ' alert-dismissible">' +
-            '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
-            message +
-            '</div>'
+    $(document).on('click', '.nut-xac-nhan-don', function () {
+        guiThaoTacDonHang(
+            '/admin/don-hang/xac-nhan',
+            { ma_don_hang: $(this).data('ma-don-hang') }
         );
-    }
+    });
 
-    function postOrderAction(url, data, successDelay = 1200) {
-        data._token = $('meta[name="csrf-token"]').attr('content');
+    $(document).on('click', '.nut-giao-don', function () {
+        guiThaoTacDonHang(
+            '/admin/don-hang/giao-hang',
+            { ma_don_hang: $(this).data('ma-don-hang') }
+        );
+    });
 
-        $.post(url, data, function (response) {
-            showOrderDetailAlert(response.status ? 'success' : 'danger', response.message || 'Không thể xử lý yêu cầu.');
-            if (response.status) {
-                setTimeout(function () { location.reload(); }, successDelay);
+    $(document).on('click', '.nut-hoan-tat-don', function () {
+        guiThaoTacDonHang(
+            '/admin/don-hang/hoan-tat',
+            { ma_don_hang: $(this).data('ma-don-hang') }
+        );
+    });
+
+    $(document).on('click', '.nut-hoan-ve', function () {
+        guiThaoTacDonHang(
+            '/admin/don-hang/hoan-ve-cua-hang',
+            { ma_don_hang: $(this).data('ma-don-hang') }
+        );
+    });
+
+    $(document).on('click', '.nut-hoan-tien-paypal', function () {
+        guiThaoTacDonHang(
+            '/admin/don-hang/hoan-tien-paypal',
+            { ma_don_hang: $(this).data('ma-don-hang') }
+        );
+    });
+
+    // Mo form nhap ly do huy don.
+    $(document).on('click', '.nut-mo-huy-don', function () {
+        $('#ma-don-hang-huy').val($(this).data('ma-don-hang'));
+        $('#ly-do-huy-don').val('');
+        $('#modal-huy-don').modal('show');
+    });
+
+    $('#nut-xac-nhan-huy-don').on('click', function () {
+        var maDonHang = $('#ma-don-hang-huy').val();
+        var lyDoHuy = $('#ly-do-huy-don').val().trim();
+
+        if (!lyDoHuy) {
+            toastr.error('Vui lòng nhập lý do hủy đơn.');
+            return;
+        }
+
+        guiThaoTacDonHang(
+            '/admin/don-hang/huy',
+            {
+                ma_don_hang: maDonHang,
+                ly_do_huy: lyDoHuy
             }
-        }).fail(function (xhr) {
-            showOrderDetailAlert('danger', xhr.responseJSON?.message || 'Không thể xử lý yêu cầu.');
+        );
+    });
+
+    // Mo form ghi nhan giao hang that bai.
+    $(document).on('click', '.nut-mo-giao-that-bai', function () {
+        $('#ma-don-giao-that-bai').val($(this).data('ma-don-hang'));
+        $('#ly-do-giao-that-bai').val('');
+        $('#modal-giao-that-bai').modal('show');
+    });
+
+    $('#nut-xac-nhan-giao-that-bai').on('click', function () {
+        var maDonHang = $('#ma-don-giao-that-bai').val();
+        var lyDoGiaoThatBai = $('#ly-do-giao-that-bai').val().trim();
+
+        if (!lyDoGiaoThatBai) {
+            toastr.error('Vui lòng nhập lý do giao thất bại.');
+            return;
+        }
+
+        guiThaoTacDonHang(
+            '/admin/don-hang/giao-that-bai',
+            {
+                ma_don_hang: maDonHang,
+                ly_do_giao_that_bai: lyDoGiaoThatBai
+            }
+        );
+    });
+
+    // Mo form kiem tra hang hoan ve cua hang.
+    $(document).on('click', '.nut-mo-nhan-hang-hoan', function () {
+        $('#ma-don-nhan-hang-hoan').val($(this).data('ma-don-hang'));
+        $('#tinh-trang-hang-hoan').val('nguyen_ven').trigger('change');
+        $('#modal-nhan-hang-hoan').modal('show');
+    });
+
+    $('#tinh-trang-hang-hoan').on('change', function () {
+        if ($(this).val() === 'hu_hong') {
+            $('#khu-vuc-hang-hoan-hu').removeClass('d-none');
+        } else {
+            $('#khu-vuc-hang-hoan-hu').addClass('d-none');
+            $('#ly-do-hang-hoan-hu').val('');
+            $('#minh-chung-hang-hoan').val('');
+        }
+    });
+
+    $('#nut-xac-nhan-nhan-hang-hoan').on('click', function () {
+        var maDonHang = $('#ma-don-nhan-hang-hoan').val();
+        var tinhTrangHangHoan = $('#tinh-trang-hang-hoan').val();
+        var lyDoHangHu = $('#ly-do-hang-hoan-hu').val().trim();
+        var cacTep = $('#minh-chung-hang-hoan')[0].files;
+
+        if (tinhTrangHangHoan === 'hu_hong' && (!lyDoHangHu || cacTep.length === 0)) {
+            toastr.error('Hàng hư phải có mô tả và ít nhất một ảnh hoặc video minh chứng.');
+            return;
+        }
+
+        var data = new FormData();
+        data.append('ma_don_hang', maDonHang);
+        data.append('tinh_trang_hang_hoan', tinhTrangHangHoan);
+        data.append('ly_do_hang_hoan_hu', lyDoHangHu);
+
+        for (var viTri = 0; viTri < cacTep.length; viTri++) {
+            data.append('minh_chung[]', cacTep[viTri]);
+        }
+
+        $.ajax({
+            url: '/admin/don-hang/nhan-hang-hoan',
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: data,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.trang_thai) {
+                    toastr.success(response.thong_bao);
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    toastr.error(response.thong_bao);
+                }
+            },
+            error: function (xhr) {
+                var thongBao = xhr.responseJSON && xhr.responseJSON.thong_bao
+                    ? xhr.responseJSON.thong_bao
+                    : 'Không thể xác nhận hàng hoàn.';
+                toastr.error(thongBao);
+            }
         });
+    });
+
+    // Gui cac buoc xu ly yeu cau doi tra.
+    function guiThaoTacDoiTra(duongDanXuLy, maYeuCau) {
+        guiThaoTacDonHang('/admin/doi-tra/' + maYeuCau + '/' + duongDanXuLy, {});
     }
 
-    $(document).on('click', '.confirm-order-btn', function () {
-        if (!orderDetailPage().length || !confirm('Xác nhận đơn hàng này và gửi hóa đơn cho khách?')) {
-            return;
-        }
 
-        let button = $(this);
-        button.prop('disabled', true);
-        postOrderAction(orderDetailUrl('confirmUrl'), { id: button.data('id') });
+    $(document).on('click', '.nut-duyet-doi-tra', function () {
+        guiThaoTacDoiTra(
+            'duyet',
+            $(this).data('ma-yeu-cau')
+        );
     });
 
-    $(document).on('click', '.ship-order-btn', function () {
-        if (!orderDetailPage().length || !confirm('Giao đơn hàng này?')) {
-            return;
-        }
-
-        postOrderAction(orderDetailUrl('shipUrl'), { id: $(this).data('id') });
+    $(document).on('click', '.nut-nhan-doi-tra', function () {
+        guiThaoTacDoiTra(
+            'nhan-hang',
+            $(this).data('ma-yeu-cau')
+        );
     });
 
-    $(document).on('click', '.complete-order-btn', function () {
-        if (!orderDetailPage().length || !confirm('Đánh dấu đơn hàng đã giao thành công?')) {
-            return;
-        }
-
-        postOrderAction(orderDetailUrl('completeUrl'), {
-            id: $(this).data('id'),
-            status: 'completed'
-        });
+    $(document).on('click', '.nut-hoan-tat-doi-tra', function () {
+        guiThaoTacDoiTra(
+            'hoan-tat',
+            $(this).data('ma-yeu-cau')
+        );
     });
 
-    // Hủy đơn hàng — mở modal nhập lý do (chi tiết)
-    $(document).on('click', '.cancel-order-btn', function () {
-        if (!orderDetailPage().length) {
-            return;
-        }
+    // Hien hoac an danh sach khach hang theo pham vi su dung.
+    function khoiTaoFormPhieuGiamGia() {
+        function capNhatKhuVucKhachHang(oLuaChon) {
+            var form = oLuaChon.closest('.admin-coupon-form');
 
-        let orderId = $(this).data('id');
-        $('#cancel-order-id').val(orderId);
-        $('#cancel-reason').val('');
-        $('#cancel-reason-error').addClass('d-none');
-        $('#cancelOrderModal').modal('show');
-    });
-
-    $(document).on('click', '.approve-return-btn', function () {
-        let id = $(this).data('id');
-        if (!orderReturnPage().length || !confirm('Duyệt yêu cầu xử lý hàng lỗi/hư?')) {
-            return;
-        }
-
-        postOrderAction(orderReturnUrl('returnApproveUrl', id), {}, 1000);
-    });
-
-    $(document).on('click', '.receive-return-btn', function () {
-        let id = $(this).data('id');
-        if (!orderReturnPage().length || !confirm('Xác nhận đã nhận hàng lỗi/hư từ khách?')) {
-            return;
-        }
-
-        postOrderAction(orderReturnUrl('returnReceiveUrl', id), {}, 1000);
-    });
-
-    $(document).on('click', '.complete-return-btn', function () {
-        let id = $(this).data('id');
-        if (!orderReturnPage().length || !confirm('Hoàn tất yêu cầu đổi hàng này?')) {
-            return;
-        }
-
-        postOrderAction(orderReturnUrl('returnCompleteUrl', id), {}, 1000);
-    });
-
-    // =============== PHIẾU ĐẶT MUA ===============
-    function initCouponForm() {
-        function toggleCustomerBox(select) {
-            let form = select.closest('.admin-coupon-form');
             if (!form) {
                 return;
             }
 
-            let customerBox = form.querySelector('.admin-coupon-customer-box');
-            if (!customerBox) {
+            var khuVucKhachHang = form.querySelector('.admin-coupon-customer-box');
+
+            if (!khuVucKhachHang) {
                 return;
             }
 
-            customerBox.classList.toggle('d-none', select.value !== 'customer');
+            khuVucKhachHang.classList.toggle('d-none', oLuaChon.value !== 'khach_hang');
         }
 
-        document.querySelectorAll('.js-coupon-apply-type').forEach(function (select) {
-            toggleCustomerBox(select);
+        var cacOLuaChon = document.querySelectorAll('.js-coupon-apply-type');
 
-            select.addEventListener('change', function () {
-                toggleCustomerBox(select);
+        for (var viTri = 0; viTri < cacOLuaChon.length; viTri++) {
+            capNhatKhuVucKhachHang(cacOLuaChon[viTri]);
+
+            cacOLuaChon[viTri].addEventListener('change', function () {
+                capNhatKhuVucKhachHang(this);
             });
-        });
+        }
     }
+    // Khởi tạo các dòng sản phẩm trong form đơn đặt nhập.
+    function khoiTaoFormDonDatNhap() {
+        let thanBang = document.getElementById('purchase-order-items');
+        let nutThem = document.getElementById('btn-add-purchase-row');
+        let mauLuaChon = document.getElementById('purchase-product-options');
 
-    function initPurchaseOrderForm() {
-        let tbody = document.getElementById('purchase-order-items');
-        let addButton = document.getElementById('btn-add-purchase-row');
-        let optionTemplate = document.getElementById('purchase-product-options');
-
-        if (!tbody || !addButton || !optionTemplate) {
+        if (!thanBang || !nutThem || !mauLuaChon) {
             return;
         }
 
-        let index = tbody.children.length;
+        let viTri = thanBang.children.length;
 
-        function addRow() {
-            let row = document.createElement('tr');
-            row.innerHTML =
-                '<td><select name="items[' + index + '][product_id]" class="form-control js-product-select" required>' + optionTemplate.innerHTML + '</select></td>' +
-                '<td><input type="number" name="items[' + index + '][quantity_ordered]" class="form-control text-center" min="1" required></td>' +
+        function themDong() {
+            let dong = document.createElement('tr');
+            dong.innerHTML =
+                '<td><select name="chi_tiets[' + viTri + '][ma_san_pham]" class="form-control js-product-select" required>' + mauLuaChon.innerHTML + '</select></td>' +
+                '<td><input type="number" name="chi_tiets[' + viTri + '][so_luong_dat]" class="form-control text-center" min="1" required></td>' +
                 '<td><button type="button" class="btn btn-danger btn-sm js-remove-row"><i class="fa fa-trash"></i></button></td>';
 
-            tbody.appendChild(row);
-            index++;
+            thanBang.appendChild(dong);
+            viTri++;
         }
 
-        tbody.addEventListener('click', function (event) {
-            let button = event.target.closest('.js-remove-row');
-            if (!button) {
+        thanBang.addEventListener('click', function (suKien) {
+            let nutXoa = suKien.target.closest('.js-remove-row');
+            if (!nutXoa) {
                 return;
             }
 
-            button.closest('tr').remove();
-            if (!tbody.children.length) {
-                addRow();
+            nutXoa.closest('tr').remove();
+            if (!thanBang.children.length) {
+                themDong();
             }
         });
 
-        addButton.addEventListener('click', addRow);
+        nutThem.addEventListener('click', themDong);
 
-        if (!tbody.children.length) {
-            addRow();
+        if (!thanBang.children.length) {
+            themDong();
         }
     }
 
-    // =============== PHIẾU NHẬP HÀNG ===============
-    function initPurchaseImportForm() {
+    // Kiểm tra số lượng và minh chứng trong form nhập kho.
+    function khoiTaoFormNhapKho() {
         let form = document.getElementById('purchase-import-form');
-        let evidence = document.getElementById('defect-evidence');
-        let description = document.getElementById('defect-description');
-        let mark = document.getElementById('defect-required-mark');
-        let evidenceMark = document.getElementById('defect-evidence-required-mark');
-        let submit = document.getElementById('btn-submit-import');
+        let tepMinhChung = document.getElementById('defect-evidence');
+        let moTaHangLoi = document.getElementById('defect-description');
+        let dauBatBuocMoTa = document.getElementById('defect-required-mark');
+        let dauBatBuocMinhChung = document.getElementById('defect-evidence-required-mark');
+        let nutLuu = document.getElementById('purchase-import-submit');
 
-        if (!form || !evidence || !description || !mark || !evidenceMark || !submit) {
+        if (!form || !tepMinhChung || !moTaHangLoi || !dauBatBuocMoTa || !dauBatBuocMinhChung || !nutLuu) {
             return;
         }
 
-        function refreshImportForm() {
-            let hasRejected = false;
-            let invalid = false;
+        function capNhatFormNhapKho() {
+            let coHangTuChoi = false;
+            let duLieuKhongHopLe = false;
+            let cacDong = form.querySelectorAll('tbody tr');
 
-            document.querySelectorAll('.js-import-row').forEach(function (row) {
-                let ordered = parseInt(row.querySelector('.js-ordered').value, 10) || 0;
-                let receivedInput = row.querySelector('.js-received');
-                let rejectedInput = row.querySelector('.js-rejected');
-                let received = parseInt(receivedInput.value, 10) || 0;
-                let rejected = parseInt(rejectedInput.value, 10) || 0;
-                let accepted = Math.max(0, received - rejected);
+            cacDong.forEach(function (dong) {
+                let soLuongDat = parseInt(dong.querySelector('.js-ordered').value, 10) || 0;
+                let oSoLuongNhan = dong.querySelector('.js-received');
+                let oSoLuongTuChoi = dong.querySelector('.js-rejected');
+                let soLuongNhan = parseInt(oSoLuongNhan.value, 10) || 0;
+                let soLuongTuChoi = parseInt(oSoLuongTuChoi.value, 10) || 0;
+                let soLuongNhap = Math.max(0, soLuongNhan - soLuongTuChoi);
 
-                row.querySelector('.js-accepted').value = accepted;
-                row.querySelector('.js-manufactured').required = accepted > 0;
-                row.querySelector('.js-expired').required = accepted > 0;
+                dong.querySelector('.js-accepted').value = soLuongNhap;
+                dong.querySelector('.js-manufactured').required = soLuongNhap > 0;
+                dong.querySelector('.js-expired').required = soLuongNhap > 0;
 
-                hasRejected = hasRejected || rejected > 0;
-                invalid = invalid || received > ordered || rejected > received;
-                receivedInput.classList.toggle('parsley-error', received > ordered);
-                rejectedInput.classList.toggle('parsley-error', rejected > received);
+                coHangTuChoi = coHangTuChoi || soLuongTuChoi > 0;
+                duLieuKhongHopLe = duLieuKhongHopLe || soLuongNhan > soLuongDat || soLuongTuChoi > soLuongNhan;
+                oSoLuongNhan.classList.toggle('parsley-error', soLuongNhan > soLuongDat);
+                oSoLuongTuChoi.classList.toggle('parsley-error', soLuongTuChoi > soLuongNhan);
             });
 
-            evidence.required = hasRejected;
-            description.required = hasRejected;
-            mark.classList.toggle('d-none', !hasRejected);
-            evidenceMark.classList.toggle('d-none', !hasRejected);
-            submit.disabled = invalid;
+            tepMinhChung.required = coHangTuChoi;
+            moTaHangLoi.required = coHangTuChoi;
+            dauBatBuocMoTa.classList.toggle('d-none', !coHangTuChoi);
+            dauBatBuocMinhChung.classList.toggle('d-none', !coHangTuChoi);
+            nutLuu.disabled = duLieuKhongHopLe;
         }
 
-        form.addEventListener('input', refreshImportForm);
-        refreshImportForm();
+        form.addEventListener('input', capNhatFormNhapKho);
+        capNhatFormNhapKho();
+    }
+    khoiTaoFormPhieuGiamGia();
+    khoiTaoFormDonDatNhap();
+    khoiTaoFormNhapKho();
+
+});
+// Ve cac bieu do bang du lieu da duoc TongQuanController chuan bi.
+$(document).ready(function () {
+    if (typeof Chart === 'undefined' || !document.getElementById('bieu-do-doanh-thu-thang')) {
+        return;
     }
 
-    initCouponForm();
-    initPurchaseOrderForm();
-    initPurchaseImportForm();
+    function layDuLieuBieuDo(bieuDo, tenThuocTinh) {
+        var duLieu = bieuDo.getAttribute(tenThuocTinh);
 
+        if (!duLieu) {
+            return [];
+        }
+
+        return JSON.parse(duLieu);
+    }
+
+    function dinhDangTienBieuDo(giaTien) {
+        return Number(giaTien || 0).toLocaleString('vi-VN') + 'đ';
+    }
+
+    function tuyChonTrucTien() {
+        return {
+            ticks: {
+                beginAtZero: true,
+                callback: function (giaTri) {
+                    return dinhDangTienBieuDo(giaTri);
+                }
+            }
+        };
+    }
+
+    function tuyChonTrucSoLuong() {
+        return {
+            ticks: {
+                beginAtZero: true,
+                callback: function (giaTri) {
+                    if (giaTri % 1 === 0) {
+                        return giaTri;
+                    }
+
+                    return '';
+                }
+            }
+        };
+    }
+
+    var bieuDoDoanhThuThang = document.getElementById('bieu-do-doanh-thu-thang');
+    new Chart(bieuDoDoanhThuThang, {
+        type: 'bar',
+        data: {
+            labels: layDuLieuBieuDo(bieuDoDoanhThuThang, 'data-nhan'),
+            datasets: [{
+                label: 'Doanh thu',
+                data: layDuLieuBieuDo(bieuDoDoanhThuThang, 'data-gia-tri'),
+                backgroundColor: '#3498db',
+                borderColor: '#2471a3',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { display: false },
+            scales: {
+                yAxes: [tuyChonTrucTien()]
+            },
+            tooltips: {
+                callbacks: {
+                    label: function (thongTin) {
+                        return 'Doanh thu: ' + dinhDangTienBieuDo(thongTin.yLabel);
+                    }
+                }
+            }
+        }
+    });
+
+    var bieuDoDoanhThuTuan = document.getElementById('bieu-do-doanh-thu-tuan');
+    new Chart(bieuDoDoanhThuTuan, {
+        type: 'line',
+        data: {
+            labels: layDuLieuBieuDo(bieuDoDoanhThuTuan, 'data-nhan'),
+            datasets: [{
+                label: 'Doanh thu',
+                data: layDuLieuBieuDo(bieuDoDoanhThuTuan, 'data-gia-tri'),
+                backgroundColor: 'rgba(38, 185, 154, 0.18)',
+                borderColor: '#26b99a',
+                pointBackgroundColor: '#26b99a',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { display: false },
+            scales: {
+                yAxes: [tuyChonTrucTien()]
+            },
+            tooltips: {
+                callbacks: {
+                    label: function (thongTin) {
+                        return 'Doanh thu: ' + dinhDangTienBieuDo(thongTin.yLabel);
+                    }
+                }
+            }
+        }
+    });
+
+    var bieuDoNguoiDung = document.getElementById('bieu-do-nguoi-dung');
+    new Chart(bieuDoNguoiDung, {
+        type: 'line',
+        data: {
+            labels: layDuLieuBieuDo(bieuDoNguoiDung, 'data-nhan'),
+            datasets: [{
+                label: 'Người dùng mới',
+                data: layDuLieuBieuDo(bieuDoNguoiDung, 'data-gia-tri'),
+                backgroundColor: 'rgba(240, 173, 78, 0.18)',
+                borderColor: '#f0ad4e',
+                pointBackgroundColor: '#f0ad4e',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { display: false },
+            scales: {
+                yAxes: [tuyChonTrucSoLuong()]
+            }
+        }
+    });
+
+    var bieuDoSanPhamYeuThich = document.getElementById('bieu-do-san-pham-yeu-thich');
+
+    if (bieuDoSanPhamYeuThich) {
+        new Chart(bieuDoSanPhamYeuThich, {
+            type: 'horizontalBar',
+            data: {
+                labels: layDuLieuBieuDo(bieuDoSanPhamYeuThich, 'data-nhan'),
+                datasets: [{
+                    label: 'Lượt yêu thích',
+                    data: layDuLieuBieuDo(bieuDoSanPhamYeuThich, 'data-gia-tri'),
+                    backgroundColor: '#e74c3c',
+                    borderColor: '#c0392b',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: { display: false },
+                scales: {
+                    xAxes: [tuyChonTrucSoLuong()]
+                }
+            }
+        });
+    }
 });
