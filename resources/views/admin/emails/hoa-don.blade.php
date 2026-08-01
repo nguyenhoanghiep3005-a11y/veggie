@@ -74,7 +74,7 @@
                 </tr>
             </table>
 
-            <p style="margin-top:26px;">Trân trọng,<br><strong>Đội ngũ Veggie</strong></p>
+            <p style="margin-top:26px;">Trân trọng,<br><strong>Đội ngũ HoangHiep</strong></p>
         </div>
     </div>
 </body>
