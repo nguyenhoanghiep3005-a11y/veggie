@@ -19,10 +19,10 @@ class TaiKhoanController extends Controller
             'ma_nguoi_dung',
             $nguoiDung->ma_nguoi_dung
         )->get();
-        $donHangs = DonHang::where(
-            'ma_nguoi_dung',
-            $nguoiDung->ma_nguoi_dung
-        )->orderBy('created_at', 'desc')->paginate(10);
+        $donHangs = DonHang::with('yeuCauDoiTra')
+            ->where('ma_nguoi_dung', $nguoiDung->ma_nguoi_dung)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return view(
             'clients.pages.tai-khoan',

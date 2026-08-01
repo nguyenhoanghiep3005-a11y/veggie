@@ -11,9 +11,39 @@
                 <h3 class="mb-1">Chi tiết đơn hàng #{{ $donHang->ma_don_hang }}</h3>
                 <div class="text-muted">Ngày đặt: {{ $donHang->created_at->format('d/m/Y H:i') }}</div>
             </div>
-            <span class="badge {{ $donHang->lopTrangThaiKhachHang() }}">
-                {{ $donHang->tenTrangThaiKhachHang() }}
-            </span>
+            @if ($yeuCauDoiTra)
+                @if ($yeuCauDoiTra->trang_thai == 'cho_duyet')
+                    <span class="badge bg-warning">Chờ duyệt yêu cầu</span>
+                @elseif ($yeuCauDoiTra->trang_thai == 'da_duyet')
+                    <span class="badge bg-info">Đã duyệt yêu cầu</span>
+                @elseif ($yeuCauDoiTra->trang_thai == 'dang_xu_ly')
+                    <span class="badge bg-info">Đang xử lý đổi trả</span>
+                @elseif ($yeuCauDoiTra->trang_thai == 'dang_giao_hang_doi')
+                    <span class="badge bg-primary">Đang giao hàng đổi</span>
+                @elseif ($yeuCauDoiTra->trang_thai == 'hoan_tat')
+                    <span class="badge bg-success">Hoàn tất đổi trả</span>
+                @else
+                    <span class="badge bg-secondary">-</span>
+                @endif
+            @else
+                @if ($donHang->trang_thai == 'cho_xac_nhan')
+                    <span class="badge bg-warning">Chờ xác nhận</span>
+                @elseif ($donHang->trang_thai == 'da_xac_nhan')
+                    <span class="badge bg-primary">Đã xác nhận</span>
+                @elseif ($donHang->trang_thai == 'dang_giao')
+                    <span class="badge bg-info">Đang giao hàng</span>
+                @elseif ($donHang->trang_thai == 'hoan_thanh')
+                    <span class="badge bg-success">Hoàn thành</span>
+                @elseif ($donHang->trang_thai == 'giao_that_bai' || $donHang->trang_thai == 'dang_hoan_hang' || $donHang->trang_thai == 'da_hoan_ve_kho')
+                    <span class="badge bg-danger">Giao hàng thất bại</span>
+                @elseif ($donHang->trang_thai == 'da_huy' && $donHang->ly_do_giao_that_bai)
+                    <span class="badge bg-danger">Giao hàng thất bại</span>
+                @elseif ($donHang->trang_thai == 'da_huy')
+                    <span class="badge bg-danger">Đã hủy</span>
+                @else
+                    <span class="badge bg-secondary">{{ $donHang->trang_thai }}</span>
+                @endif
+            @endif
         </div>
 
         @if (session('success'))
@@ -30,10 +60,20 @@
             </div>
         @endif
 
-        @if ($donHang->ghiChuTrangThaiKhachHang() != '' && $donHang->maTrangThaiHienThiKhachHang() == 'giao_that_bai')
+        @if ($donHang->trang_thai == 'giao_that_bai' || $donHang->trang_thai == 'dang_hoan_hang' || $donHang->trang_thai == 'da_hoan_ve_kho' || ($donHang->trang_thai == 'da_huy' && $donHang->ly_do_giao_that_bai))
             <div class="alert alert-warning">
-                <strong>{{ $donHang->tenTrangThaiKhachHang() }}</strong>
-                <div>{{ $donHang->ghiChuTrangThaiKhachHang() }}</div>
+                <strong>Giao hàng thất bại</strong>
+                @if ($donHang->trang_thai == 'giao_that_bai' && $donHang->coTheGiaoLai())
+                    <div>Đơn hàng giao không thành công. Shop đang chuẩn bị giao lại.</div>
+                @elseif ($donHang->trang_thai == 'giao_that_bai')
+                    <div>Đơn hàng giao lại vẫn không thành công.</div>
+                @elseif ($donHang->trang_thai == 'dang_hoan_hang')
+                    <div>Đơn hàng giao lại vẫn không thành công và đang được hoàn về cửa hàng.</div>
+                @elseif ($donHang->trang_thai == 'da_hoan_ve_kho')
+                    <div>Đơn hàng giao lại vẫn không thành công và hàng đã được hoàn về cửa hàng.</div>
+                @elseif ($donHang->trang_thai == 'da_huy' && $donHang->ly_do_giao_that_bai)
+                    <div>Đơn hàng giao lại vẫn không thành công và đã kết thúc xử lý tại cửa hàng.</div>
+                @endif
                 @if ($donHang->ly_do_giao_that_bai)
                     <div>Lý do: {{ $donHang->ly_do_giao_that_bai }}</div>
                 @endif
@@ -43,9 +83,30 @@
         @if ($yeuCauDoiTra)
             <div class="card border-warning mb-4">
                 <div class="card-body">
-                    <h4>{{ $yeuCauDoiTra->tenLoai() }}</h4>
+                    <h4>
+                        @if ($yeuCauDoiTra->loai == 'hang_loi')
+                            Đổi trả do hàng hư hỏng hoặc bị lỗi
+                        @else
+                            -
+                        @endif
+                    </h4>
                     <p class="text-muted">Gửi lúc {{ $thoiGianYeuCau }}</p>
-                    <p><strong>Trạng thái:</strong> {{ $yeuCauDoiTra->tenTrangThai() }}</p>
+                    <p>
+                        <strong>Trạng thái:</strong>
+                        @if ($yeuCauDoiTra->trang_thai == 'cho_duyet')
+                            Chờ duyệt yêu cầu
+                        @elseif ($yeuCauDoiTra->trang_thai == 'da_duyet')
+                            Đã duyệt yêu cầu
+                        @elseif ($yeuCauDoiTra->trang_thai == 'dang_xu_ly')
+                            Đang xử lý đổi trả
+                        @elseif ($yeuCauDoiTra->trang_thai == 'dang_giao_hang_doi')
+                            Đang giao hàng đổi
+                        @elseif ($yeuCauDoiTra->trang_thai == 'hoan_tat')
+                            Hoàn tất đổi trả
+                        @else
+                            -
+                        @endif
+                    </p>
                     <p><strong>Nội dung:</strong> {{ $yeuCauDoiTra->mo_ta }}</p>
 
                     <h5>Sản phẩm đã gửi yêu cầu xử lý</h5>

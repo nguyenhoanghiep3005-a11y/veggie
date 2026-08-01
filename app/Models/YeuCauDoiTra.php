@@ -40,64 +40,6 @@ class YeuCauDoiTra extends Model
         return $this->belongsTo(DonHang::class, 'ma_don_hang');
     }
 
-    // Lay ten loai yeu cau doi tra.
-    public function tenLoai()
-    {
-        if ($this->loai == 'hang_loi') {
-            return 'Đổi trả do hàng hư hỏng hoặc bị lỗi';
-        }
-
-        return '-';
-    }
-
-    // Lay ten trang thai xu ly yeu cau doi tra.
-    public function tenTrangThai()
-    {
-        if ($this->trang_thai == 'cho_duyet') {
-            return 'Chờ duyệt yêu cầu';
-        }
-
-        if ($this->trang_thai == 'da_duyet') {
-            return 'Đã duyệt yêu cầu';
-        }
-
-        if ($this->trang_thai == 'dang_xu_ly') {
-            return 'Đang xử lý đổi trả';
-        }
-
-        if ($this->trang_thai == 'dang_giao_hang_doi') {
-            return 'Đang giao hàng đổi';
-        }
-
-        if ($this->trang_thai == 'hoan_tat') {
-            return 'Hoàn tất đổi trả';
-        }
-
-        return '-';
-    }
-
-    // Lay lop mau hien thi trang thai doi tra.
-    public function lopTrangThai()
-    {
-        if ($this->trang_thai == 'cho_duyet') {
-            return 'custom-badge badge badge-warning';
-        }
-
-        if ($this->trang_thai == 'da_duyet' || $this->trang_thai == 'dang_xu_ly') {
-            return 'custom-badge badge badge-info';
-        }
-
-        if ($this->trang_thai == 'dang_giao_hang_doi') {
-            return 'custom-badge badge badge-primary';
-        }
-
-        if ($this->trang_thai == 'hoan_tat') {
-            return 'custom-badge badge badge-success';
-        }
-
-        return 'custom-badge badge badge-secondary';
-    }
-
     // Tinh tong so luong san pham khach yeu cau doi tra.
     public function tongSoLuong()
     {

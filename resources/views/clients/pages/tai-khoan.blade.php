@@ -62,9 +62,40 @@
                                                                     <td>#{{ $donHang->ma_don_hang }}</td>
                                                                     <td>{{ $donHang->created_at->format('d/m/Y') }}</td>
                                                                     <td>
-                                                                        <span class="badge {{ $donHang->lopTrangThaiKhachHang() }}">
-                                                                            {{ $donHang->tenTrangThaiKhachHang() }}
-                                                                        </span>                                                                    </td>
+                                                                        @if ($donHang->yeuCauDoiTra)
+                                                                            @if ($donHang->yeuCauDoiTra->trang_thai == 'cho_duyet')
+                                                                                <span class="badge bg-warning">Chờ duyệt yêu cầu</span>
+                                                                            @elseif ($donHang->yeuCauDoiTra->trang_thai == 'da_duyet')
+                                                                                <span class="badge bg-info">Đã duyệt yêu cầu</span>
+                                                                            @elseif ($donHang->yeuCauDoiTra->trang_thai == 'dang_xu_ly')
+                                                                                <span class="badge bg-info">Đang xử lý đổi trả</span>
+                                                                            @elseif ($donHang->yeuCauDoiTra->trang_thai == 'dang_giao_hang_doi')
+                                                                                <span class="badge bg-primary">Đang giao hàng đổi</span>
+                                                                            @elseif ($donHang->yeuCauDoiTra->trang_thai == 'hoan_tat')
+                                                                                <span class="badge bg-success">Hoàn tất đổi trả</span>
+                                                                            @else
+                                                                                <span class="badge bg-secondary">-</span>
+                                                                            @endif
+                                                                        @else
+                                                                            @if ($donHang->trang_thai == 'cho_xac_nhan')
+                                                                                <span class="badge bg-warning">Chờ xác nhận</span>
+                                                                            @elseif ($donHang->trang_thai == 'da_xac_nhan')
+                                                                                <span class="badge bg-primary">Đã xác nhận</span>
+                                                                            @elseif ($donHang->trang_thai == 'dang_giao')
+                                                                                <span class="badge bg-info">Đang giao hàng</span>
+                                                                            @elseif ($donHang->trang_thai == 'hoan_thanh')
+                                                                                <span class="badge bg-success">Hoàn thành</span>
+                                                                            @elseif ($donHang->trang_thai == 'giao_that_bai' || $donHang->trang_thai == 'dang_hoan_hang' || $donHang->trang_thai == 'da_hoan_ve_kho')
+                                                                                <span class="badge bg-danger">Giao hàng thất bại</span>
+                                                                            @elseif ($donHang->trang_thai == 'da_huy' && $donHang->ly_do_giao_that_bai)
+                                                                                <span class="badge bg-danger">Giao hàng thất bại</span>
+                                                                            @elseif ($donHang->trang_thai == 'da_huy')
+                                                                                <span class="badge bg-danger">Đã hủy</span>
+                                                                            @else
+                                                                                <span class="badge bg-secondary">{{ $donHang->trang_thai }}</span>
+                                                                            @endif
+                                                                        @endif
+                                                                    </td>
                                                                     <td>{{ number_format($donHang->tong_tien, 0, ',', '.') }} đ</td>
                                                                     <td>
                                                                         <a href="{{ route('don-hang.chi-tiet', $donHang->ma_don_hang) }}" class="btn btn-sm btn-info">Xem chi tiết</a>
