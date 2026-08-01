@@ -148,7 +148,7 @@
                         @endif
                         <hr>
                         <div class="d-flex justify-content-between">
-                            <span>{{ $donHang->tenTongTien() }}</span>
+                            <span>Tổng tiền đơn hàng</span>
                             <strong class="text-danger">{{ number_format($donHang->tong_tien, 0, ',', '.') }}<small>đ</small></strong>
                         </div>
                     </div>

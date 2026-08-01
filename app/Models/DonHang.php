@@ -400,22 +400,17 @@ class DonHang extends Model
         return 'bg-secondary';
     }
 
-    // Kiem tra don hang co the giao lai sau lan that bai dau tien.
+    // Kiem tra don giao that bai lan dau co the giao lai.
     public function coTheGiaoLai()
     {
         return $this->trang_thai == 'giao_that_bai'
-            && (int) $this->so_lan_giao_that_bai < 2;
+            && (int) $this->so_lan_giao_that_bai == 1;
     }
 
-    // Kiem tra don hang da du dieu kien chuyen sang hoan ve cua hang.
+    // Kiem tra don giao that bai co the hoan ve cua hang.
     public function coTheHoanVeCuaHang()
     {
         return $this->trang_thai == 'giao_that_bai'
-            && (int) $this->so_lan_giao_that_bai >= 2;
-    }
-    // Lay ten dong tong tien cua don hang.
-    public function tenTongTien()
-    {
-        return 'Tổng tiền đơn hàng';
+            && (int) $this->so_lan_giao_that_bai >= 1;
     }
 }
