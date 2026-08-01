@@ -197,7 +197,7 @@ class DonHangController extends Controller
         $data = $this->kiemTraMaDonHang($request);
         $donHang = DonHang::find($data['ma_don_hang']);
 
-        if (! $donHang || $donHang->trang_thai != 'giao_that_bai') {
+        if (! $donHang || ! $donHang->coTheHoanVeCuaHang()) {
             return $this->phanHoiLoi(
                 'Đơn phải giao thất bại trước khi hoàn về cửa hàng.'
             );
@@ -218,7 +218,7 @@ class DonHangController extends Controller
         $data = $this->kiemTraMaDonHang($request);
         $donHang = DonHang::find($data['ma_don_hang']);
 
-        if (! $donHang || $donHang->trang_thai != 'giao_that_bai') {
+        if (! $donHang || ! $donHang->coTheGiaoLai()) {
             return $this->phanHoiLoi(
                 'Chỉ giao lại được đơn đang giao thất bại.'
             );
@@ -256,8 +256,6 @@ class DonHangController extends Controller
 
             if ($data['tinh_trang_hang_hoan'] == 'nguyen_ven') {
                 $this->hoanTonKhoDonHang($donHang);
-                $donHang->da_hoan_ton_kho = true;
-                $donHang->hoan_ton_kho_luc = now();
             } else {
                 $this->luuHangHoanHu(
                     $donHang,

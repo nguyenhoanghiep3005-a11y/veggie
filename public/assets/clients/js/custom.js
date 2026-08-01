@@ -1382,6 +1382,7 @@ $(document).ready(function () {
         $('.product-detail-rating-number').text(sanPham.so_sao_trung_binh);
         $('.product-detail-review-count').text(sanPham.tong_danh_gia + ' đánh giá');
         $('.product-detail-sold').text('Đã bán ' + sanPham.so_luong_da_ban);
+        $('.product-detail-stock').text(sanPham.ten_ton_kho);
         $('.product-description-text').text(sanPham.mo_ta);
         if (sanPham.mo_ta) {
           $('.product-description-text').removeClass('d-none');

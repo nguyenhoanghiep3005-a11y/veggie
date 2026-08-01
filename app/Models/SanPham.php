@@ -22,15 +22,12 @@ class SanPham extends Model
         'ma_danh_muc',
         'mo_ta',
         'gia',
-        'ton_kho',
-        'trang_thai',
         'don_vi',
         'danh_gia_trung_binh',
     ];
 
     protected $casts = [
         'gia' => 'decimal:2',
-        'ton_kho' => 'integer',
         'danh_gia_trung_binh' => 'decimal:2',
     ];
 
@@ -95,22 +92,66 @@ class SanPham extends Model
     {
         return $this->loHangKhos()
             ->where('so_luong_con', '>', 0)
-            ->where(function ($query) {
-                $query->whereNull('han_su_dung')
-                    ->orWhereDate('han_su_dung', '>=', today());
-            })
+            ->whereDate('han_su_dung', '>=', today())
             ->orderBy('han_su_dung')
             ->orderBy('ma_lo_hang_kho');
     }
 
-    // Tính tổng số lượng còn có thể bán.
+    // Tinh so luong khach co the mua theo gia dang hien thi.
     public function soLuongCoTheBan()
     {
-        if (! $this->loHangKhos()->exists()) {
-            return (int) $this->ton_kho;
+        if ($this->layGiaKhuyenMaiDangCo() > 0) {
+            return $this->soLuongKhuyenMaiCoTheBan();
         }
 
-        return (int) $this->layCacLoHangCoTheBan()->sum('so_luong_con');
+        return $this->soLuongThuongCoTheBan();
+    }
+
+    // Tinh so luong con ban duoc cua cac lo dang khuyen mai.
+    public function soLuongKhuyenMaiCoTheBan()
+    {
+        $giaKhuyenMai = (float) $this->layGiaKhuyenMaiDangCo();
+
+        if ($giaKhuyenMai <= 0) {
+            return 0;
+        }
+
+        return (int) $this->layCacLoHangCoTheBan()
+            ->where('gia_khuyen_mai', $giaKhuyenMai)
+            ->sum('so_luong_con');
+    }
+
+    // Tinh so luong con ban duoc cua cac lo khong khuyen mai.
+    public function soLuongThuongCoTheBan()
+    {
+        $soLuong = 0;
+        $loHangs = $this->layCacLoHangCoTheBan()->get();
+
+        foreach ($loHangs as $loHang) {
+            $giaKhuyenMai = (float) $loHang->gia_khuyen_mai;
+
+            if ($giaKhuyenMai <= 0 || $giaKhuyenMai >= (float) $this->gia) {
+                $soLuong += (int) $loHang->so_luong_con;
+            }
+        }
+
+        return $soLuong;
+    }
+
+    // Lay dong chu hien thi so luong ma khach co the mua.
+    public function tenSoLuongCoTheBan()
+    {
+        $soLuong = $this->soLuongCoTheBan();
+
+        if ($soLuong <= 0) {
+            return 'Hết hàng';
+        }
+
+        if ($this->dang_khuyen_mai) {
+            return 'Còn '.$soLuong;
+        }
+
+        return 'Còn '.$soLuong;
     }
 
     // Tính tổng số lượng sản phẩm đã bán thành công.
@@ -120,20 +161,9 @@ class SanPham extends Model
         $chiTietDonHangs = $this->chiTietDonHangs()->with('donHang')->get();
 
         foreach ($chiTietDonHangs as $chiTietDonHang) {
-            if (! $chiTietDonHang->donHang) {
-                continue;
+            if ($chiTietDonHang->donHang && $chiTietDonHang->donHang->trang_thai == 'hoan_thanh') {
+                $soLuongDaBan += (int) $chiTietDonHang->so_luong;
             }
-
-            $trangThaiDuocTinh = [
-                'hoan_thanh',
-                
-            ];
-
-            if (! in_array($chiTietDonHang->donHang->trang_thai, $trangThaiDuocTinh)) {
-                continue;
-            }
-
-            $soLuongDaBan += (int) $chiTietDonHang->so_luong;
         }
 
         return $soLuongDaBan;
@@ -197,7 +227,7 @@ class SanPham extends Model
         $tenBienThe = trim((string) $this->ten_bien_the);
 
         if ($tenBienThe != '' && $tenBienThe != 'Mặc định') {
-            $tenSanPham = preg_replace('/\s*'.preg_quote($tenBienThe, '/').'$/iu', '', $tenSanPham);
+            $tenSanPham = preg_replace('/\s*' . preg_quote($tenBienThe, '/') . '$/iu', '', $tenSanPham);
         }
 
         $tenSanPham = preg_replace('/\s+\d+(?:[,.]\d+)?\s*(g|gram|kg)$/iu', '', $tenSanPham);
@@ -235,19 +265,19 @@ class SanPham extends Model
             return $this->ten_goc;
         }
 
-        return trim($this->ten_goc.' '.$this->ten_bien_the);
+        return trim($this->ten_goc . ' ' . $this->ten_bien_the);
     }
 
     // Lấy đường dẫn hình ảnh chính của sản phẩm.
     public function getDuongDanHinhAnhAttribute()
     {
         if ($this->hinhAnhDauTien && $this->hinhAnhDauTien->hinh_anh) {
-            return asset('storage/'.$this->hinhAnhDauTien->hinh_anh);
+            return asset('storage/' . $this->hinhAnhDauTien->hinh_anh);
         }
 
         $hinhAnhThayThe = $this->layHinhAnhBienTheThayThe();
         if ($hinhAnhThayThe) {
-            return asset('storage/'.$hinhAnhThayThe->hinh_anh);
+            return asset('storage/' . $hinhAnhThayThe->hinh_anh);
         }
 
         return asset('storage/uploads/products/default.png');
@@ -276,28 +306,18 @@ class SanPham extends Model
     }
 
     // Trừ tồn kho khi khách đặt hàng và trả về phần phân bổ theo lô.
-    public function truTonKho($soLuong, $tinhCaHangHetHan = false)
+    public function truTonKho($soLuong)
     {
         $soLuong = (int) $soLuong;
         if ($soLuong <= 0) {
             return [];
         }
 
-        $soLuongCoSan = $this->soLuongCoTheBan();
-        if ($tinhCaHangHetHan) {
-            $soLuongCoSan = (int) $this->ton_kho;
+        if ($this->soLuongCoTheBan() < $soLuong) {
+            throw new Exception('Sản phẩm "' . $this->ten_hien_thi . '" không đủ hàng.');
         }
 
-        if ($soLuongCoSan < $soLuong) {
-            throw new Exception('Sản phẩm "'.$this->ten_hien_thi.'" không đủ hàng.');
-        }
-
-        $phanBoTonKhos = $this->truTonKhoTheoLo($soLuong, $tinhCaHangHetHan);
-        $this->ton_kho -= $soLuong;
-        $this->capNhatTrangThaiTonKho();
-        $this->save();
-
-        return $phanBoTonKhos;
+        return $this->truTonKhoTheoLo($soLuong);
     }
 
     // Hoàn lại tồn kho khi đơn hàng bị hủy hoặc hàng được trả lại nguyên vẹn.
@@ -342,39 +362,28 @@ class SanPham extends Model
                 $loHangKho->save();
             }
         }
-
-        $this->ton_kho += $soLuong;
-        $this->capNhatTrangThaiTonKho();
-        $this->save();
-    }
-
-    // Cập nhật trạng thái còn hàng hoặc hết hàng.
-    public function capNhatTrangThaiTonKho()
-    {
-        if ($this->ton_kho > 0 && $this->soLuongCoTheBan() > 0) {
-            $this->trang_thai = 'con_hang';
-        } else {
-            $this->trang_thai = 'het_hang';
-        }
     }
 
     // Trừ số lượng trong từng lô kho theo thứ tự hết hạn sớm.
-    private function truTonKhoTheoLo($soLuong, $tinhCaHangHetHan)
+    private function truTonKhoTheoLo($soLuong)
     {
         $soLuongCon = $soLuong;
         $phanBoTonKhos = [];
-        $query = $this->loHangKhos()->where('so_luong_con', '>', 0);
+        $giaDangBan = (float) $this->gia_hien_tai;
+        $giaGoc = (float) $this->gia;
+        $query = $this->layCacLoHangCoTheBan();
 
-        if (! $tinhCaHangHetHan) {
-            $query->where(function ($query) {
-                $query->whereNull('han_su_dung')
-                    ->orWhereDate('han_su_dung', '>=', today());
+        if ($giaDangBan < $giaGoc) {
+            $query->where('gia_khuyen_mai', $giaDangBan);
+        } else {
+            $query->where(function ($query) use ($giaGoc) {
+                $query->whereNull('gia_khuyen_mai')
+                    ->orWhere('gia_khuyen_mai', '<=', 0)
+                    ->orWhere('gia_khuyen_mai', '>=', $giaGoc);
             });
         }
 
         $loHangKhos = $query
-            ->orderBy('han_su_dung')
-            ->orderBy('ma_lo_hang_kho')
             ->lockForUpdate()
             ->get();
 
@@ -404,10 +413,7 @@ class SanPham extends Model
         }
 
         if ($soLuongCon > 0) {
-            $phanBoTonKhos[] = [
-                'ma_chi_tiet_phieu_nhap' => null,
-                'so_luong' => $soLuongCon,
-            ];
+            throw new Exception('Sản phẩm "' . $this->ten_hien_thi . '" không đủ hàng.');
         }
 
         return $phanBoTonKhos;
@@ -427,8 +433,10 @@ class SanPham extends Model
             ->get();
 
         foreach ($sanPhams as $sanPham) {
-            if ($sanPham->hinhAnhDauTien
-                && mb_strtolower($sanPham->ten_goc, 'UTF-8') == $tenGoc) {
+            if (
+                $sanPham->hinhAnhDauTien
+                && mb_strtolower($sanPham->ten_goc, 'UTF-8') == $tenGoc
+            ) {
                 return $sanPham->hinhAnhDauTien;
             }
         }

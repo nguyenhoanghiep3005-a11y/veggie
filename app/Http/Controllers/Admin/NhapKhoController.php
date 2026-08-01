@@ -533,8 +533,6 @@ class NhapKhoController extends Controller
                     'ngay_san_xuat' => $ngaySanXuat,
                     'han_su_dung' => $hanSuDung,
                 ]);
-
-                $this->tangTonKhoSanPham($chiTiet->ma_san_pham, $soLuongNhap);
             }
 
             if ($soLuongTuChoi > 0) {
@@ -580,17 +578,7 @@ class NhapKhoController extends Controller
             'bao_nha_cung_cap_luc' => $thoiGianBaoNhaCungCap,
         ]);
     }
-
-    // Cộng tồn kho tổng của sản phẩm.
-    private function tangTonKhoSanPham($maSanPham, $soLuong)
-    {
-        $sanPham = SanPham::findOrFail($maSanPham);
-        $sanPham->ton_kho += $soLuong;
-        $sanPham->capNhatTrangThaiTonKho();
-        $sanPham->save();
-    }
-
-    // Lưu thông tin các tệp minh chứng vào phiếu hàng hư.
+// Lưu thông tin các tệp minh chứng vào phiếu hàng hư.
     private function luuMinhChungPhieuHangHu($phieuHangHu, $minhChungs)
     {
         foreach ($minhChungs as $minhChung) {

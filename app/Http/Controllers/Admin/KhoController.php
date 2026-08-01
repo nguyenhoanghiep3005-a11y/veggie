@@ -146,15 +146,12 @@ class KhoController extends Controller
             $loHangKho->load('sanPham');
             $sanPham = $loHangKho->sanPham;
 
-            if (! $sanPham || $soLuongHu > $loHangKho->so_luong_con || $soLuongHu > $sanPham->ton_kho) {
+            if (! $sanPham || $soLuongHu > $loHangKho->so_luong_con) {
                 throw new Exception('Số lượng hàng hư không hợp lệ.');
             }
 
             $loHangKho->so_luong_con -= $soLuongHu;
             $loHangKho->save();
-            $sanPham->ton_kho -= $soLuongHu;
-            $sanPham->capNhatTrangThaiTonKho();
-            $sanPham->save();
 
             $hangHuKho = HangHuKho::create([
                 'ma_lo_hang_kho' => $loHangKho->ma_lo_hang_kho,

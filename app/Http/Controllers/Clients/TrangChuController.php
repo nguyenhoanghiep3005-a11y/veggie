@@ -30,16 +30,11 @@ class TrangChuController extends Controller
             'hinhAnhDauTien',
             'danhGias',
             'loHangKhos',
-        ])->where('trang_thai', 'con_hang')
-            ->where('ton_kho', '>', 0)
-            ->whereHas('loHangKhos', function ($query) {
-                $query->where('so_luong_con', '>', 0)
-                    ->where('gia_khuyen_mai', '>', 0)
-                    ->where(function ($query) {
-                        $query->whereNull('han_su_dung')
-                            ->orWhereDate('han_su_dung', '>=', today());
-                    });
-            })
+        ])->whereHas('loHangKhos', function ($query) {
+            $query->where('so_luong_con', '>', 0)
+                ->where('gia_khuyen_mai', '>', 0)
+                ->whereDate('han_su_dung', '>=', today());
+        })
             ->orderBy('ma_san_pham', 'desc')
             ->paginate(12, ['*'], 'khuyen_mai');
 
@@ -47,16 +42,16 @@ class TrangChuController extends Controller
             $this->chuanBiSanPhamTrangChu($sanPham, $soLuongDaBans);
         }
 
-        $danhMucBanChays = $this->layDanhMucBanChay($danhMucs);
+        $sanPhamBanChays = $this->laySanPhamBanChay($danhMucs);
         $sanPhamModals = $this->laySanPhamModal(
             $sanPhamKhuyenMais,
-            $danhMucBanChays
+            $sanPhamBanChays
         );
 
         return view('clients.pages.home', compact(
             'danhMucs',
             'sanPhamKhuyenMais',
-            'danhMucBanChays',
+            'sanPhamBanChays',
             'sanPhamModals'
         ));
     }
@@ -128,57 +123,38 @@ class TrangChuController extends Controller
         }
     }
 
-    // Lay cac danh muc co san pham ban chay khong trong dot khuyen mai.
-    private function layDanhMucBanChay($danhMucs)
+    // Lay danh sach san pham ban chay khong trong dot khuyen mai.
+    private function laySanPhamBanChay($danhMucs)
     {
-        $danhMucBanChays = [];
-        $viTriTab = 0;
+        $sanPhamBanChays = [];
 
         foreach ($danhMucs as $danhMuc) {
-            $sanPhamBanChays = [];
-
             foreach ($danhMuc->sanPhams as $sanPham) {
-                if ($sanPham->so_luong_da_ban <= 0 || $sanPham->dang_khuyen_mai) {
+                if ($sanPham->so_luong_da_ban <= 0 || $sanPham->dang_khuyen_mai || $sanPham->soLuongCoTheBan() <= 0) {
                     continue;
                 }
 
                 $sanPhamBanChays[] = $sanPham;
             }
-
-            if (count($sanPhamBanChays) == 0) {
-                continue;
-            }
-
-            usort($sanPhamBanChays, function ($sanPhamTruoc, $sanPhamSau) {
-                if ($sanPhamSau->so_luong_da_ban > $sanPhamTruoc->so_luong_da_ban) {
-                    return 1;
-                }
-
-                if ($sanPhamSau->so_luong_da_ban < $sanPhamTruoc->so_luong_da_ban) {
-                    return -1;
-                }
-
-                return 0;
-            });
-
-            $danhMuc->san_pham_ban_chays = $sanPhamBanChays;
-            $danhMuc->lop_tab = '';
-            $danhMuc->lop_noi_dung = '';
-
-            if ($viTriTab == 0) {
-                $danhMuc->lop_tab = 'active show';
-                $danhMuc->lop_noi_dung = 'active show';
-            }
-
-            $danhMucBanChays[] = $danhMuc;
-            $viTriTab++;
         }
 
-        return $danhMucBanChays;
+        usort($sanPhamBanChays, function ($sanPhamTruoc, $sanPhamSau) {
+            if ($sanPhamSau->so_luong_da_ban > $sanPhamTruoc->so_luong_da_ban) {
+                return 1;
+            }
+
+            if ($sanPhamSau->so_luong_da_ban < $sanPhamTruoc->so_luong_da_ban) {
+                return -1;
+            }
+
+            return 0;
+        });
+
+        return array_slice($sanPhamBanChays, 0, 12);
     }
 
     // Gom san pham de tao modal xem nhanh mot lan o cuoi trang.
-    private function laySanPhamModal($sanPhamKhuyenMais, $danhMucBanChays)
+    private function laySanPhamModal($sanPhamKhuyenMais, $sanPhamBanChays)
     {
         $sanPhamModals = [];
         $maSanPhamDaThems = [];
@@ -188,15 +164,13 @@ class TrangChuController extends Controller
             $maSanPhamDaThems[$sanPham->ma_san_pham] = true;
         }
 
-        foreach ($danhMucBanChays as $danhMuc) {
-            foreach ($danhMuc->san_pham_ban_chays as $sanPham) {
-                if (isset($maSanPhamDaThems[$sanPham->ma_san_pham])) {
-                    continue;
-                }
-
-                $sanPhamModals[] = $sanPham;
-                $maSanPhamDaThems[$sanPham->ma_san_pham] = true;
+        foreach ($sanPhamBanChays as $sanPham) {
+            if (isset($maSanPhamDaThems[$sanPham->ma_san_pham])) {
+                continue;
             }
+
+            $sanPhamModals[] = $sanPham;
+            $maSanPhamDaThems[$sanPham->ma_san_pham] = true;
         }
 
         return $sanPhamModals;

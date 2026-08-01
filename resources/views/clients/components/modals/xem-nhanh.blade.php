@@ -32,6 +32,7 @@
                                             @endif
                                             <span>{{number_format($sanPham->gia_hien_tai , 0 , ',',".")}}<small class="product-price-symbol">đ</small></span>
                                         </div>
+                                        <div class="product-detail-stock">{{ $sanPham->tenSoLuongCoTheBan() }}</div>
                                         <div class="modal-product-meta ltn__product-details-menu-1">
                                             <ul>
                                                 <li>
@@ -49,7 +50,7 @@
                                                     <div class="cart-plus-minus">
                                                         <input type="text" name="qtybutton" value="1"
                                                             class="cart-plus-minus-box" readonly
-                                                            data-max="{{$sanPham->ton_kho}}">
+                                                            data-max="{{ $sanPham->soLuongCoTheBan() }}">
                                                     </div>
                                                 </li>
 

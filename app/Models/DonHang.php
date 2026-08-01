@@ -140,12 +140,8 @@ class DonHang extends Model
     // Lay thoi diem bat dau tinh han doi tra.
     public function thoiDiemBatDauDoiTra()
     {
-        if ($this->hoan_tat_luc) {
-            return $this->hoan_tat_luc;
-        }
-
         if ($this->trang_thai == 'hoan_thanh') {
-            return $this->updated_at;
+            return $this->hoan_tat_luc;
         }
 
         return null;

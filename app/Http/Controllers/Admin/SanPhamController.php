@@ -27,8 +27,6 @@ class SanPhamController extends Controller
 
         $data = $request->validate($this->quyTacThemSanPham(), $this->thongBaoKiemTra());
         $data['duong_dan'] = Str::slug($data['ten'].'-'.$data['don_vi']).'-'.time();
-        $data['ton_kho'] = 0;
-        $data['trang_thai'] = 'het_hang';
 
         $sanPham = SanPham::create($data);
         $this->luuHinhAnhSanPham($sanPham, $request);
@@ -69,7 +67,6 @@ class SanPhamController extends Controller
         unset($data['ma_san_pham']);
 
         $sanPham->fill($data);
-        $sanPham->capNhatTrangThaiTonKho();
         $sanPham->save();
 
         if ($request->hasFile('images')) {

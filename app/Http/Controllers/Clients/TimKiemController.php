@@ -28,9 +28,10 @@ class TimKiemController extends Controller
             'hinhAnhs',
             'danhGias',
             'chiTietDonHangs.donHang',
-        ])->where('trang_thai', 'con_hang')
-            ->where('ton_kho', '>', 0)
-            ->where('ten', 'like', '%'.$tuKhoa.'%')
+        ])->whereHas('loHangKhos', function ($query) {
+            $query->where('so_luong_con', '>', 0)
+                ->whereDate('han_su_dung', '>=', today());
+        })->where('ten', 'like', '%'.$tuKhoa.'%')
             ->orderBy('ma_san_pham', 'desc')
             ->paginate(9)
             ->appends(['keyword' => $tuKhoa]);

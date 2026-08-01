@@ -31,8 +31,6 @@ class ProductSeeder extends Seeder
                             'ma_danh_muc' => $danhMuc->ma_danh_muc,
                             'mo_ta' => $this->taoMoTa($sanPham),
                             'gia' => $gia,
-                            'ton_kho' => 0,
-                            'trang_thai' => 'het_hang',
                             'don_vi' => $donVi,
                             'danh_gia_trung_binh' => 5,
                         ]

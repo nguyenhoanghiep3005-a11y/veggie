@@ -165,106 +165,94 @@
 @endif
 
 
-@if(count($danhMucBanChays) > 0)
-<!-- PRODUCT TAB AREA START (product-item-3) -->
-<div class="ltn__product-tab-area ltn__product-gutter pt-115 pb-70 home-best-seller-section">
+@if(count($sanPhamBanChays) > 0)
+<!-- BEST SELLER PRODUCT AREA START -->
+<div class="ltn__product-slider-area ltn__product-gutter pt-115 pb-70 home-best-seller-section">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-title-area ltn__section-title-2 text-center">
-                    <h1 class="section-title">Sản Phẩm Bán Chạy </h1>
-                </div>
-                <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
-                    <div class="nav">
-                        @foreach ($danhMucBanChays as $danhMuc)
-                        <a class="{{$danhMuc->lop_tab}}" data-bs-toggle="tab"
-                            href="#tab-{{$danhMuc->ma_danh_muc}}">{{$danhMuc->ten}}</a>
-                        @endforeach
-                    </div>
-                </div>
-                <div class="tab-content">
-                    @foreach ($danhMucBanChays as $danhMuc)
-                    <div class="tab-pane fade {{$danhMuc->lop_noi_dung}}" id="tab-{{$danhMuc->ma_danh_muc}}">
-                        <div class="ltn__product-tab-content-inner">
-                            <div class="row ltn__tab-product-slider-one-active slick-arrow-1 home-product-slider">
-                                @foreach ($danhMuc->san_pham_ban_chays as $sanPham)
-                                <!-- ltn__product-item -->
-                                <div class="col-lg-12">
-                                    <div class="ltn__product-item ltn__product-item-3 text-center">
-                                        <div class="product-img">
-                                            <a href="{{route('san-pham.chi-tiet',$sanPham->duong_dan)}}"><img src="{{$sanPham->duong_dan_hinh_anh}}" alt="{{$sanPham->ten}}"></a>
-                                            <div class="product-hover-action">
-                                                <ul>
-                                                    <li>
-                                                        <a href="#" title="Xem nhanh" data-bs-toggle="modal"
-                                                            data-bs-target="#quick_view_modal-{{$sanPham->ma_san_pham}}">
-                                                            <i class="far fa-eye"></i>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="#" title="Thêm vào giỏ hàng" class="add-to-cart-btn"
-                                                            data-id="{{$sanPham->ma_san_pham}}">
-                                                            <i class="fas fa-shopping-cart"></i>
-                                                        </a>
-                                                    </li>
-                                                    @auth
-                                                    <li>
-                                                        <a href="javascript:void(0)" class="add-to-wishlist"
-                                                            data-id="{{ $sanPham->ma_san_pham }}">
-                                                            <i class="far fa-heart"></i>
-                                                        </a>
-
-                                                    </li>
-                                                    @endauth
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div class="product-info">
-                                            <div class="product-ratting">
-                                                <ul>
-                                                    @for ($soSao = 1; $soSao <= 5; $soSao++) <li>
-                                                        <a href="javascript:void(0)">
-                                                            <i
-                                                                class="{{ $soSao <= $sanPham->so_sao_trung_binh ? 'fas fa-star' : 'far fa-star' }}"></i>
-                                                        </a>
-                                                        </li>
-                                                        @endfor
-
-                                                        <li class="review-total">
-                                                            ({{ $sanPham->tong_danh_gia }} Đánh giá)
-                                                        </li>
-                                                </ul>
-                                            </div>
-                                            <h2 class="product-title"><a
-                                                    href="{{route('san-pham.chi-tiet',$sanPham->duong_dan)}}">{{$sanPham->ten}}</a>
-                                            </h2>
-                                            <div class="product-card-bottom">
-                                                <div class="product-card-price">
-                                                    @if($sanPham->gia_hien_tai < $sanPham->gia)
-                                                    <del>{{number_format($sanPham->gia,0,',','.')}}<small class="product-price-symbol">&#273;</small></del>
-                                                    @endif
-                                                    <span>{{number_format($sanPham->gia_hien_tai,0,',','.')}}<small class="product-price-symbol">&#273;</small></span>
-                                                </div>
-                                                <div class="product-card-sold">
-                                                    {{ $sanPham->so_luong_da_ban }} đã bán
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-
+                    <h1 class="section-title">Sản Phẩm Bán Chạy</h1>
                 </div>
             </div>
         </div>
+        <div class="row ltn__tab-product-slider-one-active slick-arrow-1 home-product-slider">
+            @foreach ($sanPhamBanChays as $sanPham)
+            <div class="col-lg-12">
+                <div class="ltn__product-item ltn__product-item-3 text-center">
+                    <div class="product-img">
+                        <a href="{{route('san-pham.chi-tiet',$sanPham->duong_dan)}}">
+                            <img src="{{$sanPham->duong_dan_hinh_anh}}" alt="{{$sanPham->ten}}">
+                        </a>
+                        @if($sanPham->phan_tram_giam > 0)
+                        <div class="product-badge">
+                            <ul>
+                                <li>-{{$sanPham->phan_tram_giam}}%</li>
+                            </ul>
+                        </div>
+                        @endif
+                        <div class="product-hover-action">
+                            <ul>
+                                <li>
+                                    <a href="#" title="Xem nhanh" data-bs-toggle="modal"
+                                        data-bs-target="#quick_view_modal-{{$sanPham->ma_san_pham}}">
+                                        <i class="far fa-eye"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" title="Thêm vào giỏ hàng" class="add-to-cart-btn"
+                                        data-id="{{$sanPham->ma_san_pham}}">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </a>
+                                </li>
+                                @auth
+                                <li>
+                                    <a href="javascript:void(0)" class="add-to-wishlist"
+                                        data-id="{{ $sanPham->ma_san_pham }}">
+                                        <i class="far fa-heart"></i>
+                                    </a>
+                                </li>
+                                @endauth
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-ratting">
+                            <ul>
+                                @for ($soSao = 1; $soSao <= 5; $soSao++)
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <i class="{{ $soSao <= $sanPham->so_sao_trung_binh ? 'fas fa-star' : 'far fa-star' }}"></i>
+                                    </a>
+                                </li>
+                                @endfor
+                                <li class="review-total">
+                                    ({{ $sanPham->tong_danh_gia }} Đánh giá)
+                                </li>
+                            </ul>
+                        </div>
+                        <h2 class="product-title">
+                            <a href="{{route('san-pham.chi-tiet',$sanPham->duong_dan)}}">{{$sanPham->ten}}</a>
+                        </h2>
+                        <div class="product-card-bottom">
+                            <div class="product-card-price">
+                                @if($sanPham->gia_hien_tai < $sanPham->gia)
+                                <del>{{number_format($sanPham->gia,0,',','.')}}<small class="product-price-symbol">&#273;</small></del>
+                                @endif
+                                <span>{{number_format($sanPham->gia_hien_tai,0,',','.')}}<small class="product-price-symbol">&#273;</small></span>
+                            </div>
+                            <div class="product-card-sold">
+                                {{ $sanPham->so_luong_da_ban }} đã bán
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
     </div>
 </div>
-<!-- PRODUCT TAB AREA END -->
+<!-- BEST SELLER PRODUCT AREA END -->
 @endif
 
 <!-- CATEGORY AREA START -->

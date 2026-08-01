@@ -192,6 +192,8 @@ class DonHangController extends Controller
             $donHang->trang_thai = 'da_huy';
             $donHang->nguoi_huy = 'khach_hang';
             $donHang->ly_do_huy = trim($data['ly_do_huy']);
+            $donHang->da_hoan_ton_kho = true;
+            $donHang->hoan_ton_kho_luc = now();
             $donHang->save();
 
             DB::commit();

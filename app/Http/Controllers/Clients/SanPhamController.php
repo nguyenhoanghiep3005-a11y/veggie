@@ -207,7 +207,7 @@ class SanPhamController extends Controller
                 ),
                 'ten_bien_the' => $bienTheSanPham->ten_bien_the,
                 'ton_kho' => $tonKho,
-                'ten_ton_kho' => $tenTonKho,
+                'ten_ton_kho' => $bienTheSanPham->tenSoLuongCoTheBan(),
                 'dang_duoc_chon' => $bienTheSanPham->ma_san_pham
                     == $sanPham->ma_san_pham,
             ];
@@ -236,6 +236,7 @@ class SanPhamController extends Controller
                 'tong_danh_gia' => $sanPham->tong_danh_gia,
                 'so_luong_da_ban' => $sanPham->so_luong_da_ban,
                 'ton_kho' => $sanPham->soLuongCoTheBan(),
+                'ten_ton_kho' => $sanPham->tenSoLuongCoTheBan(),
                 'co_the_mua' => $sanPham->soLuongCoTheBan() > 0,
                 'hinh_anh' => $sanPham->duong_dan_hinh_anh,
                 'cac_hinh_anh' => $sanPham->cac_hinh_anh_chi_tiet,
@@ -260,8 +261,10 @@ class SanPhamController extends Controller
             'hinhAnhs',
             'danhGias',
             'chiTietDonHangs.donHang',
-        ])->where('trang_thai', 'con_hang')
-            ->where('ton_kho', '>', 0);
+        ])->whereHas('loHangKhos', function ($query) {
+            $query->where('so_luong_con', '>', 0)
+                ->whereDate('han_su_dung', '>=', today());
+        });
     }
 
     // Tim san pham chi tiet theo duong dan.
@@ -274,7 +277,10 @@ class SanPhamController extends Controller
             'danhGias.nguoiDung',
             'chiTietDonHangs.donHang',
         ])->where('duong_dan', $slug)
-            ->where('trang_thai', 'con_hang')
+            ->whereHas('loHangKhos', function ($query) {
+                $query->where('so_luong_con', '>', 0)
+                    ->whereDate('han_su_dung', '>=', today());
+            })
             ->firstOrFail();
 
         $thongTinMoTa = $this->tachThongTinMoTa($sanPham->mo_ta);
@@ -299,7 +305,10 @@ class SanPhamController extends Controller
             'danhGias',
             'chiTietDonHangs.donHang',
         ])->where('ma_danh_muc', $sanPham->ma_danh_muc)
-            ->where('trang_thai', 'con_hang')
+            ->whereHas('loHangKhos', function ($query) {
+                $query->where('so_luong_con', '>', 0)
+                    ->whereDate('han_su_dung', '>=', today());
+            })
             ->orderBy('ma_san_pham', 'asc')
             ->get();
 

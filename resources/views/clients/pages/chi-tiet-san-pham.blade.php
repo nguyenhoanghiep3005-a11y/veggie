@@ -63,7 +63,7 @@
                                         <span>{{ $bienTheSanPham->ten_bien_the }}</span>
                                         <small>
                                             @if ($bienTheSanPham->soLuongCoTheBan() > 0)
-                                                Còn {{ $bienTheSanPham->soLuongCoTheBan() }}
+                                                {{ $bienTheSanPham->tenSoLuongCoTheBan() }}
                                             @else
                                                 Hết hàng
                                             @endif
@@ -155,7 +155,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="tab-pane fade" id="tab-danh-gia-san-pham">
                     <div class="ltn__shop-details-tab-content-inner">
                         <div class="ltn__comment-area mb-30">
