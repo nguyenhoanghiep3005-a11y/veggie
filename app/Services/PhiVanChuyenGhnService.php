@@ -172,6 +172,10 @@ class PhiVanChuyenGhnService
             }
         }
 
-        return max(1, $tongSoLuong);
+        if ($tongSoLuong < 1) {
+            return 1;
+        }
+
+        return $tongSoLuong;
     }
 }

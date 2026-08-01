@@ -182,11 +182,10 @@ class NhapKhoController extends Controller
             DB::beginTransaction();
 
             $donDatNhap = DonDatNhap::with('chiTietDonDatNhaps.sanPham')
-                ->lockForUpdate()
                 ->findOrFail($maDonDatNhap);
 
             if ($donDatNhap->trang_thai != 'cho_nhap_hang') {
-                throw new Exception('Đơn đặt nhập đã được xử lý ở phiên làm việc khác.');
+                throw new Exception('Đơn đặt nhập đã được xử lý.');
             }
 
             $phieuNhap = $this->taoPhieuNhap($donDatNhap);
@@ -261,12 +260,15 @@ class NhapKhoController extends Controller
         $this->chuanBiPhieuNhapDeHienThi($phieuNhap);
 
         foreach ($phieuNhap->chiTietPhieuNhaps as $chiTiet) {
-            $chiTiet->ten_san_pham_hien_thi = $chiTiet->sanPham
-                ? $chiTiet->sanPham->ten_hien_thi
-                : 'Sản phẩm đã xóa';
-            $chiTiet->han_su_dung_hien_thi = $chiTiet->han_su_dung
-                ? $chiTiet->han_su_dung->format('d/m/Y')
-                : '-';
+            $chiTiet->ten_san_pham_hien_thi = 'Sản phẩm đã xóa';
+            if ($chiTiet->sanPham) {
+                $chiTiet->ten_san_pham_hien_thi = $chiTiet->sanPham->ten_hien_thi;
+            }
+
+            $chiTiet->han_su_dung_hien_thi = '-';
+            if ($chiTiet->han_su_dung) {
+                $chiTiet->han_su_dung_hien_thi = $chiTiet->han_su_dung->format('d/m/Y');
+            }
         }
 
         return view('admin.pages.chi-tiet-phieu-nhap', compact('phieuNhap'));
@@ -298,9 +300,10 @@ class NhapKhoController extends Controller
         ]);
 
         foreach ($phieuHangHu->chiTietPhieuHangHus as $chiTiet) {
-            $chiTiet->ten_san_pham_hien_thi = $chiTiet->sanPham
-                ? $chiTiet->sanPham->ten_hien_thi
-                : 'Sản phẩm đã xóa';
+            $chiTiet->ten_san_pham_hien_thi = 'Sản phẩm đã xóa';
+            if ($chiTiet->sanPham) {
+                $chiTiet->ten_san_pham_hien_thi = $chiTiet->sanPham->ten_hien_thi;
+            }
         }
 
         return view('admin.pages.chi-tiet-phieu-hang-hu', compact('phieuHangHu'));
@@ -385,8 +388,15 @@ class NhapKhoController extends Controller
             $soLuongNhan = (int) $data['so_luong_nhan'];
             $soLuongTuChoi = (int) $data['so_luong_tu_choi'];
             $soLuongNhap = $soLuongNhan - $soLuongTuChoi;
-            $ngaySanXuat = $data['ngay_san_xuat'] ?? '';
-            $hanSuDung = $data['han_su_dung'] ?? '';
+            $ngaySanXuat = '';
+            if (isset($data['ngay_san_xuat'])) {
+                $ngaySanXuat = $data['ngay_san_xuat'];
+            }
+
+            $hanSuDung = '';
+            if (isset($data['han_su_dung'])) {
+                $hanSuDung = $data['han_su_dung'];
+            }
             $tienToLoi = 'chi_tiets.'.$viTri.'.';
 
             if (! $chiTiet) {
@@ -487,8 +497,13 @@ class NhapKhoController extends Controller
             $soLuongNhan = (int) $data['so_luong_nhan'];
             $soLuongTuChoi = (int) $data['so_luong_tu_choi'];
             $soLuongNhap = $soLuongNhan - $soLuongTuChoi;
-            $ngaySanXuat = $soLuongNhap > 0 ? $data['ngay_san_xuat'] : null;
-            $hanSuDung = $soLuongNhap > 0 ? $data['han_su_dung'] : null;
+            $ngaySanXuat = null;
+            $hanSuDung = null;
+
+            if ($soLuongNhap > 0) {
+                $ngaySanXuat = $data['ngay_san_xuat'];
+                $hanSuDung = $data['han_su_dung'];
+            }
 
             $chiTiet->update([
                 'so_luong_nhan' => $soLuongNhan,
@@ -550,18 +565,26 @@ class NhapKhoController extends Controller
     // Cập nhật đơn đặt nhập sau khi nhận hàng xong.
     private function hoanTatDonDatNhap($donDatNhap, $tongSoLuongTuChoi, $moTaHangLoi)
     {
+        $moTaHangLoiCanLuu = null;
+        $thoiGianBaoNhaCungCap = null;
+
+        if ($tongSoLuongTuChoi > 0) {
+            $moTaHangLoiCanLuu = $moTaHangLoi;
+            $thoiGianBaoNhaCungCap = now();
+        }
+
         $donDatNhap->update([
             'trang_thai' => 'da_nhap_hang',
             'nhan_hang_luc' => now(),
-            'mo_ta_hang_loi' => $tongSoLuongTuChoi > 0 ? $moTaHangLoi : null,
-            'bao_nha_cung_cap_luc' => $tongSoLuongTuChoi > 0 ? now() : null,
+            'mo_ta_hang_loi' => $moTaHangLoiCanLuu,
+            'bao_nha_cung_cap_luc' => $thoiGianBaoNhaCungCap,
         ]);
     }
 
     // Cộng tồn kho tổng của sản phẩm.
     private function tangTonKhoSanPham($maSanPham, $soLuong)
     {
-        $sanPham = SanPham::lockForUpdate()->findOrFail($maSanPham);
+        $sanPham = SanPham::findOrFail($maSanPham);
         $sanPham->ton_kho += $soLuong;
         $sanPham->capNhatTrangThaiTonKho();
         $sanPham->save();
@@ -571,13 +594,44 @@ class NhapKhoController extends Controller
     private function luuMinhChungPhieuHangHu($phieuHangHu, $minhChungs)
     {
         foreach ($minhChungs as $minhChung) {
+            $oDia = 'public';
+            $duongDan = '';
+            $tenGoc = null;
+            $loaiMime = null;
+            $loaiTep = 'hinh_anh';
+            $kichThuoc = 0;
+
+            if (isset($minhChung['o_dia'])) {
+                $oDia = $minhChung['o_dia'];
+            }
+
+            if (isset($minhChung['duong_dan'])) {
+                $duongDan = $minhChung['duong_dan'];
+            }
+
+            if (isset($minhChung['ten_goc'])) {
+                $tenGoc = $minhChung['ten_goc'];
+            }
+
+            if (isset($minhChung['loai_mime'])) {
+                $loaiMime = $minhChung['loai_mime'];
+            }
+
+            if (isset($minhChung['loai_tep'])) {
+                $loaiTep = $minhChung['loai_tep'];
+            }
+
+            if (isset($minhChung['kich_thuoc'])) {
+                $kichThuoc = $minhChung['kich_thuoc'];
+            }
+
             $phieuHangHu->minhChungs()->create([
-                'o_dia' => $minhChung['o_dia'] ?? 'public',
-                'duong_dan' => $minhChung['duong_dan'] ?? '',
-                'ten_goc' => $minhChung['ten_goc'] ?? null,
-                'loai_mime' => $minhChung['loai_mime'] ?? null,
-                'loai_tep' => $minhChung['loai_tep'] ?? 'hinh_anh',
-                'kich_thuoc' => $minhChung['kich_thuoc'] ?? 0,
+                'o_dia' => $oDia,
+                'duong_dan' => $duongDan,
+                'ten_goc' => $tenGoc,
+                'loai_mime' => $loaiMime,
+                'loai_tep' => $loaiTep,
+                'kich_thuoc' => $kichThuoc,
             ]);
         }
     }
@@ -585,27 +639,35 @@ class NhapKhoController extends Controller
     // Chuẩn bị thông tin chung của đơn đặt nhập để View chỉ hiển thị.
     private function chuanBiDonDatNhapDeHienThi($donDatNhap)
     {
-        $donDatNhap->ten_nha_cung_cap_hien_thi = $donDatNhap->nhaCungCap
-            ? $donDatNhap->nhaCungCap->ten
-            : 'Không rõ';
-        $donDatNhap->ngay_dat_hien_thi = $donDatNhap->ngay_dat
-            ? $donDatNhap->ngay_dat->format('d/m/Y')
-            : '-';
-        $donDatNhap->ngay_nhap_hien_thi = $donDatNhap->nhan_hang_luc
-            ? $donDatNhap->nhan_hang_luc->format('d/m/Y H:i')
-            : 'Chưa nhập';
+        $donDatNhap->ten_nha_cung_cap_hien_thi = 'Không rõ';
+        if ($donDatNhap->nhaCungCap) {
+            $donDatNhap->ten_nha_cung_cap_hien_thi = $donDatNhap->nhaCungCap->ten;
+        }
+
+        $donDatNhap->ngay_dat_hien_thi = '-';
+        if ($donDatNhap->ngay_dat) {
+            $donDatNhap->ngay_dat_hien_thi = $donDatNhap->ngay_dat->format('d/m/Y');
+        }
+
+        $donDatNhap->ngay_nhap_hien_thi = 'Chưa nhập';
+        if ($donDatNhap->nhan_hang_luc) {
+            $donDatNhap->ngay_nhap_hien_thi = $donDatNhap->nhan_hang_luc->format('d/m/Y H:i');
+        }
     }
 
     // Chuẩn bị các dòng và phiếu con của chi tiết đơn đặt nhập.
     private function chuanBiChiTietDonDatNhap($donDatNhap)
     {
         foreach ($donDatNhap->chiTietDonDatNhaps as $chiTiet) {
-            $chiTiet->ten_san_pham_hien_thi = $chiTiet->sanPham
-                ? $chiTiet->sanPham->ten_hien_thi
-                : 'Sản phẩm đã xóa';
-            $chiTiet->han_su_dung_hien_thi = $chiTiet->han_su_dung
-                ? $chiTiet->han_su_dung->format('d/m/Y')
-                : '-';
+            $chiTiet->ten_san_pham_hien_thi = 'Sản phẩm đã xóa';
+            if ($chiTiet->sanPham) {
+                $chiTiet->ten_san_pham_hien_thi = $chiTiet->sanPham->ten_hien_thi;
+            }
+
+            $chiTiet->han_su_dung_hien_thi = '-';
+            if ($chiTiet->han_su_dung) {
+                $chiTiet->han_su_dung_hien_thi = $chiTiet->han_su_dung->format('d/m/Y');
+            }
         }
 
         foreach ($donDatNhap->phieuNhaps as $phieuNhap) {
@@ -618,15 +680,18 @@ class NhapKhoController extends Controller
     {
         foreach ($donDatNhap->chiTietDonDatNhaps as $viTri => $chiTiet) {
             $tienTo = 'chi_tiets.'.$viTri.'.';
-            $chiTiet->ten_san_pham_hien_thi = $chiTiet->sanPham
-                ? $chiTiet->sanPham->ten_hien_thi
-                : 'Sản phẩm đã xóa';
+            $chiTiet->ten_san_pham_hien_thi = 'Sản phẩm đã xóa';
+            if ($chiTiet->sanPham) {
+                $chiTiet->ten_san_pham_hien_thi = $chiTiet->sanPham->ten_hien_thi;
+            }
             $chiTiet->so_luong_nhan_mac_dinh = old($tienTo.'so_luong_nhan', $chiTiet->so_luong_dat);
             $chiTiet->so_luong_tu_choi_mac_dinh = old($tienTo.'so_luong_tu_choi', 0);
-            $chiTiet->so_luong_nhap_mac_dinh = max(
-                0,
-                $chiTiet->so_luong_nhan_mac_dinh - $chiTiet->so_luong_tu_choi_mac_dinh
-            );
+            $chiTiet->so_luong_nhap_mac_dinh =
+                $chiTiet->so_luong_nhan_mac_dinh - $chiTiet->so_luong_tu_choi_mac_dinh;
+
+            if ($chiTiet->so_luong_nhap_mac_dinh < 0) {
+                $chiTiet->so_luong_nhap_mac_dinh = 0;
+            }
             $chiTiet->ngay_san_xuat_mac_dinh = old($tienTo.'ngay_san_xuat', date('Y-m-d'));
             $chiTiet->han_su_dung_mac_dinh = old($tienTo.'han_su_dung', date('Y-m-d', strtotime('+365 days')));
         }
@@ -635,11 +700,14 @@ class NhapKhoController extends Controller
     // Chuẩn bị thông tin phiếu nhập để View chỉ hiển thị.
     private function chuanBiPhieuNhapDeHienThi($phieuNhap)
     {
-        $phieuNhap->ngay_nhap_hien_thi = $phieuNhap->nhan_hang_luc
-            ? $phieuNhap->nhan_hang_luc->format('d/m/Y H:i')
-            : '-';
-        $phieuNhap->ten_nha_cung_cap_hien_thi = $phieuNhap->nhaCungCap
-            ? $phieuNhap->nhaCungCap->ten
-            : 'Không rõ';
+        $phieuNhap->ngay_nhap_hien_thi = '-';
+        if ($phieuNhap->nhan_hang_luc) {
+            $phieuNhap->ngay_nhap_hien_thi = $phieuNhap->nhan_hang_luc->format('d/m/Y H:i');
+        }
+
+        $phieuNhap->ten_nha_cung_cap_hien_thi = 'Không rõ';
+        if ($phieuNhap->nhaCungCap) {
+            $phieuNhap->ten_nha_cung_cap_hien_thi = $phieuNhap->nhaCungCap->ten;
+        }
     }
 }

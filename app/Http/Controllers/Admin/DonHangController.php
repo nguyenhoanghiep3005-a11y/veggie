@@ -58,15 +58,15 @@ class DonHangController extends Controller
         $yeuCauDoiTra = $donHang->yeuCauDoiTra;
         $sanPhamDoiTras = $this->laySanPhamDoiTra($donHang, $yeuCauDoiTra);
         $minhChungDoiTras = $this->layMinhChungDoiTra($yeuCauDoiTra);
-        $ngayYeuCau = $this->dinhDangNgay(
-            $yeuCauDoiTra ? $yeuCauDoiTra->yeu_cau_luc : null
-        );
-        $ngayDuyet = $this->dinhDangNgay(
-            $yeuCauDoiTra ? $yeuCauDoiTra->duyet_luc : null
-        );
-        $ngayNhanHang = $this->dinhDangNgay(
-            $yeuCauDoiTra ? $yeuCauDoiTra->nhan_hang_luc : null
-        );
+        $ngayYeuCau = '-';
+        $ngayDuyet = '-';
+        $ngayNhanHang = '-';
+
+        if ($yeuCauDoiTra) {
+            $ngayYeuCau = $this->dinhDangNgay($yeuCauDoiTra->yeu_cau_luc);
+            $ngayDuyet = $this->dinhDangNgay($yeuCauDoiTra->duyet_luc);
+            $ngayNhanHang = $this->dinhDangNgay($yeuCauDoiTra->nhan_hang_luc);
+        }
 
         return view('admin.pages.chi-tiet-don-hang', compact(
             'donHang',
@@ -97,11 +97,14 @@ class DonHangController extends Controller
 
         $daGuiHoaDon = $this->guiHoaDon($donHang);
 
+        $thongBao = 'Đã xác nhận đơn hàng.';
+        if ($daGuiHoaDon) {
+            $thongBao = 'Đã xác nhận đơn. Hóa đơn sẽ được gửi qua email.';
+        }
+
         return response()->json([
             'trang_thai' => true,
-            'thong_bao' => $daGuiHoaDon
-                ? 'Đã xác nhận đơn và gửi hóa đơn.'
-                : 'Đã xác nhận đơn hàng.',
+            'thong_bao' => $thongBao,
             'da_gui_hoa_don' => $daGuiHoaDon,
         ]);
     }
@@ -267,10 +270,12 @@ class DonHangController extends Controller
             $donHang->cua_hang_nhan_lai_luc = now();
             $donHang->tinh_trang_hang_hoan =
                 $data['tinh_trang_hang_hoan'];
-            $donHang->ly_do_hang_hoan_hu =
-                isset($data['ly_do_hang_hoan_hu'])
-                    ? trim($data['ly_do_hang_hoan_hu'])
-                    : null;
+            $lyDoHangHoanHu = null;
+            if (isset($data['ly_do_hang_hoan_hu'])) {
+                $lyDoHangHoanHu = trim($data['ly_do_hang_hoan_hu']);
+            }
+
+            $donHang->ly_do_hang_hoan_hu = $lyDoHangHoanHu;
             $donHang->save();
 
             if (
@@ -452,9 +457,7 @@ class DonHangController extends Controller
             $hangHu = HangHuKho::create([
                 'ma_lo_hang_kho' => null,
                 'ma_san_pham' => $chiTietDonHang->ma_san_pham,
-                'ten_san_pham' => $chiTietDonHang->sanPham
-                    ? $chiTietDonHang->sanPham->ten_hien_thi
-                    : 'Sản phẩm đã xóa',
+                'ten_san_pham' => $this->layTenSanPhamTrongDon($chiTietDonHang),
                 'so_luong' => $chiTietDonHang->so_luong,
                 'ly_do' => 'Hàng hoàn bị hư: '.$lyDo,
                 'xay_ra_luc' => now(),
@@ -539,10 +542,17 @@ class DonHangController extends Controller
         }
 
         $diaChi = $donHang->layDiaChiGiaoHang();
-        $donHang->ten_nguoi_nhan = $diaChi ? $diaChi->ho_ten : '-';
-        $donHang->so_dien_thoai_nguoi_nhan = $diaChi ? $diaChi->so_dien_thoai : '-';
-        $donHang->dia_chi_nguoi_nhan = $diaChi ? $diaChi->dia_chi : '-';
-        $donHang->tinh_thanh_nguoi_nhan = $diaChi ? $diaChi->tinh_thanh : '-';
+        $donHang->ten_nguoi_nhan = '-';
+        $donHang->so_dien_thoai_nguoi_nhan = '-';
+        $donHang->dia_chi_nguoi_nhan = '-';
+        $donHang->tinh_thanh_nguoi_nhan = '-';
+
+        if ($diaChi) {
+            $donHang->ten_nguoi_nhan = $diaChi->ho_ten;
+            $donHang->so_dien_thoai_nguoi_nhan = $diaChi->so_dien_thoai;
+            $donHang->dia_chi_nguoi_nhan = $diaChi->dia_chi;
+            $donHang->tinh_thanh_nguoi_nhan = $diaChi->tinh_thanh;
+        }
 
         $donHang->ten_phuong_thuc_thanh_toan = '-';
         $donHang->ten_trang_thai_thanh_toan = '-';
@@ -558,7 +568,7 @@ class DonHangController extends Controller
             $cacTrangThai = [
                 'chua_thanh_toan' => 'Chưa thanh toán',
                 'da_thanh_toan' => 'Đã thanh toán',
-                                'da_hoan_tien' => 'Đã hoàn tiền',
+                'da_hoan_tien' => 'Đã hoàn tiền',
             ];
 
             $trangThaiThanhToan = $donHang->thanhToan->trang_thai;
@@ -611,18 +621,17 @@ class DonHangController extends Controller
         }
 
         foreach ($yeuCauDoiTra->san_pham as $sanPhamDoiTra) {
-            $maChiTiet = isset($sanPhamDoiTra['ma_chi_tiet_don_hang'])
-                ? $sanPhamDoiTra['ma_chi_tiet_don_hang']
-                : null;
+            $maChiTiet = null;
+            if (isset($sanPhamDoiTra['ma_chi_tiet_don_hang'])) {
+                $maChiTiet = $sanPhamDoiTra['ma_chi_tiet_don_hang'];
+            }
 
             foreach ($donHang->chiTietDonHangs as $chiTietDonHang) {
                 if ($chiTietDonHang->ma_chi_tiet_don_hang == $maChiTiet) {
                     $ketQuas[] = [
                         'ten_san_pham' =>
                             $chiTietDonHang->ten_san_pham,
-                        'so_luong' => isset($sanPhamDoiTra['so_luong'])
-                            ? $sanPhamDoiTra['so_luong']
-                            : 0,
+                        'so_luong' => $this->laySoLuongSanPhamDoiTra($sanPhamDoiTra),
                     ];
                     break;
                 }
@@ -630,6 +639,26 @@ class DonHangController extends Controller
         }
 
         return $ketQuas;
+    }
+
+    // Lay ten san pham trong don hang, phong khi san pham da bi xoa.
+    private function layTenSanPhamTrongDon($chiTietDonHang)
+    {
+        if ($chiTietDonHang->sanPham) {
+            return $chiTietDonHang->sanPham->ten_hien_thi;
+        }
+
+        return 'Sản phẩm đã xóa';
+    }
+
+    // Lay so luong san pham trong yeu cau doi tra.
+    private function laySoLuongSanPhamDoiTra($sanPhamDoiTra)
+    {
+        if (isset($sanPhamDoiTra['so_luong'])) {
+            return $sanPhamDoiTra['so_luong'];
+        }
+
+        return 0;
     }
 
     // Lay danh sach minh chung doi tra de hien thi.
@@ -659,26 +688,32 @@ class DonHangController extends Controller
     // Dinh dang ngay gio de hien thi.
     private function dinhDangNgay($thoiGian)
     {
-        return $thoiGian ? $thoiGian->format('d/m/Y H:i') : '-';
+        if ($thoiGian) {
+            return $thoiGian->format('d/m/Y H:i');
+        }
+
+        return '-';
     }
 
-    // Gui hoa don den email nguoi dung, loi mail khong lam huy xac nhan don.
+    // Gui hoa don sau khi man hinh admin da nhan phan hoi.
     private function guiHoaDon($donHang)
     {
         if (! $donHang->nguoiDung || ! $donHang->nguoiDung->email) {
             return false;
         }
 
-        try {
-            Mail::to($donHang->nguoiDung->email)
-                ->send(new HoaDonDonHangMail($donHang));
+        $emailNguoiNhan = $donHang->nguoiDung->email;
 
-            return true;
-        } catch (Exception $exception) {
-            Log::warning('Không gửi được hóa đơn: '.$exception->getMessage());
+        app()->terminating(function () use ($emailNguoiNhan, $donHang) {
+            try {
+                Mail::to($emailNguoiNhan)
+                    ->send(new HoaDonDonHangMail($donHang));
+            } catch (Exception $exception) {
+                Log::warning('Khong gui duoc hoa don: '.$exception->getMessage());
+            }
+        });
 
-            return false;
-        }
+        return true;
     }
 
     // Tra phan hoi thanh cong cho JavaScript.

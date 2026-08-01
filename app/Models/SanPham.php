@@ -90,6 +90,29 @@ class SanPham extends Model
         return $this->hasMany(ChiTietPhieuHangHu::class, 'ma_san_pham');
     }
 
+    // Tạo truy vấn lấy các lô còn hàng và chưa hết hạn.
+    public function layCacLoHangCoTheBan()
+    {
+        return $this->loHangKhos()
+            ->where('so_luong_con', '>', 0)
+            ->where(function ($query) {
+                $query->whereNull('han_su_dung')
+                    ->orWhereDate('han_su_dung', '>=', today());
+            })
+            ->orderBy('han_su_dung')
+            ->orderBy('ma_lo_hang_kho');
+    }
+
+    // Tính tổng số lượng còn có thể bán.
+    public function soLuongCoTheBan()
+    {
+        if (! $this->loHangKhos()->exists()) {
+            return (int) $this->ton_kho;
+        }
+
+        return (int) $this->layCacLoHangCoTheBan()->sum('so_luong_con');
+    }
+
     // Tính tổng số lượng sản phẩm đã bán thành công.
     public function soLuongDaBan()
     {
@@ -114,6 +137,39 @@ class SanPham extends Model
         }
 
         return $soLuongDaBan;
+    }
+
+    // Lấy giá bán của một lô hàng.
+    public function layGiaTheoLo($loHang)
+    {
+        $giaKhuyenMai = (float) $loHang->gia_khuyen_mai;
+
+        if ($giaKhuyenMai > 0 && $giaKhuyenMai < (float) $this->gia) {
+            return $giaKhuyenMai;
+        }
+
+        return (float) $this->gia;
+    }
+
+    // Lấy giá khuyến mãi thấp nhất trong các lô còn bán được.
+    public function layGiaKhuyenMaiDangCo()
+    {
+        $giaKhuyenMaiDangCo = 0;
+        $loHangs = $this->layCacLoHangCoTheBan()->get();
+
+        foreach ($loHangs as $loHang) {
+            $giaKhuyenMai = (float) $loHang->gia_khuyen_mai;
+
+            if ($giaKhuyenMai <= 0 || $giaKhuyenMai >= (float) $this->gia) {
+                continue;
+            }
+
+            if ($giaKhuyenMaiDangCo == 0 || $giaKhuyenMai < $giaKhuyenMaiDangCo) {
+                $giaKhuyenMaiDangCo = $giaKhuyenMai;
+            }
+        }
+
+        return $giaKhuyenMaiDangCo;
     }
 
     // Lấy giá đang bán, nếu có lô khuyến mãi thì ưu tiên giá khuyến mãi.
@@ -200,7 +256,10 @@ class SanPham extends Model
     // Tính tổng tiền theo số lượng mua và giá đang bán của sản phẩm.
     public function tinhGiaTheoSoLuong($soLuong)
     {
-        $soLuong = max(0, (int) $soLuong);
+        $soLuong = (int) $soLuong;
+        if ($soLuong < 0) {
+            $soLuong = 0;
+        }
 
         return $soLuong * (float) $this->gia_hien_tai;
     }
@@ -208,65 +267,12 @@ class SanPham extends Model
     // Tính đơn giá trung bình cho số lượng sản phẩm đang mua.
     public function layDonGiaTheoSoLuong($soLuong)
     {
-        $soLuong = max(1, (int) $soLuong);
+        $soLuong = (int) $soLuong;
+        if ($soLuong < 1) {
+            $soLuong = 1;
+        }
 
         return $this->tinhGiaTheoSoLuong($soLuong) / $soLuong;
-    }
-
-    // Lấy giá bán của một lô hàng.
-    public function layGiaTheoLo($loHang)
-    {
-        $giaKhuyenMai = (float) $loHang->gia_khuyen_mai;
-
-        if ($giaKhuyenMai > 0 && $giaKhuyenMai < (float) $this->gia) {
-            return $giaKhuyenMai;
-        }
-
-        return (float) $this->gia;
-    }
-
-    // Lấy giá khuyến mãi thấp nhất trong các lô còn bán được.
-    public function layGiaKhuyenMaiDangCo()
-    {
-        $giaKhuyenMaiDangCo = 0;
-        $loHangs = $this->layCacLoHangCoTheBan()->get();
-
-        foreach ($loHangs as $loHang) {
-            $giaKhuyenMai = (float) $loHang->gia_khuyen_mai;
-
-            if ($giaKhuyenMai <= 0 || $giaKhuyenMai >= (float) $this->gia) {
-                continue;
-            }
-
-            if ($giaKhuyenMaiDangCo == 0 || $giaKhuyenMai < $giaKhuyenMaiDangCo) {
-                $giaKhuyenMaiDangCo = $giaKhuyenMai;
-            }
-        }
-
-        return $giaKhuyenMaiDangCo;
-    }
-
-    // Tạo truy vấn lấy các lô còn hàng và chưa hết hạn.
-    public function layCacLoHangCoTheBan()
-    {
-        return $this->loHangKhos()
-            ->where('so_luong_con', '>', 0)
-            ->where(function ($query) {
-                $query->whereNull('han_su_dung')
-                    ->orWhereDate('han_su_dung', '>=', today());
-            })
-            ->orderBy('han_su_dung')
-            ->orderBy('ma_lo_hang_kho');
-    }
-
-    // Tính tổng số lượng còn có thể bán.
-    public function soLuongCoTheBan()
-    {
-        if (! $this->loHangKhos()->exists()) {
-            return (int) $this->ton_kho;
-        }
-
-        return (int) $this->layCacLoHangCoTheBan()->sum('so_luong_con');
     }
 
     // Trừ tồn kho khi khách đặt hàng và trả về phần phân bổ theo lô.
@@ -303,9 +309,21 @@ class SanPham extends Model
         }
 
         foreach ($phanBoTonKhos as $phanBoTonKho) {
-            $maLoHangKho = $phanBoTonKho['ma_lo_hang_kho'] ?? null;
-            $maChiTietPhieuNhap = $phanBoTonKho['ma_chi_tiet_phieu_nhap'] ?? null;
-            $soLuongHoan = (int) ($phanBoTonKho['so_luong'] ?? 0);
+            $maLoHangKho = null;
+            $maChiTietPhieuNhap = null;
+            $soLuongHoan = 0;
+
+            if (isset($phanBoTonKho['ma_lo_hang_kho'])) {
+                $maLoHangKho = $phanBoTonKho['ma_lo_hang_kho'];
+            }
+
+            if (isset($phanBoTonKho['ma_chi_tiet_phieu_nhap'])) {
+                $maChiTietPhieuNhap = $phanBoTonKho['ma_chi_tiet_phieu_nhap'];
+            }
+
+            if (isset($phanBoTonKho['so_luong'])) {
+                $soLuongHoan = (int) $phanBoTonKho['so_luong'];
+            }
 
             if ($soLuongHoan <= 0) {
                 continue;
@@ -365,7 +383,10 @@ class SanPham extends Model
                 break;
             }
 
-            $soLuongLay = min($soLuongCon, (int) $loHangKho->so_luong_con);
+            $soLuongLay = $soLuongCon;
+            if ((int) $loHangKho->so_luong_con < $soLuongLay) {
+                $soLuongLay = (int) $loHangKho->so_luong_con;
+            }
             if ($soLuongLay <= 0) {
                 continue;
             }

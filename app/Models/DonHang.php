@@ -95,13 +95,41 @@ class DonHang extends Model
         if ($this->du_lieu_dia_chi_giao_hang) {
             $data = $this->du_lieu_dia_chi_giao_hang;
             $diaChiGiaoHang = new DiaChiGiaoHang();
-            $diaChiGiaoHang->ho_ten = $data['ho_ten'] ?? 'Khách vãng lai';
-            $diaChiGiaoHang->so_dien_thoai = $data['so_dien_thoai'] ?? '-';
-            $diaChiGiaoHang->dia_chi = $data['dia_chi'] ?? '-';
-            $diaChiGiaoHang->tinh_thanh = $data['tinh_thanh'] ?? '-';
-            $diaChiGiaoHang->ma_tinh = $data['ma_tinh'] ?? null;
-            $diaChiGiaoHang->ma_huyen = $data['ma_huyen'] ?? null;
-            $diaChiGiaoHang->ma_xa = $data['ma_xa'] ?? null;
+            $diaChiGiaoHang->ho_ten = 'Khách vãng lai';
+            $diaChiGiaoHang->so_dien_thoai = '-';
+            $diaChiGiaoHang->dia_chi = '-';
+            $diaChiGiaoHang->tinh_thanh = '-';
+            $diaChiGiaoHang->ma_tinh = null;
+            $diaChiGiaoHang->ma_huyen = null;
+            $diaChiGiaoHang->ma_xa = null;
+
+            if (isset($data['ho_ten'])) {
+                $diaChiGiaoHang->ho_ten = $data['ho_ten'];
+            }
+
+            if (isset($data['so_dien_thoai'])) {
+                $diaChiGiaoHang->so_dien_thoai = $data['so_dien_thoai'];
+            }
+
+            if (isset($data['dia_chi'])) {
+                $diaChiGiaoHang->dia_chi = $data['dia_chi'];
+            }
+
+            if (isset($data['tinh_thanh'])) {
+                $diaChiGiaoHang->tinh_thanh = $data['tinh_thanh'];
+            }
+
+            if (isset($data['ma_tinh'])) {
+                $diaChiGiaoHang->ma_tinh = $data['ma_tinh'];
+            }
+
+            if (isset($data['ma_huyen'])) {
+                $diaChiGiaoHang->ma_huyen = $data['ma_huyen'];
+            }
+
+            if (isset($data['ma_xa'])) {
+                $diaChiGiaoHang->ma_xa = $data['ma_xa'];
+            }
 
             return $diaChiGiaoHang;
         }
@@ -164,7 +192,11 @@ class DonHang extends Model
     // Kiem tra don hang co yeu cau doi tra hay khong.
     public function coYeuCauDoiTra()
     {
-        return $this->yeuCauDoiTra ? true : false;
+        if ($this->yeuCauDoiTra) {
+            return true;
+        }
+
+        return false;
     }
 
     // Lay ten trang thai doi tra de hien thi tren don hang.
@@ -195,9 +227,11 @@ class DonHang extends Model
         }
 
         if ($this->trang_thai == 'da_huy') {
-            return $this->nguoi_huy == 'quan_tri'
-                ? 'Đã hủy bởi Shop'
-                : 'Đã hủy';
+            if ($this->nguoi_huy == 'quan_tri') {
+                return 'Đã hủy bởi Shop';
+            }
+
+            return 'Đã hủy';
         }
 
         $tenTrangThais = [

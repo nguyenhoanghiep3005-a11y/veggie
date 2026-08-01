@@ -1,7 +1,7 @@
 <div class="ltn__product-tab-content-inner ltn__product-grid-view">
     <div class="row">
         @forelse ($sanPhams as $sanPham)
-            <div class="col-xl-4 col-sm-6 col-6">
+            <div class="{{ !empty($kichThuocNho) ? 'col-xl-3 col-lg-3 col-sm-6 col-6' : 'col-xl-4 col-sm-6 col-6' }}">
                 <div class="ltn__product-item ltn__product-item-3 text-center">
                     <div class="product-img">
                         <a href="{{ route('san-pham.chi-tiet', $sanPham->duong_dan) }}">

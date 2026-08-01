@@ -13,7 +13,7 @@
                 <fieldset>
                     <div class="row">
                         <div class="col-md-12">
-                            <input type="email" name="email" placeholder="Nhập email của bạn" value="{{ old('email', $email ?? '') }}" {{ ! empty($email) ? 'readonly' : '' }} required>
+                            <input type="email" name="email" placeholder="Nhập email của bạn" value="{{ old('email', $email) }}" @if ($email != '') readonly @endif required>
                             @error('email')
                             <div class="alert alert-danger">{{ $message }}</div>
                             @enderror

@@ -119,21 +119,21 @@ class PhieuGiamGiaController extends Controller
     {
         $data['ma_giam_gia'] = strtoupper(trim($data['ma_giam_gia']));
 
-        if (empty($data['gia_tri_don_toi_thieu'])) {
+        if (! isset($data['gia_tri_don_toi_thieu']) || $data['gia_tri_don_toi_thieu'] == '') {
             $data['gia_tri_don_toi_thieu'] = 0;
         }
 
-        if (empty($data['so_tien_giam_toi_da'])) {
+        if (! isset($data['so_tien_giam_toi_da']) || $data['so_tien_giam_toi_da'] == '') {
             $data['so_tien_giam_toi_da'] = null;
         }
 
-        if (empty($data['gioi_han_su_dung'])) {
+        if (! isset($data['gioi_han_su_dung']) || $data['gioi_han_su_dung'] == '') {
             $data['gioi_han_su_dung'] = null;
         }
 
         $data['dang_hoat_dong'] = $request->boolean('dang_hoat_dong');
 
-        if (empty($data['ma_nguoi_dungs'])) {
+        if (! isset($data['ma_nguoi_dungs']) || count($data['ma_nguoi_dungs']) == 0) {
             $data['ma_nguoi_dungs'] = [];
         }
 

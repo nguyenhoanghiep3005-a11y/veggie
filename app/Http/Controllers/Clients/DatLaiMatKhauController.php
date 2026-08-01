@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Clients;
 
 use App\Http\Controllers\Controller;
+use App\Models\NguoiDung;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -12,7 +13,7 @@ class DatLaiMatKhauController extends Controller
     // Hiển thị form đặt lại mật khẩu và gửi mã đặt lại sang View.
     public function hienThiFormDatLaiMatKhau(Request $request, $token)
     {
-        $email = $request->query('email');
+        $email = (string) $request->query('email', '');
 
         return view('clients.pages.dat-lai-mat-khau', compact('token', 'email'));
     }
@@ -20,7 +21,7 @@ class DatLaiMatKhauController extends Controller
     // Kiểm tra thông tin và cập nhật mật khẩu mới cho người dùng.
     public function datLaiMatKhau(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'email' => 'required|email|exists:nguoi_dung,email',
             'password' => 'required|min:6|confirmed',
             'token' => 'required',

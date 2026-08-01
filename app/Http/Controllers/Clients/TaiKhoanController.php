@@ -45,9 +45,17 @@ class TaiKhoanController extends Controller
         $nguoiDung->dia_chi = $data['ltn__address'];
         $nguoiDung->save();
 
+        $thongBao = 'Cập nhật thông tin thành công.';
+
+        if (! $request->ajax()) {
+            toastr()->success($thongBao);
+
+            return back();
+        }
+
         return response()->json([
             'trang_thai' => true,
-            'thong_bao' => 'Cập nhật thông tin thành công.',
+            'thong_bao' => $thongBao,
         ]);
     }
 
@@ -63,25 +71,49 @@ class TaiKhoanController extends Controller
         $nguoiDung = Auth::user();
 
         if (! Hash::check($data['current_password'], $nguoiDung->mat_khau)) {
+            $thongBao = 'Mật khẩu hiện tại không đúng.';
+
+            if (! $request->ajax()) {
+                toastr()->error($thongBao);
+
+                return back();
+            }
+
             return response()->json([
                 'trang_thai' => false,
-                'thong_bao' => 'Mật khẩu hiện tại không đúng.',
+                'thong_bao' => $thongBao,
             ], 422);
         }
 
         if (Hash::check($data['new_password'], $nguoiDung->mat_khau)) {
+            $thongBao = 'Mật khẩu mới không được trùng với mật khẩu hiện tại.';
+
+            if (! $request->ajax()) {
+                toastr()->error($thongBao);
+
+                return back();
+            }
+
             return response()->json([
                 'trang_thai' => false,
-                'thong_bao' => 'Mật khẩu mới không được trùng với mật khẩu hiện tại.',
+                'thong_bao' => $thongBao,
             ], 422);
         }
 
         $nguoiDung->mat_khau = Hash::make($data['new_password']);
         $nguoiDung->save();
 
+        $thongBao = 'Đổi mật khẩu thành công.';
+
+        if (! $request->ajax()) {
+            toastr()->success($thongBao);
+
+            return back();
+        }
+
         return response()->json([
             'trang_thai' => true,
-            'thong_bao' => 'Đổi mật khẩu thành công.',
+            'thong_bao' => $thongBao,
         ]);
     }
 

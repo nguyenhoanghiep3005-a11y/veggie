@@ -37,40 +37,46 @@ class ThanhToanController extends Controller
         $nguoiDung = Auth::user();
         $sanPhamGioHangs = $this->gioHang->laySanPhamGioHang();
 
-        if (empty($sanPhamGioHangs)) {
+        if (count($sanPhamGioHangs) == 0) {
             toastr()->error('Giỏ hàng đang trống.');
 
             return redirect()->route('gio-hang.hien-thi');
         }
 
-        $diaChis = [];
-        if ($nguoiDung) {
-            $diaChis = DiaChiGiaoHang::where(
-                'ma_nguoi_dung',
-                $nguoiDung->ma_nguoi_dung
-            )->get();
-        }
+        $diaChis = $this->layDanhSachDiaChiNguoiDung($nguoiDung);
 
         $diaChiMacDinh = $this->layDiaChiMacDinh($diaChis);
         $coDiaChiDaLuu = count($diaChis) > 0;
-        $loaiGiaoHangDaChon = old(
-            'loai_giao_hang',
-            $coDiaChiDaLuu ? 'tai_khoan' : 'dia_chi_moi'
-        );
-        $maDiaChiDaChon = old(
-            'ma_dia_chi_giao_hang',
-            $diaChiMacDinh ? $diaChiMacDinh->ma_dia_chi_giao_hang : ''
-        );
+
+        $loaiGiaoHangMacDinh = 'dia_chi_moi';
+        if ($coDiaChiDaLuu) {
+            $loaiGiaoHangMacDinh = 'tai_khoan';
+        }
+
+        $maDiaChiMacDinh = '';
+        if ($diaChiMacDinh) {
+            $maDiaChiMacDinh = $diaChiMacDinh->ma_dia_chi_giao_hang;
+        }
+
+        $loaiGiaoHangDaChon = old('loai_giao_hang', $loaiGiaoHangMacDinh);
+        $maDiaChiDaChon = old('ma_dia_chi_giao_hang', $maDiaChiMacDinh);
         $diaChiDaChon = $this->timDiaChiTrongDanhSach($diaChis, $maDiaChiDaChon);
 
         if (! $diaChiDaChon) {
             $diaChiDaChon = $diaChiMacDinh;
         }
 
-        $tenNguoiNhan = $diaChiDaChon ? $diaChiDaChon->ho_ten : '';
-        $soDienThoaiNguoiNhan = $diaChiDaChon ? $diaChiDaChon->so_dien_thoai : '';
-        $diaChiNguoiNhan = $diaChiDaChon ? $diaChiDaChon->dia_chi : '';
-        $tinhThanhNguoiNhan = $diaChiDaChon ? $diaChiDaChon->tinh_thanh : '';
+        $tenNguoiNhan = '';
+        $soDienThoaiNguoiNhan = '';
+        $diaChiNguoiNhan = '';
+        $tinhThanhNguoiNhan = '';
+
+        if ($diaChiDaChon) {
+            $tenNguoiNhan = $diaChiDaChon->ho_ten;
+            $soDienThoaiNguoiNhan = $diaChiDaChon->so_dien_thoai;
+            $diaChiNguoiNhan = $diaChiDaChon->dia_chi;
+            $tinhThanhNguoiNhan = $diaChiDaChon->tinh_thanh;
+        }
 
         $tamTinh = $this->gioHang->tinhTongTien();
         $phieuGiamGia = $this->layPhieuGiamGiaTrongSession($tamTinh);
@@ -83,7 +89,12 @@ class ThanhToanController extends Controller
         $phiVanChuyen = $cacKhoanTien['phi_van_chuyen'];
         $soTienGiam = $cacKhoanTien['so_tien_giam'];
         $tongTien = $cacKhoanTien['tong_tien'];
-        $maGiamGia = $phieuGiamGia ? $phieuGiamGia->ma_giam_gia : '';
+        $maGiamGia = '';
+
+        if ($phieuGiamGia) {
+            $maGiamGia = $phieuGiamGia->ma_giam_gia;
+        }
+
         $phieuDaNhans = $this->layPhieuGiamGiaDaNhan(
             $nguoiDung,
             $tamTinh,
@@ -213,9 +224,9 @@ class ThanhToanController extends Controller
     {
         $data = $request->validate([
             'ma_dia_chi_giao_hang' => 'nullable|integer',
-            'ma_tinh' => 'required_without:ma_dia_chi_giao_hang',
-            'ma_huyen' => 'required_without:ma_dia_chi_giao_hang',
-            'ma_xa' => 'required_without:ma_dia_chi_giao_hang',
+            'ma_tinh' => 'nullable',
+            'ma_huyen' => 'nullable',
+            'ma_xa' => 'nullable',
         ]);
 
         $diaChi = $this->layDiaChiTinhPhiTuRequest($data);
@@ -301,12 +312,15 @@ class ThanhToanController extends Controller
 
         $this->xoaDuLieuSauKhiDatHang();
 
+        $duongDanChuyen = route('trang-chu');
+        if ($donHang->ma_nguoi_dung) {
+            $duongDanChuyen = route('tai-khoan.hien-thi');
+        }
+
         return response()->json([
             'trang_thai' => true,
             'thong_bao' => 'Thanh toán thành công.',
-            'duong_dan_chuyen' => $donHang->ma_nguoi_dung
-                ? route('tai-khoan.hien-thi')
-                : route('trang-chu'),
+            'duong_dan_chuyen' => $duongDanChuyen,
         ]);
     }
 
@@ -315,11 +329,13 @@ class ThanhToanController extends Controller
     {
         $quyTac = [
             'loai_giao_hang' => 'required|in:tai_khoan,dia_chi_moi',
-            'phuong_thuc' => 'required|in:tien_mat,paypal',
         ];
 
         if ($laPayPal) {
+            $quyTac['phuong_thuc'] = 'required|in:paypal';
             $quyTac['ma_giao_dich'] = 'required|string|max:191';
+        } else {
+            $quyTac['phuong_thuc'] = 'required|in:tien_mat';
         }
 
         if ($request->input('loai_giao_hang') == 'tai_khoan' && Auth::check()) {
@@ -345,7 +361,7 @@ class ThanhToanController extends Controller
     {
         $sanPhamGioHangs = $this->gioHang->laySanPhamGioHang();
 
-        if (empty($sanPhamGioHangs)) {
+        if (count($sanPhamGioHangs) == 0) {
             throw new Exception('Giỏ hàng đang trống.');
         }
 
@@ -359,10 +375,13 @@ class ThanhToanController extends Controller
         DB::beginTransaction();
 
         try {
+            $maNguoiDung = null;
+            if ($data['loai_giao_hang'] == 'tai_khoan') {
+                $maNguoiDung = Auth::id();
+            }
+
             $donHang = DonHang::create([
-                'ma_nguoi_dung' => $data['loai_giao_hang'] == 'tai_khoan'
-                    ? Auth::id()
-                    : null,
+                'ma_nguoi_dung' => $maNguoiDung,
                 'ma_dia_chi_giao_hang' => $thongTinDiaChi['ma_dia_chi_giao_hang'],
                 'du_lieu_dia_chi_giao_hang' => $thongTinDiaChi['du_lieu_dia_chi'],
                 'tam_tinh' => 0,
@@ -374,42 +393,20 @@ class ThanhToanController extends Controller
 
             $tamTinh = $this->taoChiTietDonHang($donHang, $sanPhamGioHangs);
             $phieuGiamGia = $this->layPhieuGiamGiaTrongSession($tamTinh);
-            $soTienGiam = 0;
-
-            if ($phieuGiamGia) {
-                $soTienGiam = $phieuGiamGia->tinhSoTienGiam($tamTinh);
-            }
-
+            $soTienGiam = $this->tinhTienGiam($phieuGiamGia, $tamTinh);
             $phiVanChuyen = $this->phiVanChuyenGhn->tinhPhiVanChuyen(
                 $diaChi,
                 $sanPhamGioHangs
             );
 
-            $donHang->tam_tinh = $tamTinh;
-            $donHang->phi_van_chuyen = $phiVanChuyen;
-            $donHang->so_tien_giam = $soTienGiam;
-            $donHang->tong_tien = max(
-                0,
-                $tamTinh + $phiVanChuyen - $soTienGiam
+            $this->capNhatTienDonHang(
+                $donHang,
+                $tamTinh,
+                $phiVanChuyen,
+                $soTienGiam,
+                $phieuGiamGia
             );
-
-            if ($phieuGiamGia) {
-                $donHang->ma_phieu_giam_gia = $phieuGiamGia->ma_phieu_giam_gia;
-                $donHang->ma_giam_gia = $phieuGiamGia->ma_giam_gia;
-            }
-
-            $donHang->save();
-
-            ThanhToan::create([
-                'ma_don_hang' => $donHang->ma_don_hang,
-                'phuong_thuc' => $phuongThuc,
-                'ma_giao_dich' => $maGiaoDich,
-                'trang_thai' => $phuongThuc == 'paypal'
-                    ? 'da_thanh_toan'
-                    : 'chua_thanh_toan',
-                'thanh_toan_luc' => $phuongThuc == 'paypal' ? now() : null,
-                'so_tien' => $donHang->tong_tien,
-            ]);
+            $this->taoThanhToan($donHang, $phuongThuc, $maGiaoDich);
 
             $this->ghiNhanSuDungPhieuGiamGia($phieuGiamGia);
 
@@ -456,6 +453,54 @@ class ThanhToanController extends Controller
         }
 
         return $tamTinh;
+    }
+
+    // Cap nhat tam tinh, phi van chuyen, tien giam va tong tien cho don hang.
+    private function capNhatTienDonHang(
+        $donHang,
+        $tamTinh,
+        $phiVanChuyen,
+        $soTienGiam,
+        $phieuGiamGia
+    ) {
+        $tongTien = $tamTinh + $phiVanChuyen - $soTienGiam;
+
+        if ($tongTien < 0) {
+            $tongTien = 0;
+        }
+
+        $donHang->tam_tinh = $tamTinh;
+        $donHang->phi_van_chuyen = $phiVanChuyen;
+        $donHang->so_tien_giam = $soTienGiam;
+        $donHang->tong_tien = $tongTien;
+
+        if ($phieuGiamGia) {
+            $donHang->ma_phieu_giam_gia = $phieuGiamGia->ma_phieu_giam_gia;
+            $donHang->ma_giam_gia = $phieuGiamGia->ma_giam_gia;
+        }
+
+        $donHang->save();
+    }
+
+    // Tao dong thanh toan cua don hang COD hoac PayPal.
+    private function taoThanhToan($donHang, $phuongThuc, $maGiaoDich = null)
+    {
+        $trangThaiThanhToan = 'chua_thanh_toan';
+        $thanhToanLuc = null;
+
+        if ($phuongThuc == 'paypal') {
+            $trangThaiThanhToan = 'da_thanh_toan';
+            $thanhToanLuc = now();
+        }
+
+        ThanhToan::create([
+            'ma_don_hang' => $donHang->ma_don_hang,
+            'phuong_thuc' => $phuongThuc,
+            'ma_giao_dich' => $maGiaoDich,
+            'trang_thai' => $trangThaiThanhToan,
+            'thanh_toan_luc' => $thanhToanLuc,
+            'so_tien' => $donHang->tong_tien,
+        ]);
     }
 
     // Tao doi tuong dia chi va du lieu dia chi luu kem don hang.
@@ -509,6 +554,19 @@ class ThanhToanController extends Controller
         ];
     }
 
+    // Lay danh sach dia chi da luu cua nguoi dung.
+    private function layDanhSachDiaChiNguoiDung($nguoiDung)
+    {
+        if (! $nguoiDung) {
+            return [];
+        }
+
+        return DiaChiGiaoHang::where(
+            'ma_nguoi_dung',
+            $nguoiDung->ma_nguoi_dung
+        )->get();
+    }
+
     // Tinh tam tinh, phi van chuyen, tien giam va tong thanh toan.
     private function tinhCacKhoanTien(
         $sanPhamGioHangs,
@@ -529,37 +587,49 @@ class ThanhToanController extends Controller
             );
         }
 
-        $soTienGiam = 0;
-        if ($phieuGiamGia) {
-            $soTienGiam = $phieuGiamGia->tinhSoTienGiam($tamTinh);
+        $soTienGiam = $this->tinhTienGiam($phieuGiamGia, $tamTinh);
+        $tongTien = $tamTinh + $phiVanChuyen - $soTienGiam;
+
+        if ($tongTien < 0) {
+            $tongTien = 0;
         }
 
         return [
             'tam_tinh' => $tamTinh,
             'phi_van_chuyen' => $phiVanChuyen,
             'so_tien_giam' => $soTienGiam,
-            'tong_tien' => max(
-                0,
-                $tamTinh + $phiVanChuyen - $soTienGiam
-            ),
+            'tong_tien' => $tongTien,
         ];
+    }
+
+    // Tinh so tien duoc giam tu phieu giam gia.
+    private function tinhTienGiam($phieuGiamGia, $tamTinh)
+    {
+        if (! $phieuGiamGia) {
+            return 0;
+        }
+
+        return $phieuGiamGia->tinhSoTienGiam($tamTinh);
     }
 
     // Lay dia chi da luu hoac dia chi moi tu du lieu yeu cau.
     private function layDiaChiTinhPhiTuRequest($data)
     {
-        if (! empty($data['ma_dia_chi_giao_hang']) && Auth::check()) {
+        $coMaDiaChi = isset($data['ma_dia_chi_giao_hang'])
+            && $data['ma_dia_chi_giao_hang'] != '';
+
+        if ($coMaDiaChi && Auth::check()) {
             return $this->timDiaChiNguoiDung(
                 Auth::id(),
                 $data['ma_dia_chi_giao_hang']
             );
         }
 
-        if (
-            ! empty($data['ma_tinh'])
-            && ! empty($data['ma_huyen'])
-            && ! empty($data['ma_xa'])
-        ) {
+        $coTinh = isset($data['ma_tinh']) && $data['ma_tinh'] != '';
+        $coHuyen = isset($data['ma_huyen']) && $data['ma_huyen'] != '';
+        $coXa = isset($data['ma_xa']) && $data['ma_xa'] != '';
+
+        if ($coTinh && $coHuyen && $coXa) {
             return new DiaChiGiaoHang([
                 'ma_tinh' => $data['ma_tinh'],
                 'ma_huyen' => $data['ma_huyen'],
@@ -663,25 +733,36 @@ class ThanhToanController extends Controller
                 $nguoiDung->ma_nguoi_dung,
                 $tamTinh
             );
-            $phieuDaNhan->dang_duoc_chon = $phieuDangChon
+
+            $phieuDaNhan->dang_duoc_chon = false;
+            if (
+                $phieuDangChon
                 && $phieuDangChon->ma_phieu_giam_gia
-                    == $phieuDaNhan->ma_phieu_giam_gia;
+                    == $phieuDaNhan->ma_phieu_giam_gia
+            ) {
+                $phieuDaNhan->dang_duoc_chon = true;
+            }
+
             $phieuDaNhan->phan_tram_giam_hien_thi =
                 number_format($phieuDaNhan->phan_tram_giam, 0);
             $phieuDaNhan->don_toi_thieu_hien_thi =
                 'Đơn tối thiểu '
                 .number_format($phieuDaNhan->gia_tri_don_toi_thieu, 0, ',', '.')
                 .' đ';
-            $phieuDaNhan->giam_toi_da_hien_thi =
-                $phieuDaNhan->so_tien_giam_toi_da
-                    ? 'Giảm tối đa '
-                        .number_format($phieuDaNhan->so_tien_giam_toi_da, 0, ',', '.')
-                        .' đ'
-                    : 'Không giới hạn mức giảm';
-            $phieuDaNhan->het_han_hien_thi =
-                $phieuDaNhan->het_han_luc
-                    ? $phieuDaNhan->het_han_luc->format('d/m/Y H:i')
-                    : 'Không giới hạn';
+
+            $phieuDaNhan->giam_toi_da_hien_thi = 'Không giới hạn mức giảm';
+            if ($phieuDaNhan->so_tien_giam_toi_da) {
+                $phieuDaNhan->giam_toi_da_hien_thi =
+                    'Giảm tối đa '
+                    .number_format($phieuDaNhan->so_tien_giam_toi_da, 0, ',', '.')
+                    .' đ';
+            }
+
+            $phieuDaNhan->het_han_hien_thi = 'Không giới hạn';
+            if ($phieuDaNhan->het_han_luc) {
+                $phieuDaNhan->het_han_hien_thi =
+                    $phieuDaNhan->het_han_luc->format('d/m/Y H:i');
+            }
 
             $phieuDaNhans[] = $phieuDaNhan;
         }
@@ -700,10 +781,10 @@ class ThanhToanController extends Controller
             (int) $phieuGiamGia->so_lan_da_dung + 1;
         $phieuGiamGia->save();
 
-        Auth::user()->phieuGiamGias()->updateExistingPivot(
-            $phieuGiamGia->ma_phieu_giam_gia,
-            ['ngay_su_dung' => now()]
-        );
+        DB::table('nguoi_dung_phieu_giam_gia')
+            ->where('ma_nguoi_dung', Auth::id())
+            ->where('ma_phieu_giam_gia', $phieuGiamGia->ma_phieu_giam_gia)
+            ->update(['ngay_su_dung' => now()]);
     }
 
     // Xoa gio hang va phieu giam gia sau khi dat hang thanh cong.

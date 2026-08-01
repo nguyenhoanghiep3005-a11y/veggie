@@ -69,9 +69,20 @@ class PhieuGiamGiaController extends Controller
             return back()->with('error', $loi);
         }
 
-        Auth::user()->phieuGiamGias()->syncWithoutDetaching([
-            $phieuGiamGia->ma_phieu_giam_gia => ['ngay_nhan' => now()],
-        ]);
+        $daNhan = DB::table('nguoi_dung_phieu_giam_gia')
+            ->where('ma_nguoi_dung', Auth::id())
+            ->where('ma_phieu_giam_gia', $phieuGiamGia->ma_phieu_giam_gia)
+            ->exists();
+
+        if (! $daNhan) {
+            DB::table('nguoi_dung_phieu_giam_gia')->insert([
+                'ma_nguoi_dung' => Auth::id(),
+                'ma_phieu_giam_gia' => $phieuGiamGia->ma_phieu_giam_gia,
+                'ngay_nhan' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         return back()->with('success', 'Đã nhận mã '.$phieuGiamGia->ma_giam_gia.'.');
     }

@@ -46,14 +46,17 @@ class SanPhamController extends Controller
 
         $query = $this->taoTruyVanSanPham();
 
-        if (! empty($data['ma_danh_muc'])) {
+        if (isset($data['ma_danh_muc']) && (int) $data['ma_danh_muc'] > 0) {
             $query->where('ma_danh_muc', $data['ma_danh_muc']);
         }
 
         $danhSachSanPham = $query->get()->all();
         $danhSachSanPham = $this->locSanPhamTheoGiaHienTai($danhSachSanPham, $data);
 
-        $sapXep = isset($data['sap_xep']) ? $data['sap_xep'] : 'mac_dinh';
+        $sapXep = 'mac_dinh';
+        if (isset($data['sap_xep'])) {
+            $sapXep = $data['sap_xep'];
+        }
         $danhSachSanPham = $this->sapXepDanhSachSanPham($danhSachSanPham, $sapXep);
 
         $sanPhams = $this->taoPhanTrangSanPham($danhSachSanPham, $request);
@@ -186,6 +189,10 @@ class SanPhamController extends Controller
         foreach ($bienTheSanPhams as $bienTheSanPham) {
             $this->chuanBiSanPhamHienThi($bienTheSanPham);
             $tonKho = $bienTheSanPham->soLuongCoTheBan();
+            $tenTonKho = 'Hết hàng';
+            if ($tonKho > 0) {
+                $tenTonKho = 'Còn '.$tonKho;
+            }
 
             $cacBienThe[] = [
                 'ma_san_pham' => $bienTheSanPham->ma_san_pham,
@@ -200,13 +207,13 @@ class SanPhamController extends Controller
                 ),
                 'ten_bien_the' => $bienTheSanPham->ten_bien_the,
                 'ton_kho' => $tonKho,
-                'ten_ton_kho' => $tonKho > 0 ? 'Còn '.$tonKho : 'Hết hàng',
+                'ten_ton_kho' => $tenTonKho,
                 'dang_duoc_chon' => $bienTheSanPham->ma_san_pham
                     == $sanPham->ma_san_pham,
             ];
         }
 
-        $tenDanhMuc = 'Đang cập nhật';
+        $tenDanhMuc = '';
         if ($sanPham->danhMuc) {
             $tenDanhMuc = $sanPham->danhMuc->ten;
         }
@@ -316,12 +323,22 @@ class SanPhamController extends Controller
     // Chuan bi so sao, danh gia va so luong da ban cho mot san pham.
     private function chuanBiSanPhamHienThi($sanPham)
     {
-        $soSaoTrungBinh = $sanPham->danhGias->avg('so_sao');
+        $tongSoSao = 0;
 
-        $sanPham->so_sao_trung_binh = $soSaoTrungBinh
-            ? round($soSaoTrungBinh, 1)
-            : 0;
+        foreach ($sanPham->danhGias as $danhGia) {
+            $tongSoSao += $danhGia->so_sao;
+        }
+
         $sanPham->tong_danh_gia = $sanPham->danhGias->count();
+        $sanPham->so_sao_trung_binh = 0;
+
+        if ($sanPham->tong_danh_gia > 0) {
+            $sanPham->so_sao_trung_binh = round(
+                $tongSoSao / $sanPham->tong_danh_gia,
+                1
+            );
+        }
+
         $sanPham->so_luong_da_ban = $sanPham->soLuongDaBan();
     }
 
@@ -354,7 +371,7 @@ class SanPhamController extends Controller
     // Tach mo ta san pham de hien thi tung dong thong tin ro rang.
     private function tachThongTinMoTa($moTa)
     {
-        $macDinh = 'Đang cập nhật';
+        $macDinh = '';
         $thongTin = [
             'mo_ta' => $macDinh,
             'san_xuat' => $macDinh,
@@ -376,9 +393,9 @@ class SanPhamController extends Controller
         }
 
         $thuTuDongKhongCoNhan = [
-            'san_xuat',
-            'thuong_hieu',
             'bao_quan',
+            'thuong_hieu',
+            'san_xuat',
             'cach_dung',
             'thanh_phan',
         ];
@@ -387,9 +404,15 @@ class SanPhamController extends Controller
         for ($viTri = 0; $viTri < count($dongHopLes); $viTri++) {
             $dong = $dongHopLes[$viTri];
             $loaiThongTin = $this->xacDinhLoaiDongMoTa($dong);
+            $coNhanThongTin = $loaiThongTin != '';
 
-            if ($viTri == 0 && ($loaiThongTin == '' || $loaiThongTin == 'mo_ta')) {
-                $thongTin['mo_ta'] = $this->xoaNhanMoTa($dong);
+            if ($viTri == 0) {
+                if ($loaiThongTin == 'mo_ta') {
+                    $thongTin['mo_ta'] = $this->xoaNhanMoTa($dong);
+                } else {
+                    $thongTin['mo_ta'] = $dong;
+                }
+
                 continue;
             }
 
@@ -401,7 +424,11 @@ class SanPhamController extends Controller
             }
 
             if ($loaiThongTin != '' && isset($thongTin[$loaiThongTin])) {
-                $thongTin[$loaiThongTin] = $this->xoaNhanMoTa($dong);
+                if ($coNhanThongTin) {
+                    $thongTin[$loaiThongTin] = $this->xoaNhanMoTa($dong);
+                } else {
+                    $thongTin[$loaiThongTin] = $dong;
+                }
             }
         }
 
@@ -417,27 +444,12 @@ class SanPhamController extends Controller
             return 'mo_ta';
         }
 
-        if (mb_strpos($noiDungChuThuong, 'nơi sản xuất') === 0 || mb_strpos($noiDungChuThuong, 'noi san xuat') === 0) {
-            return 'san_xuat';
-        }
-
-        if (
-            mb_strpos($noiDungChuThuong, 'sản xuất') === 0
-            || mb_strpos($noiDungChuThuong, 'san xuat') === 0
-            || mb_strpos($noiDungChuThuong, 'xuất xứ') === 0
-            || mb_strpos($noiDungChuThuong, 'xuat xu') === 0
-            || mb_strpos($noiDungChuThuong, 'nguồn gốc') === 0
-            || mb_strpos($noiDungChuThuong, 'nguon goc') === 0
-        ) {
-            return 'san_xuat';
+        if (mb_strpos($noiDungChuThuong, 'bảo quản') === 0 || mb_strpos($noiDungChuThuong, 'bao quan') === 0) {
+            return 'bao_quan';
         }
 
         if (mb_strpos($noiDungChuThuong, 'thương hiệu') === 0 || mb_strpos($noiDungChuThuong, 'thuong hieu') === 0) {
             return 'thuong_hieu';
-        }
-
-        if (mb_strpos($noiDungChuThuong, 'bảo quản') === 0 || mb_strpos($noiDungChuThuong, 'bao quan') === 0) {
-            return 'bao_quan';
         }
 
         if (mb_strpos($noiDungChuThuong, 'cách dùng') === 0 || mb_strpos($noiDungChuThuong, 'cach dung') === 0) {
@@ -448,51 +460,34 @@ class SanPhamController extends Controller
             return 'thanh_phan';
         }
 
+        if (mb_strpos($noiDungChuThuong, 'nơi sản xuất') === 0 || mb_strpos($noiDungChuThuong, 'noi san xuat') === 0) {
+            return 'san_xuat';
+        }
+
+        if (mb_strpos($noiDungChuThuong, 'sản xuất') === 0 || mb_strpos($noiDungChuThuong, 'san xuat') === 0) {
+            return 'san_xuat';
+        }
+
+        if (mb_strpos($noiDungChuThuong, 'xuất xứ') === 0 || mb_strpos($noiDungChuThuong, 'xuat xu') === 0) {
+            return 'san_xuat';
+        }
+
+        if (mb_strpos($noiDungChuThuong, 'nguồn gốc') === 0 || mb_strpos($noiDungChuThuong, 'nguon goc') === 0) {
+            return 'san_xuat';
+        }
+
         return '';
     }
 
-    // Xoa nhan o dau dong de View chi hien thi noi dung.
+    // Xoa phan nhan truoc dau hai cham, vi du Bao quan: ...
     private function xoaNhanMoTa($noiDung)
     {
-        $cacNhan = [
-            'Mô tả',
-            'Mo ta',
-            'Nơi sản xuất',
-            'Noi san xuat',
-            'Sản xuất tại',
-            'San xuat tai',
-            'Sản xuất',
-            'San xuat',
-            'Xuất xứ',
-            'Xuat xu',
-            'Nguồn gốc',
-            'Nguon goc',
-            'Thương hiệu',
-            'Thuong hieu',
-            'Bảo quản',
-            'Bao quan',
-            'Cách dùng',
-            'Cach dung',
-            'Thành phần',
-            'Thanh phan',
-        ];
+        $viTriDauHaiCham = mb_strpos($noiDung, ':', 0, 'UTF-8');
 
-        foreach ($cacNhan as $nhan) {
-            $noiDungChuThuong = mb_strtolower($noiDung, 'UTF-8');
-            $nhanChuThuong = mb_strtolower($nhan, 'UTF-8');
-
-            if (mb_strpos($noiDungChuThuong, $nhanChuThuong) === 0) {
-                $noiDung = mb_substr(
-                    $noiDung,
-                    mb_strlen($nhan, 'UTF-8'),
-                    null,
-                    'UTF-8'
-                );
-
-                return ltrim($noiDung, " :");
-            }
+        if ($viTriDauHaiCham !== false) {
+            return trim(mb_substr($noiDung, $viTriDauHaiCham + 1, null, 'UTF-8'));
         }
 
-        return $noiDung;
+        return trim($noiDung);
     }
 }

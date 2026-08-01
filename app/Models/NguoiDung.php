@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use Exception;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -68,6 +71,19 @@ class NguoiDung extends Authenticatable
         }
 
         return false;
+    }
+    // Gui email dat lai mat khau sau khi trinh duyet da nhan phan hoi.
+    public function sendPasswordResetNotification($token)
+    {
+        $nguoiDung = $this;
+
+        app()->terminating(function () use ($nguoiDung, $token) {
+            try {
+                $nguoiDung->notify(new ResetPassword($token));
+            } catch (Exception $exception) {
+                Log::warning('Khong gui duoc email dat lai mat khau: '.$exception->getMessage());
+            }
+        });
     }
     // Cho Laravel biết cột đang lưu mật khẩu của người dùng.
     public function getAuthPasswordName()

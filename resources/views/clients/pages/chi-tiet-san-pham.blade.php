@@ -34,7 +34,11 @@
                         <span class="product-detail-rating-number">{{ number_format($sanPham->so_sao_trung_binh, 1) }}</span>
                         <span class="product-ratting">
                             @for ($soSao = 1; $soSao <= 5; $soSao++)
-                                <i class="{{ $soSao <= $sanPham->so_sao_trung_binh ? 'fas fa-star' : 'far fa-star' }}"></i>
+                                @if ($soSao <= $sanPham->so_sao_trung_binh)
+                                    <i class="fas fa-star"></i>
+                                @else
+                                    <i class="far fa-star"></i>
+                                @endif
                             @endfor
                         </span>
                         <span class="product-detail-review-count">{{ $sanPham->tong_danh_gia }} đánh giá</span>
@@ -55,11 +59,14 @@
                             <div class="product-variant-list product-variant-options mt-2">
                                 @foreach ($bienTheSanPhams as $bienTheSanPham)
                                     <a href="{{ route('san-pham.chi-tiet', $bienTheSanPham->duong_dan) }}"
-                                        data-variant-url="{{ route('san-pham.bien-the', $bienTheSanPham->duong_dan) }}"
-                                        class="product-variant-option {{ $bienTheSanPham->dang_duoc_chon ? 'active' : '' }} {{ $bienTheSanPham->soLuongCoTheBan() <= 0 ? 'out-of-stock' : '' }}">
+                                        class="product-variant-option @if ($bienTheSanPham->dang_duoc_chon) active @endif @if ($bienTheSanPham->soLuongCoTheBan() <= 0) out-of-stock @endif">
                                         <span>{{ $bienTheSanPham->ten_bien_the }}</span>
                                         <small>
-                                            {{ $bienTheSanPham->soLuongCoTheBan() > 0 ? 'Còn '.$bienTheSanPham->soLuongCoTheBan() : 'Hết hàng' }}
+                                            @if ($bienTheSanPham->soLuongCoTheBan() > 0)
+                                                Còn {{ $bienTheSanPham->soLuongCoTheBan() }}
+                                            @else
+                                                Hết hàng
+                                            @endif
                                         </small>
                                     </a>
                                 @endforeach
@@ -72,7 +79,7 @@
                             <li>
                                 <div class="cart-plus-minus">
                                     <div class="dec qtybutton">-</div>
-                                    <input type="text" value="{{ $sanPham->soLuongCoTheBan() > 0 ? 1 : 0 }}"
+                                    <input type="text" value="@if ($sanPham->soLuongCoTheBan() > 0)1@else0@endif"
                                         class="cart-plus-minus-box" readonly data-max="{{ $sanPham->soLuongCoTheBan() }}">
                                     <div class="inc qtybutton">+</div>
                                 </div>
@@ -122,25 +129,25 @@
                     <div class="ltn__shop-details-tab-content-inner">
                         <h4 class="title-2">Thông tin chi tiết sản phẩm</h4>
                         <div class="product-detail-facts">
-                            <p class="product-description-text">{{ $sanPham->mo_ta_hien_thi }}</p>
+                            <p class="product-description-text @if ($sanPham->mo_ta_hien_thi == '') d-none @endif">{{ $sanPham->mo_ta_hien_thi }}</p>
                             <ul>
-                                <li class="product-manufacture-row {{ $sanPham->san_xuat_hien_thi == 'Đang cập nhật' ? 'd-none' : '' }}">
+                                <li class="product-manufacture-row @if ($sanPham->san_xuat_hien_thi == '') d-none @endif">
                                     <strong>Nơi sản xuất:</strong>
                                     <span class="product-manufacture-text">{{ $sanPham->san_xuat_hien_thi }}</span>
                                 </li>
-                                <li class="product-brand-row {{ $sanPham->thuong_hieu_hien_thi == 'Đang cập nhật' ? 'd-none' : '' }}">
+                                <li class="product-brand-row @if ($sanPham->thuong_hieu_hien_thi == '') d-none @endif">
                                     <strong>Thương hiệu:</strong>
                                     <span class="product-brand-text">{{ $sanPham->thuong_hieu_hien_thi }}</span>
                                 </li>
-                                <li class="product-storage-row {{ $sanPham->bao_quan_hien_thi == 'Đang cập nhật' ? 'd-none' : '' }}">
+                                <li class="product-storage-row @if ($sanPham->bao_quan_hien_thi == '') d-none @endif">
                                     <strong>Bảo quản:</strong>
                                     <span class="product-storage-text">{{ $sanPham->bao_quan_hien_thi }}</span>
                                 </li>
-                                <li class="product-use-row {{ $sanPham->cach_dung_hien_thi == 'Đang cập nhật' ? 'd-none' : '' }}">
+                                <li class="product-use-row @if ($sanPham->cach_dung_hien_thi == '') d-none @endif">
                                     <strong>Cách dùng:</strong>
                                     <span class="product-use-text">{{ $sanPham->cach_dung_hien_thi }}</span>
                                 </li>
-                                <li class="product-ingredients-row {{ $sanPham->thanh_phan_hien_thi == 'Đang cập nhật' ? 'd-none' : '' }}">
+                                <li class="product-ingredients-row @if ($sanPham->thanh_phan_hien_thi == '') d-none @endif">
                                     <strong>Thành phần:</strong>
                                     <span class="product-ingredients-text">{{ $sanPham->thanh_phan_hien_thi }}</span>
                                 </li>
@@ -178,9 +185,9 @@
                 </div>
             </div>
         </div>
-        <div class="ltn__product-area mt-80">
+        <div class="ltn__product-area mt-80 related-products-area">
             <h3>Sản phẩm liên quan</h3>
-            @include('clients.components.luoi-san-pham', ['sanPhams' => $sanPhamLienQuans])
+            @include('clients.components.luoi-san-pham', ['sanPhams' => $sanPhamLienQuans, 'kichThuocNho' => true])
             <div class="ltn__pagination-area text-center">
                 {{ $sanPhamLienQuans->links('clients.components.pagination.phan-trang') }}
             </div>

@@ -48,9 +48,10 @@ class DonHangController extends Controller
             ['dang_xu_ly', 'dang_giao_hang_doi', 'hoan_tat']
         );
         $daHoanTatDoiTra = $yeuCauDoiTra && $yeuCauDoiTra->trang_thai == 'hoan_tat';
-        $thoiGianYeuCau = $yeuCauDoiTra && $yeuCauDoiTra->yeu_cau_luc
-            ? $yeuCauDoiTra->yeu_cau_luc->format('d/m/Y H:i')
-            : '-';
+        $thoiGianYeuCau = '-';
+        if ($yeuCauDoiTra && $yeuCauDoiTra->yeu_cau_luc) {
+            $thoiGianYeuCau = $yeuCauDoiTra->yeu_cau_luc->format('d/m/Y H:i');
+        }
 
         return view('clients.pages.chi-tiet-don-hang', compact(
             'donHang',
@@ -283,8 +284,6 @@ class DonHangController extends Controller
 
             if (isset($sanPhamDoiTra['ma_chi_tiet_don_hang'])) {
                 $maChiTiet = $sanPhamDoiTra['ma_chi_tiet_don_hang'];
-            } elseif (isset($sanPhamDoiTra['order_item_id'])) {
-                $maChiTiet = $sanPhamDoiTra['order_item_id'];
             }
 
             $chiTietCanTim = null;
@@ -303,14 +302,10 @@ class DonHangController extends Controller
             $soLuongDoiTra = 0;
             if (isset($sanPhamDoiTra['so_luong'])) {
                 $soLuongDoiTra = $sanPhamDoiTra['so_luong'];
-            } elseif (isset($sanPhamDoiTra['quantity'])) {
-                $soLuongDoiTra = $sanPhamDoiTra['quantity'];
             }
 
             $daXuatHangDoi = false;
-            if (! empty($sanPhamDoiTra['phan_bo_hang_doi'])) {
-                $daXuatHangDoi = true;
-            } elseif (! empty($sanPhamDoiTra['replacement_allocations'])) {
+            if (isset($sanPhamDoiTra['phan_bo_hang_doi']) && count($sanPhamDoiTra['phan_bo_hang_doi']) > 0) {
                 $daXuatHangDoi = true;
             }
 
@@ -357,11 +352,20 @@ class DonHangController extends Controller
     {
         $diaChi = $donHang->layDiaChiGiaoHang();
 
-        return [
-            'ten' => $diaChi ? $diaChi->ho_ten : '-',
-            'so_dien_thoai' => $diaChi ? $diaChi->so_dien_thoai : '-',
-            'dia_chi' => $diaChi ? $diaChi->dia_chi : '-',
-            'tinh_thanh' => $diaChi ? $diaChi->tinh_thanh : '-',
+        $thongTinGiaoHang = [
+            'ten' => '-',
+            'so_dien_thoai' => '-',
+            'dia_chi' => '-',
+            'tinh_thanh' => '-',
         ];
+
+        if ($diaChi) {
+            $thongTinGiaoHang['ten'] = $diaChi->ho_ten;
+            $thongTinGiaoHang['so_dien_thoai'] = $diaChi->so_dien_thoai;
+            $thongTinGiaoHang['dia_chi'] = $diaChi->dia_chi;
+            $thongTinGiaoHang['tinh_thanh'] = $diaChi->tinh_thanh;
+        }
+
+        return $thongTinGiaoHang;
     }
 }

@@ -88,10 +88,14 @@ class MinhChungService
     {
         try {
             $loaiMime = (string) $tep->getMimeType();
-            $loaiTep = str_starts_with($loaiMime, 'video/')
-                ? 'video'
-                : 'hinh_anh';
-            $loaiTaiNguyen = $loaiTep == 'video' ? 'video' : 'image';
+            $loaiTep = 'hinh_anh';
+            $loaiTaiNguyen = 'image';
+
+            if (str_starts_with($loaiMime, 'video/')) {
+                $loaiTep = 'video';
+                $loaiTaiNguyen = 'video';
+            }
+
             $thoiGian = time();
             $thamSos = [
                 'folder' => $thuMuc,
@@ -119,24 +123,31 @@ class MinhChungService
             }
 
             $data = $response->json();
+            $duongDan = '';
+            $maCongKhai = null;
+
+            if (isset($data['secure_url'])) {
+                $duongDan = $data['secure_url'];
+            }
+
+            if (isset($data['public_id'])) {
+                $maCongKhai = $data['public_id'];
+            }
 
             return [
                 'o_dia' => 'cloudinary',
-                'duong_dan' => isset($data['secure_url'])
-                    ? $data['secure_url']
-                    : '',
+                'duong_dan' => $duongDan,
                 'ten_goc' => $tep->getClientOriginalName(),
                 'loai_mime' => $loaiMime,
                 'loai_tep' => $loaiTep,
                 'kich_thuoc' => (int) $tep->getSize(),
-                'ma_cong_khai' => isset($data['public_id'])
-                    ? $data['public_id']
-                    : null,
+                'ma_cong_khai' => $maCongKhai,
             ];
         } catch (Exception $exception) {
             return null;
         }
     }
+
     // Luu tep vao storage public khi khong dung Cloudinary.
     private function luuTepLocal(
         $tep,
@@ -146,19 +157,21 @@ class MinhChungService
         $duongDan = $tep->store($thuMuc, 'public');
         $duongDanDaLuu[] = $duongDan;
         $loaiMime = (string) $tep->getMimeType();
+        $loaiTep = 'hinh_anh';
+
+        if (str_starts_with($loaiMime, 'video/')) {
+            $loaiTep = 'video';
+        }
 
         return [
             'o_dia' => 'public',
             'duong_dan' => $duongDan,
             'ten_goc' => $tep->getClientOriginalName(),
             'loai_mime' => $loaiMime,
-            'loai_tep' => str_starts_with($loaiMime, 'video/')
-                ? 'video'
-                : 'hinh_anh',
+            'loai_tep' => $loaiTep,
             'kich_thuoc' => (int) $tep->getSize(),
         ];
     }
-
     // Tao chu ky Cloudinary tu cac tham so upload.
     private function taoChuKy($thamSos)
     {

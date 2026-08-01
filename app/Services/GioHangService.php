@@ -7,46 +7,85 @@ use Exception;
 
 class GioHangService
 {
+    // Chuan hoa du lieu gio hang ve dung cau truc dang su dung.
+    private function chuanHoaGioHang()
+    {
+        $gioHang = session('gio_hang', []);
+        $gioHangDaChuanHoa = [];
+
+        foreach ((array) $gioHang as $khoaSanPham => $dongGioHang) {
+            if (! is_array($dongGioHang)) {
+                continue;
+            }
+
+            $maSanPham = (int) $khoaSanPham;
+            if (isset($dongGioHang['ma_san_pham'])) {
+                $maSanPham = (int) $dongGioHang['ma_san_pham'];
+            }
+
+            $soLuong = 0;
+            if (isset($dongGioHang['so_luong'])) {
+                $soLuong = (int) $dongGioHang['so_luong'];
+            }
+
+            if ($maSanPham <= 0 || $soLuong <= 0) {
+                continue;
+            }
+
+            $gioHangDaChuanHoa[(string) $maSanPham] = [
+                'ma_san_pham' => $maSanPham,
+                'so_luong' => $soLuong,
+            ];
+        }
+
+        $this->luuGioHang($gioHangDaChuanHoa);
+
+        return $gioHangDaChuanHoa;
+    }
+
+    // Luu gio hang va tong so luong dung chung cho header.
+    private function luuGioHang($gioHang)
+    {
+        $tongSoLuong = 0;
+
+        foreach ($gioHang as $dongGioHang) {
+            $tongSoLuong += (int) $dongGioHang['so_luong'];
+        }
+
+        session()->put('gio_hang', $gioHang);
+        session()->put('so_luong_gio_hang', $tongSoLuong);
+    }
+
     // Lay danh sach san pham dang luu trong gio hang.
     public function laySanPhamGioHang()
     {
         $gioHang = $this->chuanHoaGioHang();
         $sanPhamGioHangs = [];
 
-        if (empty($gioHang)) {
+        if (count($gioHang) == 0) {
             return $sanPhamGioHangs;
         }
 
-        $maSanPhams = array_keys($gioHang);
-        $sanPhams = SanPham::whereIn('ma_san_pham', $maSanPhams)->get();
-
         foreach ($gioHang as $maSanPham => $dongGioHang) {
-            $sanPhamCanTim = null;
+            $sanPham = SanPham::find($maSanPham);
 
-            foreach ($sanPhams as $sanPham) {
-                if ($sanPham->ma_san_pham == $maSanPham) {
-                    $sanPhamCanTim = $sanPham;
-                    break;
-                }
-            }
-
-            if (! $sanPhamCanTim) {
+            if (! $sanPham) {
                 continue;
             }
 
             $soLuong = (int) $dongGioHang['so_luong'];
-            $donGia = (float) $sanPhamCanTim->gia_hien_tai;
+            $donGia = (float) $sanPham->gia_hien_tai;
             $tamTinh = $donGia * $soLuong;
 
             $sanPhamGioHangs[] = [
-                'ma_san_pham' => $sanPhamCanTim->ma_san_pham,
-                'san_pham' => $sanPhamCanTim,
-                'ten' => $sanPhamCanTim->ten_hien_thi,
-                'hinh_anh' => $sanPhamCanTim->duong_dan_hinh_anh,
+                'ma_san_pham' => $sanPham->ma_san_pham,
+                'san_pham' => $sanPham,
+                'ten' => $sanPham->ten_hien_thi,
+                'hinh_anh' => $sanPham->duong_dan_hinh_anh,
                 'so_luong' => $soLuong,
                 'gia' => $donGia,
                 'tam_tinh' => $tamTinh,
-                'ton_kho' => $sanPhamCanTim->soLuongCoTheBan(),
+                'ton_kho' => $sanPham->soLuongCoTheBan(),
             ];
         }
 
@@ -90,7 +129,12 @@ class GioHangService
             $soLuongCu = (int) $gioHang[$maSanPham]['so_luong'];
         }
 
-        $soLuongMoi = $soLuongCu + max(1, (int) $soLuong);
+        $soLuongThem = (int) $soLuong;
+        if ($soLuongThem < 1) {
+            $soLuongThem = 1;
+        }
+
+        $soLuongMoi = $soLuongCu + $soLuongThem;
 
         if ($soLuongMoi > $sanPham->soLuongCoTheBan()) {
             throw new Exception('Số lượng vượt quá số lượng sản phẩm đang có thể bán.');
@@ -119,9 +163,14 @@ class GioHangService
             throw new Exception('Số lượng vượt quá số lượng sản phẩm đang có thể bán.');
         }
 
+        $soLuongCapNhat = (int) $soLuong;
+        if ($soLuongCapNhat < 1) {
+            $soLuongCapNhat = 1;
+        }
+
         $gioHang[$khoaSanPham] = [
             'ma_san_pham' => (int) $maSanPham,
-            'so_luong' => max(1, (int) $soLuong),
+            'so_luong' => $soLuongCapNhat,
         ];
 
         $this->luuGioHang($gioHang);
@@ -144,51 +193,6 @@ class GioHangService
     public function xoaGioHang()
     {
         session()->forget('gio_hang');
-    }
-
-    // Luu gio hang va tong so luong dung chung cho header.
-    private function luuGioHang($gioHang)
-    {
-        $tongSoLuong = 0;
-
-        foreach ($gioHang as $dongGioHang) {
-            $tongSoLuong += (int) $dongGioHang['so_luong'];
-        }
-
-        session()->put('gio_hang', $gioHang);
-        session()->put('so_luong_gio_hang', $tongSoLuong);
-    }
-    // Chuan hoa du lieu gio hang ve mot cau truc duy nhat.
-    private function chuanHoaGioHang()
-    {
-        $gioHang = session('gio_hang', []);
-        $gioHangDaChuanHoa = [];
-
-        foreach ((array) $gioHang as $khoaSanPham => $dongGioHang) {
-            if (is_array($dongGioHang)) {
-                $maSanPham = isset($dongGioHang['ma_san_pham'])
-                    ? (int) $dongGioHang['ma_san_pham']
-                    : (int) $khoaSanPham;
-                $soLuong = isset($dongGioHang['so_luong'])
-                    ? (int) $dongGioHang['so_luong']
-                    : 0;
-            } else {
-                $maSanPham = (int) $khoaSanPham;
-                $soLuong = (int) $dongGioHang;
-            }
-
-            if ($maSanPham <= 0 || $soLuong <= 0) {
-                continue;
-            }
-
-            $gioHangDaChuanHoa[(string) $maSanPham] = [
-                'ma_san_pham' => $maSanPham,
-                'so_luong' => $soLuong,
-            ];
-        }
-
-        $this->luuGioHang($gioHangDaChuanHoa);
-
-        return $gioHangDaChuanHoa;
+        session()->forget('so_luong_gio_hang');
     }
 }

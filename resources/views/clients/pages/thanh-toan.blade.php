@@ -156,11 +156,7 @@
                         data-phi-van-chuyen="{{ $phiVanChuyen }}"
                         data-so-tien-giam="{{ $soTienGiam }}"
                         data-tong-tien="{{ $tongTien }}"
-                        data-san-sang="{{ $phiVanChuyen > 0 ? 1 : 0 }}"
-                        data-duong-dan-dia-chi="{{ route('thanh-toan.dia-chi') }}"
-                        data-duong-dan-phi-van-chuyen="{{ route('thanh-toan.phi-van-chuyen') }}"
-                        data-duong-dan-phieu-giam-gia="{{ route('thanh-toan.ap-dung-phieu-giam-gia') }}"
-                        data-duong-dan-paypal="{{ route('thanh-toan.paypal') }}">
+                        data-san-sang="{{ $phiVanChuyen > 0 ? 1 : 0 }}">
                         <h4 class="title-2 text-center">Tổng sản phẩm</h4>
 
                         @if (Auth::check())

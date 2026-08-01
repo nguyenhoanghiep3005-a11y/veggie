@@ -2,6 +2,7 @@ $(document).ready(function () {
 
   // Kiem tra form dang ky truoc khi gui.
   $('#register-form').on('submit', function (suKien) {
+
     var ten = $('input[name="ten"]').val().trim();
     var email = $('input[name="email"]').val().trim();
     var matKhau = $('input[name="password"]').val();
@@ -63,14 +64,14 @@ $(document).ready(function () {
   });
 
   // Gui form cap nhat thong tin tai khoan.
-  $('#update-account').on('submit', function (suKien) {
+  $(document).on('submit', '#update-account', function (suKien) {
     suKien.preventDefault();
 
     var $bieuMau = $(this);
     var $nutLuu = $bieuMau.find('button[type="submit"]');
 
     $.ajax({
-      url: $bieuMau.attr('action'),
+      url: '/tai-khoan/cap-nhat',
       type: 'POST',
       data: new FormData(this),
       processData: false,
@@ -82,9 +83,10 @@ $(document).ready(function () {
         toastr.success(response.thong_bao);
       },
       error: function (xhr) {
-        var thongBao = xhr.responseJSON && xhr.responseJSON.message
-          ? xhr.responseJSON.message
-          : 'Không thể cập nhật tài khoản.';
+        var thongBao = 'Không thể cập nhật tài khoản.';
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          thongBao = xhr.responseJSON.message;
+        }
         toastr.error(thongBao);
       },
       complete: function () {
@@ -93,7 +95,6 @@ $(document).ready(function () {
     });
   });
 
-  var duongDanGocTaiKhoan = $('meta[name="base-url"]').attr('content') || '';
   var daTaiTinhTaiKhoan = false;
 
   // Cap nhat niceSelect sau khi thay doi danh sach.
@@ -111,7 +112,7 @@ $(document).ready(function () {
       return;
     }
 
-    $.get(duongDanGocTaiKhoan + '/giao-hang-nhanh/tinh-thanh', function (response) {
+    $.get('/giao-hang-nhanh/tinh-thanh', function (response) {
       var cacLuaChon = '<option value="">Chọn tỉnh/thành</option>';
 
       if (response.trang_thai && response.du_lieu) {
@@ -143,7 +144,7 @@ $(document).ready(function () {
       return;
     }
 
-    $.get(duongDanGocTaiKhoan + '/giao-hang-nhanh/quan-huyen', { ma_tinh: maTinh }, function (response) {
+    $.get('/giao-hang-nhanh/quan-huyen', { ma_tinh: maTinh }, function (response) {
       var cacLuaChon = '<option value="">Chọn quận/huyện</option>';
 
       if (response.trang_thai && response.du_lieu) {
@@ -169,7 +170,7 @@ $(document).ready(function () {
       return;
     }
 
-    $.get(duongDanGocTaiKhoan + '/giao-hang-nhanh/phuong-xa', { ma_huyen: maHuyen }, function (response) {
+    $.get('/giao-hang-nhanh/phuong-xa', { ma_huyen: maHuyen }, function (response) {
       var cacLuaChon = '<option value="">Chọn phường/xã</option>';
 
       if (response.trang_thai && response.du_lieu) {
@@ -187,22 +188,37 @@ $(document).ready(function () {
 
   $(document).on('change', '#ma_tinh', function () {
     var maTinh = $(this).val();
-    $('#province_name').val(maTinh ? $(this).find(':selected').text() : '');
+    var tenTinh = '';
+    if (maTinh) {
+      tenTinh = $(this).find(':selected').text();
+    }
+
+    $('#province_name').val(tenTinh);
     taiHuyenTaiKhoan(maTinh);
   });
 
   $(document).on('change', '#ma_huyen', function () {
     var maHuyen = $(this).val();
-    $('#district_name').val(maHuyen ? $(this).find(':selected').text() : '');
+    var tenHuyen = '';
+    if (maHuyen) {
+      tenHuyen = $(this).find(':selected').text();
+    }
+
+    $('#district_name').val(tenHuyen);
     taiXaTaiKhoan(maHuyen);
   });
 
   $(document).on('change', '#ma_xa', function () {
-    $('#ward_name').val($(this).val() ? $(this).find(':selected').text() : '');
+    var tenXa = '';
+    if ($(this).val()) {
+      tenXa = $(this).find(':selected').text();
+    }
+
+    $('#ward_name').val(tenXa);
   });
 
   // Gui form doi mat khau.
-  $('#change-password-form').on('submit', function (suKien) {
+  $(document).on('submit', '#change-password-form', function (suKien) {
     suKien.preventDefault();
 
     var $bieuMau = $(this);
@@ -216,7 +232,7 @@ $(document).ready(function () {
     }
 
     $.ajax({
-      url: $bieuMau.attr('action'),
+      url: '/tai-khoan/doi-mat-khau',
       type: 'POST',
       headers: {
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -231,16 +247,19 @@ $(document).ready(function () {
         $bieuMau[0].reset();
       },
       error: function (xhr) {
-        var thongBao = xhr.responseJSON && xhr.responseJSON.thong_bao
-          ? xhr.responseJSON.thong_bao
-          : 'Không thể đổi mật khẩu.';
+        var thongBao = 'Không thể đổi mật khẩu.';
+        if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+          thongBao = xhr.responseJSON.thong_bao;
+        } else if (xhr.responseJSON && xhr.responseJSON.message) {
+          thongBao = xhr.responseJSON.message;
+        }
         toastr.error(thongBao);
       }
     });
   });
 
   // Kiem tra dia chi truoc khi gui.
-  $('#addAddressForm').on('submit', function (suKien) {
+  $(document).on('submit', '#addAddressForm', function (suKien) {
     var soDienThoai = $('#so_dien_thoai').val().trim();
 
     if (!/^[0-9]{10,11}$/.test(soDienThoai)) {
@@ -312,7 +331,10 @@ $(document).ready(function () {
     suKien.preventDefault();
 
     var ketQuaTrang = ($(this).attr('href') || '').match(/[?&]page=(\d+)/);
-    trangHienTai = ketQuaTrang ? Number(ketQuaTrang[1]) : 1;
+    trangHienTai = 1;
+    if (ketQuaTrang) {
+      trangHienTai = Number(ketQuaTrang[1]);
+    }
     locSanPham();
   });
 
@@ -398,7 +420,7 @@ $(document).ready(function () {
     var maSanPham = Number($nutThem.data('id'));
     var soLuong = 1 ;
     var $oSoLuong = $nutThem
-      .closest('.ltn__product-item, .ltn__modal-area, .ltn__shop-details-inner')
+      .closest('.ltn__product-item, .ltn__modal-area, .modal-product-info, .shop-details-info')
       .find('.cart-plus-minus-box')
       .first();
 
@@ -432,9 +454,10 @@ $(document).ready(function () {
         }
       },
       error: function (xhr) {
-        var thongBao = xhr.responseJSON && xhr.responseJSON.thong_bao
-          ? xhr.responseJSON.thong_bao
-          : 'Không thể thêm sản phẩm vào giỏ hàng.';
+        var thongBao = 'Không thể thêm sản phẩm vào giỏ hàng.';
+        if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+          thongBao = xhr.responseJSON.thong_bao;
+        }
         toastr.error(thongBao);
       }
     });
@@ -499,9 +522,10 @@ $(document).ready(function () {
         }
       },
       error: function (xhr) {
-        var thongBao = xhr.responseJSON && xhr.responseJSON.thong_bao
-          ? xhr.responseJSON.thong_bao
-          : 'Không thể cập nhật giỏ hàng.';
+        var thongBao = 'Không thể cập nhật giỏ hàng.';
+        if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+          thongBao = xhr.responseJSON.thong_bao;
+        }
         toastr.error(thongBao);
       }
     });
@@ -603,12 +627,7 @@ $(document).ready(function () {
   });
 
   if (window.location.pathname === "/thanh-toan") {
-    var duongDanGoc = $('meta[name="base-url"]').attr('content') || '';
     var $tongKetThanhToan = $('#tong-ket-thanh-toan');
-    var duongDanDiaChi = $tongKetThanhToan.data('duong-dan-dia-chi');
-    var duongDanPhiVanChuyen = $tongKetThanhToan.data('duong-dan-phi-van-chuyen');
-    var duongDanPhieuGiamGia = $tongKetThanhToan.data('duong-dan-phieu-giam-gia');
-    var duongDanPayPal = $tongKetThanhToan.data('duong-dan-paypal');
     var tongTien = Number($tongKetThanhToan.data('tong-tien')) || 0;
     var daTinhPhiVanChuyen = Number($tongKetThanhToan.data('san-sang')) === 1;
     var daTaiTinhThanh = false;
@@ -671,7 +690,7 @@ $(document).ready(function () {
       $tinhThanh.html('<option value="">Đang tải...</option>').prop('disabled', true);
       capNhatLuaChon($tinhThanh);
 
-      $.get(duongDanGoc + '/giao-hang-nhanh/tinh-thanh', function (response) {
+      $.get('/giao-hang-nhanh/tinh-thanh', function (response) {
         var cacLuaChon = '<option value="">Tỉnh/thành *</option>';
 
         if (response.trang_thai && response.du_lieu) {
@@ -706,7 +725,7 @@ $(document).ready(function () {
       $huyen.html('<option value="">Đang tải...</option>').prop('disabled', true);
       capNhatLuaChon($huyen);
 
-      $.get(duongDanGoc + '/giao-hang-nhanh/quan-huyen', { ma_tinh: maTinh }, function (response) {
+      $.get('/giao-hang-nhanh/quan-huyen', { ma_tinh: maTinh }, function (response) {
         var cacLuaChon = '<option value="">Quận/huyện *</option>';
 
         if (response.trang_thai && response.du_lieu) {
@@ -741,7 +760,7 @@ $(document).ready(function () {
       $xa.html('<option value="">Đang tải...</option>').prop('disabled', true);
       capNhatLuaChon($xa);
 
-      $.get(duongDanGoc + '/giao-hang-nhanh/phuong-xa', { ma_huyen: maHuyen }, function (response) {
+      $.get('/giao-hang-nhanh/phuong-xa', { ma_huyen: maHuyen }, function (response) {
         var cacLuaChon = '<option value="">Phường/xã *</option>';
 
         if (response.trang_thai && response.du_lieu) {
@@ -772,7 +791,7 @@ $(document).ready(function () {
       $('.phi-van-chuyen-thanh-toan').text('Đang tính...');
 
       $.ajax({
-        url: duongDanPhiVanChuyen,
+        url: '/thanh-toan/phi-van-chuyen',
         type: 'POST',
         headers: {
           'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -786,9 +805,10 @@ $(document).ready(function () {
           }
         },
         error: function (xhr) {
-          var thongBao = xhr.responseJSON && xhr.responseJSON.thong_bao
-            ? xhr.responseJSON.thong_bao
-            : 'Không tính được phí vận chuyển.';
+          var thongBao = 'Không tính được phí vận chuyển.';
+          if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+            thongBao = xhr.responseJSON.thong_bao;
+          }
           datTrangThaiPhiVanChuyen(false, thongBao);
           toastr.error(thongBao);
         }
@@ -810,7 +830,7 @@ $(document).ready(function () {
       $('.phi-van-chuyen-thanh-toan').text('Đang tính...');
 
       $.ajax({
-        url: duongDanPhiVanChuyen,
+        url: '/thanh-toan/phi-van-chuyen',
         type: 'POST',
         headers: {
           'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -828,9 +848,10 @@ $(document).ready(function () {
           }
         },
         error: function (xhr) {
-          var thongBao = xhr.responseJSON && xhr.responseJSON.thong_bao
-            ? xhr.responseJSON.thong_bao
-            : 'Không tính được phí vận chuyển.';
+          var thongBao = 'Không tính được phí vận chuyển.';
+          if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+            thongBao = xhr.responseJSON.thong_bao;
+          }
           datTrangThaiPhiVanChuyen(false, thongBao);
           toastr.error(thongBao);
         }
@@ -845,7 +866,7 @@ $(document).ready(function () {
       }
 
       $.ajax({
-        url: duongDanDiaChi,
+        url: '/thanh-toan/dia-chi',
         type: 'GET',
         data: { ma_dia_chi_giao_hang: maDiaChi },
         success: function (response) {
@@ -891,6 +912,8 @@ $(document).ready(function () {
         taiDanhSachTinh();
         tinhPhiDiaChiMoi();
       }
+
+      capNhatPhuongThucThanhToan();
     };
 
     $('#danh_sach_dia_chi').on('change', function () {
@@ -899,21 +922,36 @@ $(document).ready(function () {
 
     $(document).on('change', '#ma_tinh_moi', function () {
       var maTinh = $(this).val();
-      $('#ten_tinh_moi').val(maTinh ? $(this).find(':selected').text() : '');
+      var tenTinh = '';
+      if (maTinh) {
+        tenTinh = $(this).find(':selected').text();
+      }
+
+      $('#ten_tinh_moi').val(tenTinh);
       taiDanhSachHuyen(maTinh);
       tinhPhiDiaChiMoi();
     });
 
     $(document).on('change', '#ma_huyen_moi', function () {
       var maHuyen = $(this).val();
-      $('#ten_huyen_moi').val(maHuyen ? $(this).find(':selected').text() : '');
+      var tenHuyen = '';
+      if (maHuyen) {
+        tenHuyen = $(this).find(':selected').text();
+      }
+
+      $('#ten_huyen_moi').val(tenHuyen);
       taiDanhSachXa(maHuyen);
       tinhPhiDiaChiMoi();
     });
 
     $(document).on('change', '#ma_xa_moi', function () {
       var maXa = $(this).val();
-      $('#ten_xa_moi').val(maXa ? $(this).find(':selected').text() : '');
+      var tenXa = '';
+      if (maXa) {
+        tenXa = $(this).find(':selected').text();
+      }
+
+      $('#ten_xa_moi').val(tenXa);
       tinhPhiDiaChiMoi();
     });
 
@@ -945,7 +983,7 @@ $(document).ready(function () {
       }
 
       $.ajax({
-        url: duongDanPhieuGiamGia,
+        url: '/thanh-toan/phieu-giam-gia',
         type: 'POST',
         headers: {
           'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -960,9 +998,10 @@ $(document).ready(function () {
           capNhatTongTien(response.du_lieu);
         },
         error: function (xhr) {
-          var thongBao = xhr.responseJSON && xhr.responseJSON.thong_bao
-            ? xhr.responseJSON.thong_bao
-            : 'Không thể áp dụng mã giảm giá.';
+          var thongBao = 'Không thể áp dụng mã giảm giá.';
+          if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+            thongBao = xhr.responseJSON.thong_bao;
+          }
           $('#thong-bao-phieu').removeClass('text-success').addClass('text-danger').text(thongBao);
         },
         complete: function () {
@@ -973,32 +1012,32 @@ $(document).ready(function () {
 
     // Kiem tra thong tin dia chi moi truoc khi dat hang.
     function kiemTraDiaChiMoi() {
-      var cacLoi = [];
+      var coLoi = false;
       var hoTen = $('#ho_ten_nguoi_nhan').val().trim();
       var soDienThoai = $('#so_dien_thoai_nguoi_nhan').val().trim();
       var diaChi = $('#dia_chi_nguoi_nhan').val().trim();
 
       if (hoTen.length < 2) {
-        cacLoi.push('Vui lòng nhập họ tên người nhận.');
+        toastr.error('Vui lòng nhập họ tên người nhận.');
+        coLoi = true;
       }
 
       if (!/^[0-9]{10,11}$/.test(soDienThoai)) {
-        cacLoi.push('Số điện thoại phải có 10 đến 11 số.');
+        toastr.error('Số điện thoại phải có 10 đến 11 số.');
+        coLoi = true;
       }
 
       if (diaChi.length < 5) {
-        cacLoi.push('Vui lòng nhập địa chỉ cụ thể.');
+        toastr.error('Vui lòng nhập địa chỉ cụ thể.');
+        coLoi = true;
       }
 
       if (!$('#ma_tinh_moi').val() || !$('#ma_huyen_moi').val() || !$('#ma_xa_moi').val()) {
-        cacLoi.push('Vui lòng chọn đầy đủ tỉnh, quận và phường.');
+        toastr.error('Vui lòng chọn đầy đủ tỉnh, quận và phường.');
+        coLoi = true;
       }
 
-      for (var viTri = 0; viTri < cacLoi.length; viTri++) {
-        toastr.error(cacLoi[viTri]);
-      }
-
-      return cacLoi.length === 0;
+      return !coLoi;
     }
 
     // Tao du lieu dia chi de gui khi thanh toan PayPal.
@@ -1020,8 +1059,31 @@ $(document).ready(function () {
       };
     }
 
-    // An hien nut COD va PayPal theo phuong thuc dang chon.
+    var boQuaLoiPayPal = false;
+
+    // An hien COD, nut dat hang va nut PayPal theo loai giao hang.
     function capNhatPhuongThucThanhToan() {
+      var chiDuocPayPal = false;
+
+      if ($('#loai_giao_hang').val() === 'dia_chi_moi') {
+        chiDuocPayPal = true;
+      }
+
+      if ($('#lua-chon-tai-khoan').length === 0) {
+        chiDuocPayPal = true;
+      }
+
+      if (chiDuocPayPal) {
+        $('.checkout-cod-card').addClass('d-none');
+        $('#thanh-toan-tien-mat').prop('checked', false).prop('disabled', true);
+        $('#thanh-toan-paypal').prop('checked', true);
+        $('.checkout-paypal-only-alert').removeClass('d-none');
+      } else {
+        $('.checkout-cod-card').removeClass('d-none');
+        $('#thanh-toan-tien-mat').prop('disabled', false);
+        $('.checkout-paypal-only-alert').addClass('d-none');
+      }
+
       if ($('#thanh-toan-paypal').is(':checked')) {
         $('#nut-dat-hang').addClass('d-none');
         $('#paypal-button-container').removeClass('d-none');
@@ -1071,11 +1133,13 @@ $(document).ready(function () {
       paypal.Buttons({
         createOrder: function (data, actions) {
           if ($('#loai_giao_hang').val() === 'dia_chi_moi' && !kiemTraDiaChiMoi()) {
+            boQuaLoiPayPal = true;
             return Promise.reject();
           }
 
           if (!daTinhPhiVanChuyen) {
             toastr.error('Vui lòng kiểm tra phí vận chuyển.');
+            boQuaLoiPayPal = true;
             return Promise.reject();
           }
 
@@ -1094,7 +1158,7 @@ $(document).ready(function () {
             var duLieuDatHang = taoDuLieuDatHangPayPal();
             duLieuDatHang.ma_giao_dich = chiTietThanhToan.id;
 
-            return fetch(duongDanPayPal, {
+            return fetch('/thanh-toan/paypal', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -1114,6 +1178,11 @@ $(document).ready(function () {
           });
         },
         onError: function () {
+          if (boQuaLoiPayPal) {
+            boQuaLoiPayPal = false;
+            return;
+          }
+
           toastr.error('Thanh toán PayPal không thành công.');
         }
       }).render('#paypal-button-container');
@@ -1184,9 +1253,10 @@ $(document).ready(function () {
         taiDanhSachDanhGia(maSanPham);
       },
       error: function (xhr) {
-        var thongBao = xhr.responseJSON && xhr.responseJSON.message
-          ? xhr.responseJSON.message
-          : 'Không thể gửi đánh giá.';
+        var thongBao = 'Không thể gửi đánh giá.';
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          thongBao = xhr.responseJSON.message;
+        }
         toastr.error(thongBao);
       }
     });
@@ -1235,9 +1305,10 @@ $(document).ready(function () {
           return;
         }
 
-        var thongBao = xhr.responseJSON && xhr.responseJSON.thong_bao
-          ? xhr.responseJSON.thong_bao
-          : 'Không thể thêm sản phẩm yêu thích.';
+        var thongBao = 'Không thể thêm sản phẩm yêu thích.';
+        if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+          thongBao = xhr.responseJSON.thong_bao;
+        }
         toastr.error(thongBao);
       }
     });
@@ -1262,9 +1333,10 @@ $(document).ready(function () {
         toastr.success(response.thong_bao);
       },
       error: function (xhr) {
-        var thongBao = xhr.responseJSON && xhr.responseJSON.thong_bao
-          ? xhr.responseJSON.thong_bao
-          : 'Không thể xóa sản phẩm yêu thích.';
+        var thongBao = 'Không thể xóa sản phẩm yêu thích.';
+        if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+          thongBao = xhr.responseJSON.thong_bao;
+        }
         toastr.error(thongBao);
       }
     });
@@ -1275,17 +1347,16 @@ $(document).ready(function () {
     suKien.preventDefault();
 
     var $bienThe = $(this);
-    var duongDanLayBienThe = $bienThe.data('variant-url');
     var duongDanChiTiet = $bienThe.attr('href');
 
-    if (!duongDanLayBienThe || $bienThe.hasClass('out-of-stock')) {
+    if (!duongDanChiTiet || $bienThe.hasClass('out-of-stock')) {
       return;
     }
 
     $bienThe.addClass('loading');
 
     $.ajax({
-      url: duongDanLayBienThe,
+      url: $bienThe.attr('href') + '/bien-the',
       type: 'GET',
       success: function (response) {
         if (!response.trang_thai) {
@@ -1312,15 +1383,54 @@ $(document).ready(function () {
         $('.product-detail-review-count').text(sanPham.tong_danh_gia + ' đánh giá');
         $('.product-detail-sold').text('Đã bán ' + sanPham.so_luong_da_ban);
         $('.product-description-text').text(sanPham.mo_ta);
-        $('.product-origin-text').text(sanPham.nguon_goc);
-        $('.product-unit-text').text(sanPham.ten_bien_the);
-        $('.product-category-text').text(sanPham.ten_danh_muc);
-        $('.product-storage-text').text(sanPham.bao_quan);
-        $('.product-brand-text').text(sanPham.thuong_hieu);
-        $('.product-manufacture-text').text(sanPham.san_xuat);
+        if (sanPham.mo_ta) {
+          $('.product-description-text').removeClass('d-none');
+        } else {
+          $('.product-description-text').addClass('d-none');
+        }
 
-        var $oSoLuong = $('.product-detail-cart-action').closest('.ltn__shop-details-inner').find('.cart-plus-minus-box');
-        $oSoLuong.val(sanPham.co_the_mua ? 1 : 0).attr('data-max', sanPham.ton_kho);
+        $('.product-storage-text').text(sanPham.bao_quan);
+        if (sanPham.bao_quan) {
+          $('.product-storage-row').removeClass('d-none');
+        } else {
+          $('.product-storage-row').addClass('d-none');
+        }
+
+        $('.product-brand-text').text(sanPham.thuong_hieu);
+        if (sanPham.thuong_hieu) {
+          $('.product-brand-row').removeClass('d-none');
+        } else {
+          $('.product-brand-row').addClass('d-none');
+        }
+
+        $('.product-manufacture-text').text(sanPham.san_xuat);
+        if (sanPham.san_xuat) {
+          $('.product-manufacture-row').removeClass('d-none');
+        } else {
+          $('.product-manufacture-row').addClass('d-none');
+        }
+
+        $('.product-use-text').text(sanPham.cach_dung);
+        if (sanPham.cach_dung) {
+          $('.product-use-row').removeClass('d-none');
+        } else {
+          $('.product-use-row').addClass('d-none');
+        }
+
+        $('.product-ingredients-text').text(sanPham.thanh_phan);
+        if (sanPham.thanh_phan) {
+          $('.product-ingredients-row').removeClass('d-none');
+        } else {
+          $('.product-ingredients-row').addClass('d-none');
+        }
+
+        var $oSoLuong = $('.product-detail-cart-action').closest('.modal-product-info, .shop-details-info').find('.cart-plus-minus-box');
+        var soLuongMacDinh = 0;
+        if (sanPham.co_the_mua) {
+          soLuongMacDinh = 1;
+        }
+
+        $oSoLuong.val(soLuongMacDinh).attr('data-max', sanPham.ton_kho);
 
         var $khuVucGioHang = $('.product-detail-cart-action');
         if (sanPham.co_the_mua) {

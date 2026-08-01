@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Exception;
 use Illuminate\Support\Str;
 
@@ -64,21 +65,25 @@ class XacThucController extends Controller
             'ma_kich_hoat' => $maKichHoat,
         ]);
 
-        try {
-            Mail::to($nguoiDung->email)
-                ->send(new KichHoatTaiKhoanMail($maKichHoat, $nguoiDung));
-        } catch (Exception $exception) {
-            $nguoiDung->delete();
-            toastr()->error('Không thể gửi email kích hoạt tài khoản. Vui lòng thử lại sau.');
-
-            return redirect()->route('dang-ky.hien-thi')->withInput();
-        }
+        $this->guiEmailKichHoat($nguoiDung, $maKichHoat);
 
         toastr()->success('Đăng ký thành công. Vui lòng kiểm tra email để kích hoạt tài khoản.');
 
         return redirect()->route('dang-nhap.hien-thi');
     }
 
+    // Gui email kich hoat sau khi trinh duyet da nhan phan hoi.
+    private function guiEmailKichHoat($nguoiDung, $maKichHoat)
+    {
+        app()->terminating(function () use ($nguoiDung, $maKichHoat) {
+            try {
+                Mail::to($nguoiDung->email)
+                    ->send(new KichHoatTaiKhoanMail($maKichHoat, $nguoiDung));
+            } catch (Exception $exception) {
+                Log::warning('Khong gui duoc email kich hoat: '.$exception->getMessage());
+            }
+        });
+    }
     // Kich hoat tai khoan bang ma duoc gui qua email.
     public function kichHoatTaiKhoan($maKichHoat)
     {
