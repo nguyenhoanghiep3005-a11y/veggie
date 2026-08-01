@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Exception;
-
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 
@@ -50,24 +49,42 @@ class MinhChungService
     // Lay duong dan day du cua mot tep minh chung moi hoac cu.
     public function layDuongDan($minhChung)
     {
-        $oDia = $this->layGiaTri(
-            $minhChung,
-            'o_dia',
-            'disk',
-            'public'
-        );
-        $duongDan = $this->layGiaTri(
-            $minhChung,
-            'duong_dan',
-            'path',
-            ''
-        );
+        $oDia = 'public';
+        $duongDan = '';
 
-        if (
-            $oDia == 'cloudinary'
-            || str_starts_with($duongDan, 'http://')
-            || str_starts_with($duongDan, 'https://')
-        ) {
+        if (is_array($minhChung)) {
+            if (isset($minhChung['o_dia'])) {
+                $oDia = $minhChung['o_dia'];
+            } elseif (isset($minhChung['disk'])) {
+                $oDia = $minhChung['disk'];
+            }
+
+            if (isset($minhChung['duong_dan'])) {
+                $duongDan = $minhChung['duong_dan'];
+            } elseif (isset($minhChung['path'])) {
+                $duongDan = $minhChung['path'];
+            }
+        }
+
+        if (is_object($minhChung)) {
+            if (isset($minhChung->o_dia)) {
+                $oDia = $minhChung->o_dia;
+            } elseif (isset($minhChung->disk)) {
+                $oDia = $minhChung->disk;
+            }
+
+            if (isset($minhChung->duong_dan)) {
+                $duongDan = $minhChung->duong_dan;
+            } elseif (isset($minhChung->path)) {
+                $duongDan = $minhChung->path;
+            }
+        }
+
+        if ($oDia == 'cloudinary') {
+            return $duongDan;
+        }
+
+        if (str_starts_with($duongDan, 'http://') || str_starts_with($duongDan, 'https://')) {
             return $duongDan;
         }
 
@@ -188,29 +205,5 @@ class MinhChungService
         );
     }
 
-    // Lay gia tri theo ten moi hoac ten cu.
-    private function layGiaTri(
-        $data,
-        $tenMoi,
-        $tenCu,
-        $macDinh
-    ) {
-        if (is_array($data) && isset($data[$tenMoi])) {
-            return $data[$tenMoi];
-        }
 
-        if (is_array($data) && isset($data[$tenCu])) {
-            return $data[$tenCu];
-        }
-
-        if (is_object($data) && isset($data->$tenMoi)) {
-            return $data->$tenMoi;
-        }
-
-        if (is_object($data) && isset($data->$tenCu)) {
-            return $data->$tenCu;
-        }
-
-        return $macDinh;
-    }
 }

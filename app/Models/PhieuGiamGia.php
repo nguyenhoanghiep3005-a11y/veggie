@@ -4,14 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 class PhieuGiamGia extends Model
 {
     use HasFactory;
 
-    public const AP_DUNG_TAT_CA = 'tat_ca';
-    public const AP_DUNG_KHACH_HANG = 'khach_hang';
 
     protected $table = 'phieu_giam_gia';
 
@@ -71,29 +68,18 @@ class PhieuGiamGia extends Model
             return 'Mã giảm giá không còn hiệu lực hoặc đã hết lượt sử dụng.';
         }
 
-        if ($this->loai_ap_dung != self::AP_DUNG_TAT_CA) {
+        if ($this->loai_ap_dung != 'tat_ca') {
             if (! $maNguoiDung) {
                 return 'Mã giảm giá này chỉ áp dụng cho khách hàng được chỉ định.';
             }
 
-            $duocGan = DB::table('nguoi_dung_phieu_giam_gia')
-                ->where('ma_phieu_giam_gia', $this->ma_phieu_giam_gia)
-                ->where('ma_nguoi_dung', $maNguoiDung)
-                ->exists();
-
-            if (! $duocGan) {
+            if (! $this->daGanChoNguoiDung($maNguoiDung)) {
                 return 'Mã giảm giá này chỉ áp dụng cho khách hàng được chỉ định.';
             }
         }
 
         if ($maNguoiDung) {
-            $daSuDung = DB::table('nguoi_dung_phieu_giam_gia')
-                ->where('ma_phieu_giam_gia', $this->ma_phieu_giam_gia)
-                ->where('ma_nguoi_dung', $maNguoiDung)
-                ->whereNotNull('ngay_su_dung')
-                ->exists();
-
-            if ($daSuDung) {
+            if ($this->daDuocNguoiDungSuDung($maNguoiDung)) {
                 return 'Bạn đã sử dụng mã giảm giá này.';
             }
         }
@@ -143,17 +129,31 @@ class PhieuGiamGia extends Model
         return true;
     }
 
-    // Lọc các phiếu giảm giá còn hiệu lực.
-    public function scopeConHieuLuc($query)
+    // Kiểm tra người dùng có được gán phiếu này không.
+    private function daGanChoNguoiDung($maNguoiDung)
     {
-        return $query
-            ->where('dang_hoat_dong', true)
-            ->where(function ($query) {
-                $query->whereNull('het_han_luc')->orWhere('het_han_luc', '>', now());
-            })
-            ->where(function ($query) {
-                $query->whereNull('gioi_han_su_dung')
-                    ->orWhereColumn('so_lan_da_dung', '<', 'gioi_han_su_dung');
-            });
+        foreach ($this->nguoiDungs as $nguoiDung) {
+            if ($nguoiDung->ma_nguoi_dung == $maNguoiDung) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Kiểm tra người dùng đã dùng phiếu này chưa.
+    private function daDuocNguoiDungSuDung($maNguoiDung)
+    {
+        foreach ($this->nguoiDungs as $nguoiDung) {
+            if ($nguoiDung->ma_nguoi_dung != $maNguoiDung) {
+                continue;
+            }
+
+            if ($nguoiDung->pivot && $nguoiDung->pivot->ngay_su_dung) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

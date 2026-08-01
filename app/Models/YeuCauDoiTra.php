@@ -9,7 +9,6 @@ class YeuCauDoiTra extends Model
 {
     use HasFactory;
 
-    public const LOAI_HANG_LOI = 'hang_loi';
 
     protected $table = 'yeu_cau_doi_tra';
 
@@ -44,7 +43,7 @@ class YeuCauDoiTra extends Model
     // Lay ten loai yeu cau doi tra.
     public function tenLoai()
     {
-        if ($this->loai == self::LOAI_HANG_LOI) {
+        if ($this->loai == 'hang_loi') {
             return 'Đổi trả do hàng hư hỏng hoặc bị lỗi';
         }
 

@@ -131,7 +131,7 @@ class DonHangController extends Controller
 
             YeuCauDoiTra::create([
                 'ma_don_hang' => $donHang->ma_don_hang,
-                'loai' => YeuCauDoiTra::LOAI_HANG_LOI,
+                'loai' => 'hang_loi',
                 'mo_ta' => trim($data['mo_ta']),
                 'san_pham' => $sanPhamsYeuCau,
                 'minh_chung' => $minhChungs,

@@ -38,7 +38,7 @@ class PhieuGiamGiaController extends Controller
                 continue;
             }
 
-            if ($phieuGiamGia->loai_ap_dung == PhieuGiamGia::AP_DUNG_KHACH_HANG) {
+            if ($phieuGiamGia->loai_ap_dung == 'khach_hang') {
                 if (! $nguoiDung) {
                     continue;
                 }

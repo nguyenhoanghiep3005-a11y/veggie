@@ -350,10 +350,9 @@ class SanPham extends Model
             }
 
             if ($maLoHangKho) {
-                $loHangKho = LoHangKho::lockForUpdate()->find($maLoHangKho);
+                $loHangKho = LoHangKho::find($maLoHangKho);
             } else {
                 $loHangKho = LoHangKho::where('ma_chi_tiet_phieu_nhap', $maChiTietPhieuNhap)
-                    ->lockForUpdate()
                     ->first();
             }
 
@@ -367,35 +366,26 @@ class SanPham extends Model
     // Trừ số lượng trong từng lô kho theo thứ tự hết hạn sớm.
     private function truTonKhoTheoLo($soLuong)
     {
-        $soLuongCon = $soLuong;
+        $soLuongCon = (int) $soLuong;
         $phanBoTonKhos = [];
         $giaDangBan = (float) $this->gia_hien_tai;
-        $giaGoc = (float) $this->gia;
-        $query = $this->layCacLoHangCoTheBan();
-
-        if ($giaDangBan < $giaGoc) {
-            $query->where('gia_khuyen_mai', $giaDangBan);
-        } else {
-            $query->where(function ($query) use ($giaGoc) {
-                $query->whereNull('gia_khuyen_mai')
-                    ->orWhere('gia_khuyen_mai', '<=', 0)
-                    ->orWhere('gia_khuyen_mai', '>=', $giaGoc);
-            });
-        }
-
-        $loHangKhos = $query
-            ->lockForUpdate()
-            ->get();
+        $loHangKhos = $this->layCacLoHangCoTheBan()->get();
 
         foreach ($loHangKhos as $loHangKho) {
             if ($soLuongCon <= 0) {
                 break;
             }
 
+            $giaLoHang = $this->layGiaTheoLo($loHangKho);
+            if ($giaLoHang != $giaDangBan) {
+                continue;
+            }
+
             $soLuongLay = $soLuongCon;
             if ((int) $loHangKho->so_luong_con < $soLuongLay) {
                 $soLuongLay = (int) $loHangKho->so_luong_con;
             }
+
             if ($soLuongLay <= 0) {
                 continue;
             }
@@ -407,8 +397,9 @@ class SanPham extends Model
                 'ma_lo_hang_kho' => $loHangKho->ma_lo_hang_kho,
                 'ma_chi_tiet_phieu_nhap' => $loHangKho->ma_chi_tiet_phieu_nhap,
                 'so_luong' => $soLuongLay,
-                'gia' => $this->layGiaTheoLo($loHangKho),
+                'gia' => $giaLoHang,
             ];
+
             $soLuongCon -= $soLuongLay;
         }
 

@@ -137,7 +137,7 @@ class PhieuGiamGiaController extends Controller
             $data['ma_nguoi_dungs'] = [];
         }
 
-        if ($data['loai_ap_dung'] == PhieuGiamGia::AP_DUNG_KHACH_HANG
+        if ($data['loai_ap_dung'] == 'khach_hang'
             && count($data['ma_nguoi_dungs']) == 0) {
             throw ValidationException::withMessages([
                 'ma_nguoi_dungs' => 'Vui lòng chọn ít nhất một khách hàng.',
@@ -155,7 +155,7 @@ class PhieuGiamGiaController extends Controller
             ->whereNull('ngay_su_dung')
             ->delete();
 
-        if ($phieuGiamGia->loai_ap_dung != PhieuGiamGia::AP_DUNG_KHACH_HANG) {
+        if ($phieuGiamGia->loai_ap_dung != 'khach_hang') {
             return;
         }
 
