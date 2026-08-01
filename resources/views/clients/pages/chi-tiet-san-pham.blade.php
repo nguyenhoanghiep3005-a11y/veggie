@@ -79,7 +79,7 @@
                             <li>
                                 <div class="cart-plus-minus">
                                     <div class="dec qtybutton">-</div>
-                                    <input type="text" value="@if ($sanPham->soLuongCoTheBan() > 0)1@else0@endif"
+                                    <input type="text" value="{{ $sanPham->soLuongCoTheBan() > 0 ? 1 : 0 }}"
                                         class="cart-plus-minus-box" readonly data-max="{{ $sanPham->soLuongCoTheBan() }}">
                                     <div class="inc qtybutton">+</div>
                                 </div>
