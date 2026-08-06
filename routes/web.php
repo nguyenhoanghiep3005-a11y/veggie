@@ -109,9 +109,7 @@ Route::get('/san-pham/{slug}', [SanPhamController::class, 'hienThiChiTietSanPham
 Route::post('/gio-hang/them', [GioHangController::class, 'themVaoGioHang'])->name('gio-hang.them');
 Route::post('/gio-hang/xoa-nho', [GioHangController::class, 'xoaKhoiGioHangNho'])->name('gio-hang.xoa-nho');
 Route::get('/gio-hang/nho', [GioHangController::class, 'hienThiGioHangNho'])->name('gio-hang.nho');
-Route::get('/gio-hang', [GioHangController::class, 'hienThiGioHang'])->name('gio-hang.hien-thi');
 Route::post('/gio-hang/cap-nhat', [GioHangController::class, 'capNhatGioHang'])->name('gio-hang.cap-nhat');
-Route::post('/gio-hang/xoa', [GioHangController::class, 'xoaKhoiGioHang'])->name('gio-hang.xoa');
 
 Route::get('/tim-kiem', [TimKiemController::class, 'timKiem'])->name('tim-kiem');
 

@@ -71,23 +71,6 @@ class PhieuHangHu extends Model
         return 'DS-'.str_pad($soThuTu, 4, '0', STR_PAD_LEFT);
     }
 
-    // Lấy nguồn phát sinh phiếu hàng hư để hiển thị.
-    public function tenNguon()
-    {
-        if ($this->ma_don_hang) {
-            return 'Hàng hoàn từ đơn hàng';
-        }
-
-        if ($this->ma_phieu_nhap) {
-            return 'Phiếu nhập hàng';
-        }
-
-        if ($this->ma_don_dat_nhap) {
-            return 'Đơn đặt nhập';
-        }
-
-        return 'Điều chỉnh kho';
-    }
 
     // Tính tổng số lượng hàng hư.
     public function tongSoLuong()
@@ -101,13 +84,9 @@ class PhieuHangHu extends Model
         $tenSanPhams = [];
 
         foreach ($this->chiTietPhieuHangHus as $chiTiet) {
-            $tenSanPham = 'Sản phẩm đã xóa';
-
             if ($chiTiet->sanPham) {
-                $tenSanPham = $chiTiet->sanPham->ten_hien_thi;
+                $tenSanPhams[] = $chiTiet->sanPham->ten_hien_thi;
             }
-
-            $tenSanPhams[] = $tenSanPham;
         }
 
         return implode(', ', $tenSanPhams);

@@ -311,17 +311,23 @@ class DonHangController extends Controller
             return $this->phanHoiLoi('Đơn này không cần hoàn tiền PayPal.');
         }
 
-        if ($donHang->trang_thai != 'da_hoan_ve_kho') {
-            return $this->phanHoiLoi('Chỉ hoàn tiền sau khi hàng đã hoàn về kho.');
+        $donKhachHuy = $donHang->trang_thai == 'da_huy'
+            && $donHang->nguoi_huy == 'khach_hang';
+        $donDaHoanVeKho = $donHang->trang_thai == 'da_hoan_ve_kho';
+
+        if (! $donKhachHuy && ! $donDaHoanVeKho) {
+            return $this->phanHoiLoi('Chỉ hoàn tiền cho đơn khách hủy hoặc đơn đã hoàn về kho.');
         }
 
         $donHang->thanhToan->trang_thai = 'da_hoan_tien';
         $donHang->thanhToan->save();
 
         $donHang->trang_thai = 'da_huy';
-        $donHang->nguoi_huy = 'quan_tri';
+        if ($donDaHoanVeKho) {
+            $donHang->nguoi_huy = 'quan_tri';
+        }
         if (! $donHang->ly_do_huy) {
-            $donHang->ly_do_huy = 'Đơn giao thất bại đã hoàn về kho và đã hoàn tiền.';
+            $donHang->ly_do_huy = 'Đơn đã được hoàn tiền PayPal.';
         }
         $donHang->save();
 

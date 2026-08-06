@@ -92,7 +92,7 @@ class PhiVanChuyenGhnService
             'cod_failed_amount' => 0,
             'items' => [
                 [
-                    'name' => 'Sản phẩm Veggie',
+                    'name' => 'Sản phẩm HiepShop',
                     'quantity' => $this->tinhTongSoLuong($sanPhamGioHangs),
                     'height' => $chieuCao,
                     'length' => $chieuDai,
@@ -111,7 +111,7 @@ class PhiVanChuyenGhnService
     private function layMaDichVu($diaChi)
     {
         $response = Http::withoutVerifying()
-            ->timeout(8)
+            ->timeout(10)
             ->withHeaders([
                 'Token' => config('ghn.token'),
                 'Content-Type' => 'application/json',

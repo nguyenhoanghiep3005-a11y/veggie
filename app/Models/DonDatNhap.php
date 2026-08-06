@@ -80,31 +80,4 @@ class DonDatNhap extends Model
         return (int) $this->chiTietDonDatNhaps->sum('so_luong_tu_choi');
     }
 
-    // Lấy tên trạng thái đơn đặt nhập.
-    public function tenTrangThai()
-    {
-        if ($this->trang_thai == 'cho_nhap_hang') {
-            return 'Chờ nhập hàng';
-        }
-
-        if ($this->trang_thai == 'da_nhap_hang') {
-            return 'Đã nhập hàng';
-        }
-
-        return $this->trang_thai;
-    }
-
-    // Lấy lớp màu hiển thị trạng thái đơn đặt nhập.
-    public function lopTrangThai()
-    {
-        if ($this->trang_thai == 'cho_nhap_hang') {
-            return 'badge badge-warning';
-        }
-
-        if ($this->trang_thai == 'da_nhap_hang') {
-            return 'badge badge-success';
-        }
-
-        return 'badge badge-secondary';
-    }
 }

@@ -1,5 +1,7 @@
 $(document).ready(function () {
 
+  // ==================== CLIENT - DANG NHAP, DANG KY, TAI KHOAN ====================
+
   // Kiem tra form dang ky truoc khi gui.
   $('#register-form').on('submit', function (suKien) {
 
@@ -95,6 +97,7 @@ $(document).ready(function () {
     });
   });
 
+  // ==================== CLIENT - DIA CHI TAI KHOAN ====================
   var daTaiTinhTaiKhoan = false;
 
   // Cap nhat niceSelect sau khi thay doi danh sach.
@@ -262,9 +265,9 @@ $(document).ready(function () {
   $(document).on('submit', '#addAddressForm', function (suKien) {
     var soDienThoai = $('#so_dien_thoai').val().trim();
 
-    if (!/^[0-9]{10,11}$/.test(soDienThoai)) {
+    if (!/^0[0-9]{9,10}$/.test(soDienThoai)) {
       suKien.preventDefault();
-      toastr.error('Số điện thoại phải có 10 đến 11 số.');
+      toastr.error('Số điện thoại phải bắt đầu bằng 0 và có 10 đến 11 số.');
       return;
     }
 
@@ -275,6 +278,7 @@ $(document).ready(function () {
   });
 
 
+  // ==================== CLIENT - TRANG DANH SACH SAN PHAM ====================
   // Loc, sap xep va phan trang danh sach san pham.
   var trangHienTai = 1;
 
@@ -374,7 +378,8 @@ $(document).ready(function () {
     $('.so_tien').val('0 - 500.000 đ');
   }
 
-  // Khoi tao nut tang giam so luong cho xem nhanh va chi tiet san pham.
+  // ==================== CLIENT - SO LUONG, GIO HANG, MINI CART ====================
+  // Khoi tao nut tang giam so luong cho xem nhanh, chi tiet va gio hang.
   function khoiTaoNutTangGiamSoLuong() {
     $('.cart-plus-minus').each(function () {
       var $khungSoLuong = $(this);
@@ -392,13 +397,10 @@ $(document).ready(function () {
     khoiTaoNutTangGiamSoLuong();
   });
 
-  $(document).on('click', '.qtybutton', function () {
-    var $oSoLuong = $(this).siblings('.cart-plus-minus-box');
+  $(document).on('click', '.qtybutton', function (suKien) {
+    suKien.preventDefault();
 
-    if (!$oSoLuong.length || $oSoLuong.closest('.shoping-cart-table').length) {
-      return;
-    }
-
+    var $oSoLuong = $(this).closest('.cart-plus-minus').find('.cart-plus-minus-box');
     var soLuong = Number($oSoLuong.val()) || 1;
     var tonKho = Number($oSoLuong.data('max')) || 9999;
 
@@ -411,6 +413,7 @@ $(document).ready(function () {
     }
 
     $oSoLuong.val(soLuong);
+
   });
   // Them san pham vao gio hang.
   $(document).on('click', '.add-to-cart-btn', function (suKien) {
@@ -445,13 +448,14 @@ $(document).ready(function () {
       },
       success: function (response) {
         $('#cart_count').text(response.so_luong_gio_hang);
-        toastr.success(response.thong_bao);
         taiGioHangNho(false);
 
-        var modalThemGioHang = document.getElementById('add_to_cart_modal-' + maSanPham);
-        if (modalThemGioHang && window.bootstrap) {
-          bootstrap.Modal.getOrCreateInstance(modalThemGioHang).show();
+        if ($nutThem.hasClass('buy-now-btn')) {
+          window.location.href = '/thanh-toan';
+          return;
         }
+
+        toastr.success(response.thong_bao);
       },
       error: function (xhr) {
         var thongBao = 'Không thể thêm sản phẩm vào giỏ hàng.';
@@ -514,8 +518,8 @@ $(document).ready(function () {
         $('#cart_count').text(response.so_luong_gio_hang);
         $('.cart-total').html(response.tong_tien + '<small>đ</small>');
 
-        var $dongSanPham = $oSoLuong.closest('tr, .mini-cart-item');
-        $dongSanPham.find('.cart-product-subtotal, .mini-cart-item-total').html(response.tam_tinh + '<small>đ</small>');
+        var $dongSanPham = $oSoLuong.closest('.mini-cart-item');
+        $dongSanPham.find('.mini-cart-item-total').html(response.tam_tinh + '<small>d</small>');
 
         if (taiLaiGioHangNho) {
           taiGioHangNho(false);
@@ -551,28 +555,6 @@ $(document).ready(function () {
     capNhatGioHang(maSanPham, soLuong, $oSoLuong, false);
   });
 
-  $(document).on('click', '.qtybutton', function () {
-    var $oSoLuong = $(this).siblings('.cart-plus-minus-box');
-
-    if (!$oSoLuong.closest('.shoping-cart-table').length) {
-      return;
-    }
-
-    var maSanPham = Number($oSoLuong.data('id'));
-    var soLuong = Number($oSoLuong.val()) || 1;
-    var tonKho = Number($oSoLuong.data('max')) || 1;
-
-    if ($(this).hasClass('inc') && soLuong < tonKho) {
-      soLuong++;
-    }
-
-    if ($(this).hasClass('dec') && soLuong > 1) {
-      soLuong--;
-    }
-
-    capNhatGioHang(maSanPham, soLuong, $oSoLuong, true);
-  });
-
   // Xoa san pham khoi gio hang nho.
   $(document).on('click', '.remove-from-cart-btn', function (suKien) {
     suKien.preventDefault();
@@ -597,481 +579,207 @@ $(document).ready(function () {
     });
   });
 
-  // Xoa san pham khoi trang gio hang.
-  $(document).on('click', '.remove-from-cart', function (suKien) {
-    suKien.preventDefault();
 
-    var $dongSanPham = $(this).closest('tr');
-    var maSanPham = Number($(this).data('id'));
-
-    $.ajax({
-      url: '/gio-hang/xoa',
-      type: 'POST',
-      headers: {
-        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-      },
-      data: { ma_san_pham: maSanPham },
-      success: function (response) {
-        $dongSanPham.remove();
-        $('#cart_count').text(response.so_luong_gio_hang);
-        $('.cart-total').html(response.tong_tien + '<small>đ</small>');
-
-        if ($('.remove-from-cart').length === 0) {
-          window.location.reload();
-        }
-      },
-      error: function () {
-        toastr.error('Không thể xóa sản phẩm khỏi giỏ hàng.');
-      }
-    });
-  });
-
+  // ==================== CLIENT - TRANG THANH TOAN ====================
   if (window.location.pathname === "/thanh-toan") {
     var $tongKetThanhToan = $('#tong-ket-thanh-toan');
     var tongTien = Number($tongKetThanhToan.data('tong-tien')) || 0;
     var daTinhPhiVanChuyen = Number($tongKetThanhToan.data('san-sang')) === 1;
     var daTaiTinhThanh = false;
+    var boQuaLoiPayPal = false;
 
-    // Dinh dang so tien theo dinh dang Viet Nam.
-    function dinhDangTien(giaTien) {
-      return Number(giaTien || 0).toLocaleString('vi-VN') + ' đ';
+    function dinhDangTien(soTien) {
+      return Number(soTien || 0).toLocaleString('vi-VN') + ' đ';
     }
 
-    // Cap nhat cac khoan tien tren bang tong ket.
-    function capNhatTongTien(cacKhoanTien) {
-      $('.phi-van-chuyen-thanh-toan').text(dinhDangTien(cacKhoanTien.phi_van_chuyen));
-      $('.so-tien-giam-thanh-toan').text(dinhDangTien(cacKhoanTien.so_tien_giam));
-      $('.tong-tien-thanh-toan').text(dinhDangTien(cacKhoanTien.tong_tien));
-
-      $tongKetThanhToan.data('tam-tinh', cacKhoanTien.tam_tinh);
-      $tongKetThanhToan.data('phi-van-chuyen', cacKhoanTien.phi_van_chuyen);
-      $tongKetThanhToan.data('so-tien-giam', cacKhoanTien.so_tien_giam);
-      $tongKetThanhToan.data('tong-tien', cacKhoanTien.tong_tien);
-      tongTien = Number(cacKhoanTien.tong_tien) || 0;
-      datTrangThaiPhiVanChuyen(true, '');
-    }
-
-    // Bat hoac tat nut dat hang theo trang thai tinh phi.
-    function datTrangThaiPhiVanChuyen(daSanSang, thongBao) {
-      daTinhPhiVanChuyen = daSanSang;
-
-      if (thongBao) {
-        $('.thong-bao-phi-van-chuyen').removeClass('d-none').find('td').text(thongBao);
-      } else {
-        $('.thong-bao-phi-van-chuyen').addClass('d-none').find('td').text('');
+    function capNhatNiceSelect($select) {
+      if (typeof $select.niceSelect === 'function') {
+        $select.niceSelect('update');
       }
     }
 
-    // Cap nhat giao dien cho plugin niceSelect sau khi doi option.
-    function capNhatLuaChon($oLuaChon) {
-      if (typeof $oLuaChon.niceSelect === 'function') {
-        $oLuaChon.niceSelect('update');
-      }
+    function hienThongBaoPhi(thongBao) {
+      daTinhPhiVanChuyen = false;
+      $('.phi-van-chuyen-thanh-toan').text('Chưa tính');
+      $('.thong-bao-phi-van-chuyen').removeClass('d-none').find('td').text(thongBao);
     }
 
-    // Xoa danh sach huyen va xa khi nguoi dung doi tinh.
-    function datLaiHuyenVaXa() {
-      $('#ma_huyen_moi').html('<option value="">Quận/huyện *</option>').prop('disabled', true);
-      $('#ma_xa_moi').html('<option value="">Phường/xã *</option>').prop('disabled', true);
-      $('#ten_huyen_moi').val('');
-      $('#ten_xa_moi').val('');
-      capNhatLuaChon($('#ma_huyen_moi'));
-      capNhatLuaChon($('#ma_xa_moi'));
+    function capNhatTongTien(tien) {
+      $('.phi-van-chuyen-thanh-toan').text(dinhDangTien(tien.phi_van_chuyen));
+      $('.so-tien-giam-thanh-toan').text(dinhDangTien(tien.so_tien_giam));
+      $('.tong-tien-thanh-toan').text(dinhDangTien(tien.tong_tien));
+
+      $tongKetThanhToan.data('tam-tinh', tien.tam_tinh);
+      $tongKetThanhToan.data('phi-van-chuyen', tien.phi_van_chuyen);
+      $tongKetThanhToan.data('so-tien-giam', tien.so_tien_giam);
+      $tongKetThanhToan.data('tong-tien', tien.tong_tien);
+
+      tongTien = Number(tien.tong_tien) || 0;
+      daTinhPhiVanChuyen = true;
+      $('.thong-bao-phi-van-chuyen').addClass('d-none').find('td').text('');
     }
 
-    // Tai danh sach tinh thanh tu GHN.
     function taiDanhSachTinh() {
-      var $tinhThanh = $('#ma_tinh_moi');
-
-      if (daTaiTinhThanh || $tinhThanh.length === 0) {
+      if (daTaiTinhThanh || $('#ma_tinh_moi').length === 0) {
         return;
       }
 
-      $tinhThanh.html('<option value="">Đang tải...</option>').prop('disabled', true);
-      capNhatLuaChon($tinhThanh);
+      $('#ma_tinh_moi').html('<option value="">Đang tải...</option>').prop('disabled', true);
+      capNhatNiceSelect($('#ma_tinh_moi'));
 
       $.get('/giao-hang-nhanh/tinh-thanh', function (response) {
-        var cacLuaChon = '<option value="">Tỉnh/thành *</option>';
+        var html = '<option value="">Tỉnh/thành *</option>';
 
         if (response.trang_thai && response.du_lieu) {
-          $.each(response.du_lieu, function (viTri, tinhThanh) {
-            cacLuaChon += '<option value="' + tinhThanh.ProvinceID + '">' + tinhThanh.ProvinceName + '</option>';
+          $.each(response.du_lieu, function (viTri, tinh) {
+            html += '<option value="' + tinh.ProvinceID + '">' + tinh.ProvinceName + '</option>';
           });
-
           daTaiTinhThanh = true;
-          $tinhThanh.html(cacLuaChon).prop('disabled', false);
         } else {
-          $tinhThanh.html('<option value="">Không tải được tỉnh/thành</option>').prop('disabled', false);
           toastr.error(response.thong_bao || 'Không tải được tỉnh/thành.');
         }
 
-        capNhatLuaChon($tinhThanh);
+        $('#ma_tinh_moi').html(html).prop('disabled', false);
+        capNhatNiceSelect($('#ma_tinh_moi'));
       }).fail(function () {
-        $tinhThanh.html('<option value="">Không tải được tỉnh/thành</option>').prop('disabled', false);
-        capNhatLuaChon($tinhThanh);
+        $('#ma_tinh_moi').html('<option value="">Không tải được tỉnh/thành</option>').prop('disabled', false);
+        capNhatNiceSelect($('#ma_tinh_moi'));
         toastr.error('Không thể kết nối dịch vụ địa chỉ.');
       });
     }
 
-    // Tai danh sach quan huyen theo tinh da chon.
     function taiDanhSachHuyen(maTinh) {
-      var $huyen = $('#ma_huyen_moi');
-      datLaiHuyenVaXa();
+      $('#ma_huyen_moi').html('<option value="">Quận/huyện *</option>').prop('disabled', true);
+      $('#ma_xa_moi').html('<option value="">Phường/xã *</option>').prop('disabled', true);
+      $('#ten_huyen_moi, #ten_xa_moi').val('');
+      capNhatNiceSelect($('#ma_huyen_moi'));
+      capNhatNiceSelect($('#ma_xa_moi'));
 
       if (!maTinh) {
         return;
       }
 
-      $huyen.html('<option value="">Đang tải...</option>').prop('disabled', true);
-      capNhatLuaChon($huyen);
-
       $.get('/giao-hang-nhanh/quan-huyen', { ma_tinh: maTinh }, function (response) {
-        var cacLuaChon = '<option value="">Quận/huyện *</option>';
+        var html = '<option value="">Quận/huyện *</option>';
 
         if (response.trang_thai && response.du_lieu) {
           $.each(response.du_lieu, function (viTri, huyen) {
-            cacLuaChon += '<option value="' + huyen.DistrictID + '">' + huyen.DistrictName + '</option>';
+            html += '<option value="' + huyen.DistrictID + '">' + huyen.DistrictName + '</option>';
           });
-
-          $huyen.html(cacLuaChon).prop('disabled', false);
+          $('#ma_huyen_moi').prop('disabled', false);
         } else {
-          $huyen.html('<option value="">Không tải được quận/huyện</option>').prop('disabled', false);
           toastr.error(response.thong_bao || 'Không tải được quận/huyện.');
         }
 
-        capNhatLuaChon($huyen);
-      }).fail(function () {
-        $huyen.html('<option value="">Không tải được quận/huyện</option>').prop('disabled', false);
-        capNhatLuaChon($huyen);
+        $('#ma_huyen_moi').html(html);
+        capNhatNiceSelect($('#ma_huyen_moi'));
       });
     }
 
-    // Tai danh sach phuong xa theo huyen da chon.
     function taiDanhSachXa(maHuyen) {
-      var $xa = $('#ma_xa_moi');
+      $('#ma_xa_moi').html('<option value="">Phường/xã *</option>').prop('disabled', true);
       $('#ten_xa_moi').val('');
-      $xa.html('<option value="">Phường/xã *</option>').prop('disabled', true);
-      capNhatLuaChon($xa);
+      capNhatNiceSelect($('#ma_xa_moi'));
 
       if (!maHuyen) {
         return;
       }
 
-      $xa.html('<option value="">Đang tải...</option>').prop('disabled', true);
-      capNhatLuaChon($xa);
-
       $.get('/giao-hang-nhanh/phuong-xa', { ma_huyen: maHuyen }, function (response) {
-        var cacLuaChon = '<option value="">Phường/xã *</option>';
+        var html = '<option value="">Phường/xã *</option>';
 
         if (response.trang_thai && response.du_lieu) {
           $.each(response.du_lieu, function (viTri, xa) {
-            cacLuaChon += '<option value="' + xa.WardCode + '">' + xa.WardName + '</option>';
+            html += '<option value="' + xa.WardCode + '">' + xa.WardName + '</option>';
           });
-
-          $xa.html(cacLuaChon).prop('disabled', false);
+          $('#ma_xa_moi').prop('disabled', false);
         } else {
-          $xa.html('<option value="">Không tải được phường/xã</option>').prop('disabled', false);
           toastr.error(response.thong_bao || 'Không tải được phường/xã.');
         }
 
-        capNhatLuaChon($xa);
-      }).fail(function () {
-        $xa.html('<option value="">Không tải được phường/xã</option>').prop('disabled', false);
-        capNhatLuaChon($xa);
+        $('#ma_xa_moi').html(html);
+        capNhatNiceSelect($('#ma_xa_moi'));
       });
     }
 
-    // Tinh phi theo dia chi da luu trong tai khoan.
-    function tinhPhiDiaChiDaLuu(maDiaChi) {
-      if (!maDiaChi) {
-        datTrangThaiPhiVanChuyen(false, 'Vui lòng chọn địa chỉ giao hàng.');
-        return;
-      }
+    function tinhPhiVanChuyen() {
+      var data = {};
 
-      $('.phi-van-chuyen-thanh-toan').text('Đang tính...');
+      if ($('input[name="loai_giao_hang"]:checked').val() === 'tai_khoan') {
+        data.ma_dia_chi_giao_hang = $('#danh_sach_dia_chi').val();
 
-      $.ajax({
-        url: '/thanh-toan/phi-van-chuyen',
-        type: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        data: { ma_dia_chi_giao_hang: maDiaChi },
-        success: function (response) {
-          if (response.trang_thai) {
-            capNhatTongTien(response.du_lieu);
-          } else {
-            datTrangThaiPhiVanChuyen(false, response.thong_bao);
-          }
-        },
-        error: function (xhr) {
-          var thongBao = 'Không tính được phí vận chuyển.';
-          if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
-            thongBao = xhr.responseJSON.thong_bao;
-          }
-          datTrangThaiPhiVanChuyen(false, thongBao);
-          toastr.error(thongBao);
+        if (!data.ma_dia_chi_giao_hang) {
+          hienThongBaoPhi('Vui lòng chọn địa chỉ giao hàng.');
+          return;
         }
-      });
-    }
-
-    // Tinh phi theo dia chi moi nguoi dung dang nhap.
-    function tinhPhiDiaChiMoi() {
-      var maTinh = $('#ma_tinh_moi').val();
-      var maHuyen = $('#ma_huyen_moi').val();
-      var maXa = $('#ma_xa_moi').val();
-
-      if (!maTinh || !maHuyen || !maXa) {
-        datTrangThaiPhiVanChuyen(false, 'Vui lòng chọn đầy đủ tỉnh, quận và phường.');
-        $('.phi-van-chuyen-thanh-toan').text('Chưa tính');
-        return;
-      }
-
-      $('.phi-van-chuyen-thanh-toan').text('Đang tính...');
-
-      $.ajax({
-        url: '/thanh-toan/phi-van-chuyen',
-        type: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        data: {
-          ma_tinh: maTinh,
-          ma_huyen: maHuyen,
-          ma_xa: maXa
-        },
-        success: function (response) {
-          if (response.trang_thai) {
-            capNhatTongTien(response.du_lieu);
-          } else {
-            datTrangThaiPhiVanChuyen(false, response.thong_bao);
-          }
-        },
-        error: function (xhr) {
-          var thongBao = 'Không tính được phí vận chuyển.';
-          if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
-            thongBao = xhr.responseJSON.thong_bao;
-          }
-          datTrangThaiPhiVanChuyen(false, thongBao);
-          toastr.error(thongBao);
-        }
-      });
-    }
-
-    // Lay va hien thi thong tin dia chi da luu.
-    function layDiaChiDaLuu(maDiaChi) {
-      if (!maDiaChi) {
-        datTrangThaiPhiVanChuyen(false, 'Vui lòng chọn địa chỉ giao hàng.');
-        return;
-      }
-
-      $.ajax({
-        url: '/thanh-toan/dia-chi',
-        type: 'GET',
-        data: { ma_dia_chi_giao_hang: maDiaChi },
-        success: function (response) {
-          if (!response.trang_thai) {
-            datTrangThaiPhiVanChuyen(false, response.thong_bao);
-            return;
-          }
-
-          var diaChi = response.du_lieu;
-          $('#ten-nguoi-nhan-hien-thi').text(diaChi.ho_ten);
-          $('#so-dien-thoai-hien-thi').text(diaChi.so_dien_thoai);
-          $('#dia-chi-hien-thi').text(diaChi.dia_chi + ', ' + diaChi.tinh_thanh);
-          $('#ma_dia_chi_giao_hang').val(diaChi.ma_dia_chi_giao_hang);
-
-          if (!diaChi.co_dia_chi_ghn) {
-            datTrangThaiPhiVanChuyen(false, 'Địa chỉ này chưa có đủ mã khu vực GHN.');
-            return;
-          }
-
-          tinhPhiDiaChiDaLuu(maDiaChi);
-        },
-        error: function () {
-          datTrangThaiPhiVanChuyen(false, 'Không lấy được địa chỉ giao hàng.');
-        }
-      });
-    }
-
-    // Chuyen giua dia chi tai khoan va dia chi moi.
-    window.chonLoaiGiaoHang = function (loaiGiaoHang) {
-      $('#loai_giao_hang').val(loaiGiaoHang);
-      $('.delivery-option').removeClass('active');
-
-      if (loaiGiaoHang === 'tai_khoan') {
-        $('#lua-chon-tai-khoan').addClass('active');
-        $('#khu-vuc-dia-chi-da-luu').removeClass('d-none');
-        $('#khu-vuc-dia-chi-moi').addClass('d-none');
-        layDiaChiDaLuu($('#danh_sach_dia_chi').val());
       } else {
-        $('#lua-chon-dia-chi-moi').addClass('active');
-        $('#khu-vuc-dia-chi-da-luu').addClass('d-none');
-        $('#khu-vuc-dia-chi-moi').removeClass('d-none');
-        $('#ma_dia_chi_giao_hang').val('');
-        taiDanhSachTinh();
-        tinhPhiDiaChiMoi();
+        data.ma_tinh = $('#ma_tinh_moi').val();
+        data.ma_huyen = $('#ma_huyen_moi').val();
+        data.ma_xa = $('#ma_xa_moi').val();
+
+        if (!data.ma_tinh || !data.ma_huyen || !data.ma_xa) {
+          hienThongBaoPhi('Vui lòng chọn đầy đủ tỉnh, quận và phường.');
+          return;
+        }
       }
 
-      capNhatPhuongThucThanhToan();
-    };
-
-    $('#danh_sach_dia_chi').on('change', function () {
-      layDiaChiDaLuu($(this).val());
-    });
-
-    $(document).on('change', '#ma_tinh_moi', function () {
-      var maTinh = $(this).val();
-      var tenTinh = '';
-      if (maTinh) {
-        tenTinh = $(this).find(':selected').text();
-      }
-
-      $('#ten_tinh_moi').val(tenTinh);
-      taiDanhSachHuyen(maTinh);
-      tinhPhiDiaChiMoi();
-    });
-
-    $(document).on('change', '#ma_huyen_moi', function () {
-      var maHuyen = $(this).val();
-      var tenHuyen = '';
-      if (maHuyen) {
-        tenHuyen = $(this).find(':selected').text();
-      }
-
-      $('#ten_huyen_moi').val(tenHuyen);
-      taiDanhSachXa(maHuyen);
-      tinhPhiDiaChiMoi();
-    });
-
-    $(document).on('change', '#ma_xa_moi', function () {
-      var maXa = $(this).val();
-      var tenXa = '';
-      if (maXa) {
-        tenXa = $(this).find(':selected').text();
-      }
-
-      $('#ten_xa_moi').val(tenXa);
-      tinhPhiDiaChiMoi();
-    });
-
-    // Chon ma trong danh sach phieu giam gia.
-    $(document).on('click', '.checkout-voucher-item', function () {
-      if ($(this).hasClass('is-disabled')) {
-        return;
-      }
-
-      $('.checkout-voucher-item').removeClass('active');
-      $(this).addClass('active');
-      $('#ma_giam_gia').val($(this).data('ma-giam-gia'));
-    });
-
-    // Gui ma giam gia va cap nhat tong tien.
-    $('#nut-ap-dung-phieu').on('click', function () {
-      var maGiamGia = $('#ma_giam_gia').val().trim();
-      var data = {
-        ma_giam_gia: maGiamGia,
-        ma_dia_chi_giao_hang: $('#ma_dia_chi_giao_hang').val(),
-        ma_tinh: $('#ma_tinh_moi').val(),
-        ma_huyen: $('#ma_huyen_moi').val(),
-        ma_xa: $('#ma_xa_moi').val()
-      };
-
-      if (!maGiamGia) {
-        $('#thong-bao-phieu').addClass('text-danger').text('Vui lòng nhập mã giảm giá.');
-        return;
-      }
+      $('.phi-van-chuyen-thanh-toan').text('Đang tính...');
 
       $.ajax({
-        url: '/thanh-toan/phieu-giam-gia',
+        url: '/thanh-toan/phi-van-chuyen',
         type: 'POST',
         headers: {
           'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         data: data,
-        beforeSend: function () {
-          $('#nut-ap-dung-phieu').prop('disabled', true).text('Đang kiểm tra...');
-        },
         success: function (response) {
-          $('#thong-bao-phieu').removeClass('text-danger').addClass('text-success').text(response.thong_bao);
-          $('.checkout-selected-coupon').text('Đã chọn: ' + response.ma_giam_gia);
-          capNhatTongTien(response.du_lieu);
+          if (response.trang_thai) {
+            capNhatTongTien(response.du_lieu);
+          } else {
+            hienThongBaoPhi(response.thong_bao || 'Không tính được phí vận chuyển.');
+          }
         },
         error: function (xhr) {
-          var thongBao = 'Không thể áp dụng mã giảm giá.';
+          var thongBao = 'Không tính được phí vận chuyển.';
           if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
             thongBao = xhr.responseJSON.thong_bao;
           }
-          $('#thong-bao-phieu').removeClass('text-success').addClass('text-danger').text(thongBao);
-        },
-        complete: function () {
-          $('#nut-ap-dung-phieu').prop('disabled', false).text('Áp dụng');
+          hienThongBaoPhi(thongBao);
+          toastr.error(thongBao);
         }
       });
-    });
-
-    // Kiem tra thong tin dia chi moi truoc khi dat hang.
-    function kiemTraDiaChiMoi() {
-      var coLoi = false;
-      var hoTen = $('#ho_ten_nguoi_nhan').val().trim();
-      var soDienThoai = $('#so_dien_thoai_nguoi_nhan').val().trim();
-      var diaChi = $('#dia_chi_nguoi_nhan').val().trim();
-
-      if (hoTen.length < 2) {
-        toastr.error('Vui lòng nhập họ tên người nhận.');
-        coLoi = true;
-      }
-
-      if (!/^[0-9]{10,11}$/.test(soDienThoai)) {
-        toastr.error('Số điện thoại phải có 10 đến 11 số.');
-        coLoi = true;
-      }
-
-      if (diaChi.length < 5) {
-        toastr.error('Vui lòng nhập địa chỉ cụ thể.');
-        coLoi = true;
-      }
-
-      if (!$('#ma_tinh_moi').val() || !$('#ma_huyen_moi').val() || !$('#ma_xa_moi').val()) {
-        toastr.error('Vui lòng chọn đầy đủ tỉnh, quận và phường.');
-        coLoi = true;
-      }
-
-      return !coLoi;
     }
 
-    // Tao du lieu dia chi de gui khi thanh toan PayPal.
-    function taoDuLieuDatHangPayPal() {
-      return {
-        ma_giao_dich: '',
-        phuong_thuc: 'paypal',
-        loai_giao_hang: $('#loai_giao_hang').val(),
-        ma_dia_chi_giao_hang: $('#ma_dia_chi_giao_hang').val(),
-        ho_ten_nguoi_nhan: $('#ho_ten_nguoi_nhan').val(),
-        so_dien_thoai_nguoi_nhan: $('#so_dien_thoai_nguoi_nhan').val(),
-        dia_chi_nguoi_nhan: $('#dia_chi_nguoi_nhan').val(),
-        ma_tinh: $('#ma_tinh_moi').val(),
-        ma_huyen: $('#ma_huyen_moi').val(),
-        ma_xa: $('#ma_xa_moi').val(),
-        ten_tinh: $('#ten_tinh_moi').val(),
-        ten_huyen: $('#ten_huyen_moi').val(),
-        ten_xa: $('#ten_xa_moi').val()
-      };
+    function layDiaChiDaLuu(maDiaChi) {
+      if (!maDiaChi) {
+        hienThongBaoPhi('Vui lòng chọn địa chỉ giao hàng.');
+        return;
+      }
+
+      $.get('/thanh-toan/dia-chi', { ma_dia_chi_giao_hang: maDiaChi }, function (response) {
+        if (!response.trang_thai) {
+          hienThongBaoPhi(response.thong_bao || 'Không lấy được địa chỉ giao hàng.');
+          return;
+        }
+
+        var diaChi = response.du_lieu;
+        $('#ten-nguoi-nhan-hien-thi').text(diaChi.ho_ten);
+        $('#so-dien-thoai-hien-thi').text(diaChi.so_dien_thoai);
+        $('#dia-chi-hien-thi').text(diaChi.dia_chi + ', ' + diaChi.tinh_thanh);
+
+        if (!diaChi.co_dia_chi_ghn) {
+          hienThongBaoPhi('Địa chỉ này chưa có đủ mã khu vực GHN.');
+          return;
+        }
+
+        tinhPhiVanChuyen();
+      }).fail(function () {
+        hienThongBaoPhi('Không lấy được địa chỉ giao hàng.');
+      });
     }
 
-    var boQuaLoiPayPal = false;
-
-    // An hien COD, nut dat hang va nut PayPal theo loai giao hang.
     function capNhatPhuongThucThanhToan() {
-      var chiDuocPayPal = false;
-
-      if ($('#loai_giao_hang').val() === 'dia_chi_moi') {
-        chiDuocPayPal = true;
-      }
-
-      if ($('#lua-chon-tai-khoan').length === 0) {
-        chiDuocPayPal = true;
-      }
+      var chiDuocPayPal = $('input[name="loai_giao_hang"]:checked').val() === 'dia_chi_moi' || $('#lua-chon-tai-khoan').length === 0;
 
       if (chiDuocPayPal) {
         $('.checkout-cod-card').addClass('d-none');
@@ -1093,15 +801,129 @@ $(document).ready(function () {
       }
     }
 
-    $('input[name="phuong_thuc"]').on('change', capNhatPhuongThucThanhToan);
+    window.chonLoaiGiaoHang = function (loaiGiaoHang) {
+      $('input[name="loai_giao_hang"][value="' + loaiGiaoHang + '"]').prop('checked', true);
+      $('.delivery-option').removeClass('active');
 
-    $('#form-thanh-toan').on('submit', function (suKien) {
-      if ($('#thanh-toan-paypal').is(':checked')) {
-        suKien.preventDefault();
+      if (loaiGiaoHang === 'tai_khoan') {
+        $('#lua-chon-tai-khoan').addClass('active');
+        $('#khu-vuc-dia-chi-da-luu').removeClass('d-none');
+        $('#khu-vuc-dia-chi-moi').addClass('d-none');
+        layDiaChiDaLuu($('#danh_sach_dia_chi').val());
+      } else {
+        $('#lua-chon-dia-chi-moi').addClass('active');
+        $('#khu-vuc-dia-chi-da-luu').addClass('d-none');
+        $('#khu-vuc-dia-chi-moi').removeClass('d-none');
+        taiDanhSachTinh();
+        tinhPhiVanChuyen();
+      }
+
+      capNhatPhuongThucThanhToan();
+    };
+
+    $('#danh_sach_dia_chi').on('change', function () {
+      layDiaChiDaLuu($(this).val());
+    });
+
+    $('#ma_tinh_moi').on('change', function () {
+      $('#ten_tinh_moi').val($(this).val() ? $(this).find(':selected').text() : '');
+      taiDanhSachHuyen($(this).val());
+      tinhPhiVanChuyen();
+    });
+
+    $('#ma_huyen_moi').on('change', function () {
+      $('#ten_huyen_moi').val($(this).val() ? $(this).find(':selected').text() : '');
+      taiDanhSachXa($(this).val());
+      tinhPhiVanChuyen();
+    });
+
+    $('#ma_xa_moi').on('change', function () {
+      $('#ten_xa_moi').val($(this).val() ? $(this).find(':selected').text() : '');
+      tinhPhiVanChuyen();
+    });
+
+    $('.checkout-voucher-item').on('click', function () {
+      if ($(this).hasClass('is-disabled')) {
         return;
       }
 
-      if ($('#loai_giao_hang').val() === 'dia_chi_moi' && !kiemTraDiaChiMoi()) {
+      $('.checkout-voucher-item').removeClass('active');
+      $(this).addClass('active');
+      $('#ma_giam_gia').val($(this).data('ma-giam-gia'));
+    });
+
+    $('#nut-ap-dung-phieu').on('click', function () {
+      var maGiamGia = $('#ma_giam_gia').val().trim();
+
+      if (!maGiamGia) {
+        $('#thong-bao-phieu').removeClass('text-success').addClass('text-danger').text('Vui lòng nhập mã giảm giá.');
+        return;
+      }
+
+      $.ajax({
+        url: '/thanh-toan/phieu-giam-gia',
+        type: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+          ma_giam_gia: maGiamGia,
+          ma_dia_chi_giao_hang: $('input[name="loai_giao_hang"]:checked').val() === 'tai_khoan' ? $('#danh_sach_dia_chi').val() : '',
+          ma_tinh: $('#ma_tinh_moi').val(),
+          ma_huyen: $('#ma_huyen_moi').val(),
+          ma_xa: $('#ma_xa_moi').val()
+        },
+        beforeSend: function () {
+          $('#nut-ap-dung-phieu').prop('disabled', true).text('Đang kiểm tra...');
+        },
+        success: function (response) {
+          $('#thong-bao-phieu').removeClass('text-danger').addClass('text-success').text(response.thong_bao);
+          $('.checkout-selected-coupon').text('Đã chọn: ' + response.ma_giam_gia);
+          capNhatTongTien(response.du_lieu);
+        },
+        error: function (xhr) {
+          var thongBao = 'Không thể áp dụng mã giảm giá.';
+          if (xhr.responseJSON && xhr.responseJSON.thong_bao) {
+            thongBao = xhr.responseJSON.thong_bao;
+          }
+          $('#thong-bao-phieu').removeClass('text-success').addClass('text-danger').text(thongBao);
+        },
+        complete: function () {
+          $('#nut-ap-dung-phieu').prop('disabled', false).text('Áp dụng');
+        }
+      });
+    });
+
+    function kiemTraDiaChiMoi() {
+      var hoTen = $('#ho_ten_nguoi_nhan').val().trim();
+      var soDienThoai = $('#so_dien_thoai_nguoi_nhan').val().trim();
+      var diaChi = $('#dia_chi_nguoi_nhan').val().trim();
+
+      if (hoTen.length < 3) {
+        toastr.error('Vui lòng nhập họ tên người nhận.');
+        return false;
+      }
+
+      if (!/^0[0-9]{9}$/.test(soDienThoai)) {
+        toastr.error('Số điện thoại phải bắt đầu bằng 0 và có 10 số.');
+        return false;
+      }
+
+      if (diaChi.length < 5) {
+        toastr.error('Vui lòng nhập địa chỉ cụ thể.');
+        return false;
+      }
+
+      if (!$('#ma_tinh_moi').val() || !$('#ma_huyen_moi').val() || !$('#ma_xa_moi').val()) {
+        toastr.error('Vui lòng chọn đầy đủ tỉnh, quận và phường.');
+        return false;
+      }
+
+      return true;
+    }
+
+    $('#form-thanh-toan').on('submit', function (suKien) {
+      if ($('#thanh-toan-paypal').is(':checked')) {
         suKien.preventDefault();
         return;
       }
@@ -1115,7 +937,6 @@ $(document).ready(function () {
       $('#nut-dat-hang').prop('disabled', true).text('Đang đặt hàng...');
     });
 
-    // Khoi tao nut PayPal theo ham bat buoc cua PayPal SDK.
     function khoiTaoNutPayPal(soLanCho) {
       if (!document.querySelector('#paypal-button-container')) {
         return;
@@ -1132,7 +953,7 @@ $(document).ready(function () {
 
       paypal.Buttons({
         createOrder: function (data, actions) {
-          if ($('#loai_giao_hang').val() === 'dia_chi_moi' && !kiemTraDiaChiMoi()) {
+          if ($('input[name="loai_giao_hang"]:checked').val() === 'dia_chi_moi' && !kiemTraDiaChiMoi()) {
             boQuaLoiPayPal = true;
             return Promise.reject();
           }
@@ -1155,8 +976,21 @@ $(document).ready(function () {
         },
         onApprove: function (data, actions) {
           return actions.order.capture().then(function (chiTietThanhToan) {
-            var duLieuDatHang = taoDuLieuDatHangPayPal();
-            duLieuDatHang.ma_giao_dich = chiTietThanhToan.id;
+            var duLieuDatHang = {
+              ma_giao_dich: chiTietThanhToan.id,
+              phuong_thuc: 'paypal',
+              loai_giao_hang: $('input[name="loai_giao_hang"]:checked').val(),
+              ma_dia_chi_giao_hang: $('input[name="loai_giao_hang"]:checked').val() === 'tai_khoan' ? $('#danh_sach_dia_chi').val() : '',
+              ho_ten_nguoi_nhan: $('#ho_ten_nguoi_nhan').val(),
+              so_dien_thoai_nguoi_nhan: $('#so_dien_thoai_nguoi_nhan').val(),
+              dia_chi_nguoi_nhan: $('#dia_chi_nguoi_nhan').val(),
+              ma_tinh: $('#ma_tinh_moi').val(),
+              ma_huyen: $('#ma_huyen_moi').val(),
+              ma_xa: $('#ma_xa_moi').val(),
+              ten_tinh: $('#ten_tinh_moi').val(),
+              ten_huyen: $('#ten_huyen_moi').val(),
+              ten_xa: $('#ten_xa_moi').val()
+            };
 
             return fetch('/thanh-toan/paypal', {
               method: 'POST',
@@ -1188,17 +1022,18 @@ $(document).ready(function () {
       }).render('#paypal-button-container');
     }
 
-    if ($('#loai_giao_hang').val() === 'tai_khoan') {
+    if ($('input[name="loai_giao_hang"]:checked').val() === 'tai_khoan') {
       layDiaChiDaLuu($('#danh_sach_dia_chi').val());
     } else {
       taiDanhSachTinh();
-      tinhPhiDiaChiMoi();
+      tinhPhiVanChuyen();
     }
 
+    $('input[name="phuong_thuc"]').on('change', capNhatPhuongThucThanhToan);
     capNhatPhuongThucThanhToan();
     khoiTaoNutPayPal(0);
   }
-
+  // ==================== CLIENT - DANH GIA SAN PHAM ====================
   // Chon so sao va gui danh gia san pham.
   var soSaoDaChon = 0;
 
@@ -1272,7 +1107,7 @@ $(document).ready(function () {
       }
     });
   }
-
+  // ==================== CLIENT - YEU THICH ====================
   // Them san pham vao danh sach yeu thich.
   $(document).on('click', '.add-to-wishlist', function (suKien) {
     suKien.preventDefault();
@@ -1294,10 +1129,7 @@ $(document).ready(function () {
       success: function (response) {
         toastr.success(response.thong_bao);
 
-        var modalYeuThich = document.getElementById('liton_wishlist_modal-' + maSanPham);
-        if (modalYeuThich && window.bootstrap) {
-          bootstrap.Modal.getOrCreateInstance(modalYeuThich).show();
-        }
+
       },
       error: function (xhr) {
         if (xhr.status === 401) {
@@ -1342,6 +1174,7 @@ $(document).ready(function () {
     });
   });
 
+  // ==================== CLIENT - BIEN THE SAN PHAM ====================
   // Cap nhat trang chi tiet khi chon bien the san pham.
   $(document).on('click', '.product-variant-option', function (suKien) {
     suKien.preventDefault();
@@ -1502,6 +1335,7 @@ $(document).ready(function () {
     }
   }
 
+  // ==================== CLIENT - CHI TIET DON HANG / DOI TRA ====================
   // Mo form yeu cau doi tra tren trang chi tiet don hang.
   var nutMoDoiTra = document.getElementById('show-return-request-form');
   var khuVucDoiTra = document.getElementById('return-request-form');

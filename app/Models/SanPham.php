@@ -10,7 +10,7 @@ class SanPham extends Model
 {
     use HasFactory;
 
-    public const SO_NGAY_CAN_HAN = 60;
+    public const SO_NGAY_CAN_HAN = 30;
 
     protected $table = 'san_pham';
 
@@ -147,10 +147,6 @@ class SanPham extends Model
             return 'Hết hàng';
         }
 
-        if ($this->dang_khuyen_mai) {
-            return 'Còn '.$soLuong;
-        }
-
         return 'Còn '.$soLuong;
     }
 
@@ -283,93 +279,21 @@ class SanPham extends Model
         return asset('storage/uploads/products/default.png');
     }
 
-    // Tính tổng tiền theo số lượng mua và giá đang bán của sản phẩm.
-    public function tinhGiaTheoSoLuong($soLuong)
-    {
-        $soLuong = (int) $soLuong;
-        if ($soLuong < 0) {
-            $soLuong = 0;
-        }
-
-        return $soLuong * (float) $this->gia_hien_tai;
-    }
-
-    // Tính đơn giá trung bình cho số lượng sản phẩm đang mua.
-    public function layDonGiaTheoSoLuong($soLuong)
-    {
-        $soLuong = (int) $soLuong;
-        if ($soLuong < 1) {
-            $soLuong = 1;
-        }
-
-        return $this->tinhGiaTheoSoLuong($soLuong) / $soLuong;
-    }
-
-    // Trừ tồn kho khi khách đặt hàng và trả về phần phân bổ theo lô.
+    // Tru ton kho khi khach dat hang.
     public function truTonKho($soLuong)
-    {
-        $soLuong = (int) $soLuong;
-        if ($soLuong <= 0) {
-            return [];
-        }
-
-        if ($this->soLuongCoTheBan() < $soLuong) {
-            throw new Exception('Sản phẩm "' . $this->ten_hien_thi . '" không đủ hàng.');
-        }
-
-        return $this->truTonKhoTheoLo($soLuong);
-    }
-
-    // Hoàn lại tồn kho khi đơn hàng bị hủy hoặc hàng được trả lại nguyên vẹn.
-    public function hoanTonKho($soLuong, $phanBoTonKhos = [])
-    {
-        $soLuong = (int) $soLuong;
-        if ($soLuong <= 0) {
-            return;
-        }
-
-        foreach ($phanBoTonKhos as $phanBoTonKho) {
-            $maLoHangKho = null;
-            $maChiTietPhieuNhap = null;
-            $soLuongHoan = 0;
-
-            if (isset($phanBoTonKho['ma_lo_hang_kho'])) {
-                $maLoHangKho = $phanBoTonKho['ma_lo_hang_kho'];
-            }
-
-            if (isset($phanBoTonKho['ma_chi_tiet_phieu_nhap'])) {
-                $maChiTietPhieuNhap = $phanBoTonKho['ma_chi_tiet_phieu_nhap'];
-            }
-
-            if (isset($phanBoTonKho['so_luong'])) {
-                $soLuongHoan = (int) $phanBoTonKho['so_luong'];
-            }
-
-            if ($soLuongHoan <= 0) {
-                continue;
-            }
-
-            if ($maLoHangKho) {
-                $loHangKho = LoHangKho::find($maLoHangKho);
-            } else {
-                $loHangKho = LoHangKho::where('ma_chi_tiet_phieu_nhap', $maChiTietPhieuNhap)
-                    ->first();
-            }
-
-            if ($loHangKho && (int) $loHangKho->ma_san_pham == (int) $this->ma_san_pham) {
-                $loHangKho->so_luong_con += $soLuongHoan;
-                $loHangKho->save();
-            }
-        }
-    }
-
-    // Trừ số lượng trong từng lô kho theo thứ tự hết hạn sớm.
-    private function truTonKhoTheoLo($soLuong)
     {
         $soLuongCon = (int) $soLuong;
         $phanBoTonKhos = [];
         $giaDangBan = (float) $this->gia_hien_tai;
         $loHangKhos = $this->layCacLoHangCoTheBan()->get();
+
+        if ($soLuongCon <= 0) {
+            return [];
+        }
+
+        if ($this->soLuongCoTheBan() < $soLuongCon) {
+            throw new Exception('Sản phẩm "' . $this->ten_hien_thi . '" không đủ hàng.');
+        }
 
         foreach ($loHangKhos as $loHangKho) {
             if ($soLuongCon <= 0) {
@@ -386,16 +310,11 @@ class SanPham extends Model
                 $soLuongLay = (int) $loHangKho->so_luong_con;
             }
 
-            if ($soLuongLay <= 0) {
-                continue;
-            }
-
             $loHangKho->so_luong_con -= $soLuongLay;
             $loHangKho->save();
 
             $phanBoTonKhos[] = [
                 'ma_lo_hang_kho' => $loHangKho->ma_lo_hang_kho,
-                'ma_chi_tiet_phieu_nhap' => $loHangKho->ma_chi_tiet_phieu_nhap,
                 'so_luong' => $soLuongLay,
                 'gia' => $giaLoHang,
             ];
@@ -410,6 +329,38 @@ class SanPham extends Model
         return $phanBoTonKhos;
     }
 
+    // Hoan lai ton kho khi don hang bi huy hoac hang hoan con nguyen ven.
+    public function hoanTonKho($soLuong, $phanBoTonKhos = [])
+    {
+        $soLuong = (int) $soLuong;
+        if ($soLuong <= 0) {
+            return;
+        }
+
+        foreach ($phanBoTonKhos as $phanBoTonKho) {
+            $maLoHangKho = null;
+            $soLuongHoan = 0;
+
+            if (isset($phanBoTonKho['ma_lo_hang_kho'])) {
+                $maLoHangKho = $phanBoTonKho['ma_lo_hang_kho'];
+            }
+
+            if (isset($phanBoTonKho['so_luong'])) {
+                $soLuongHoan = (int) $phanBoTonKho['so_luong'];
+            }
+
+            if (! $maLoHangKho || $soLuongHoan <= 0) {
+                continue;
+            }
+
+            $loHangKho = LoHangKho::find($maLoHangKho);
+
+            if ($loHangKho && (int) $loHangKho->ma_san_pham == (int) $this->ma_san_pham) {
+                $loHangKho->so_luong_con += $soLuongHoan;
+                $loHangKho->save();
+            }
+        }
+    }
     // Tìm hình ảnh từ biến thể cùng tên khi sản phẩm chưa có ảnh.
     private function layHinhAnhBienTheThayThe()
     {

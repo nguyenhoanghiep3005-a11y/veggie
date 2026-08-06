@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Kích hoạt tài khoản</title>
-</head>
-<body>
-    <h1>Xin chào, {{ $nguoiDung->ten }}</h1>
-    <p>Cảm ơn bạn đã đăng ký tại website của chúng tôi. 
-        Để kích hoạt tài khoản của bạn, vui lòng nhấp vào liên kết dưới đây:
-    </p>
-    <a href="{{ route('kich-hoat-tai-khoan', $maKichHoat) }}" 
-       style="padding: 10px 5px; background-color: green; color: #fff;">
-        Kích hoạt tài khoản
-    </a>
-    <p>Trân trọng,</p>
-</body>
+    <head>
+        <title>Kích hoạt tài khoản</title>
+    </head>
+    <body>
+        <h1>Xin chào, {{ $nguoiDung->ten }}</h1>
+        <p>Cảm ơn bạn đã đăng ký tại website của chúng tôi.
+            Để kích hoạt tài khoản của bạn, vui lòng nhấp vào liên kết dưới đây:
+        </p>
+        <a href="{{ route('kich-hoat-tai-khoan', $maKichHoat) }}"
+            style="padding: 10px 5px; background-color: green; color: #fff;">
+            Kích hoạt tài khoản
+        </a>
+        <p>Trân trọng,</p>
+    </body>
 </html>

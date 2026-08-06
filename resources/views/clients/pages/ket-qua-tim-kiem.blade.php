@@ -4,6 +4,14 @@
 @section('breadcrumb', 'Tìm kiếm')
 
 @section('content')
+<style>
+    /* CSS rieng trang ket qua tim kiem. */
+    .category-filter.active {
+        color: var(--client-primary);
+        font-weight: bold;
+        text-decoration: underline;
+    }
+</style>
 <div class="ltn__product-area ltn__product-gutter">
     <div class="container">
         <div class="row">
@@ -27,8 +35,8 @@
                             @foreach ($danhMucs as $danhMuc)
                                 <li>
                                     <a href="{{ route('san-pham.danh-sach', ['ma_danh_muc' => $danhMuc->ma_danh_muc]) }}"
-                                       class="category-filter {{ (int) $maDanhMucDaChon === (int) $danhMuc->ma_danh_muc ? 'active' : '' }}"
-                                       data-id="{{ $danhMuc->ma_danh_muc }}">
+                                        class="category-filter {{ (int) $maDanhMucDaChon === (int) $danhMuc->ma_danh_muc ? 'active' : '' }}"
+                                        data-id="{{ $danhMuc->ma_danh_muc }}">
                                         {{ $danhMuc->ten }}
                                         <span><i class="fas fa-long-arrow-alt-right"></i></span>
                                     </a>

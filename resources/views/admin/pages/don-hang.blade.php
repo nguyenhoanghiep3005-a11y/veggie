@@ -1,6 +1,97 @@
 @extends('layouts.admin')
 
 @section('title', 'Quản lý đơn hàng')
+
+@push('styles')
+<style>
+    /* CSS bat buoc cho Datatables tu sinh ra, khong gan truc tiep vao the HTML duoc. */
+    table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child:before,
+    table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child:before,
+    table.dataTable td.control,
+    table.dataTable th.control,
+    table.dataTable td.dtr-control,
+    table.dataTable th.dtr-control {
+        display: none !important;
+    }
+
+    #datatable-buttons td:empty,
+    #datatable-buttons th:empty {
+        display: none !important;
+        visibility: collapse !important;
+        width: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* CSS rieng cho nhan trang thai. */
+    .custom-badge,
+    .label {
+        display: inline-block;
+        min-width: 90px;
+        padding: 8px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.3;
+        text-align: center;
+        white-space: normal;
+    }
+
+    .badge-success,
+    .label-success {
+        background-color: #28a745 !important;
+        color: #fff !important;
+    }
+
+    .badge-warning,
+    .label-warning {
+        background-color: #ffc107 !important;
+        color: #111 !important;
+    }
+
+    .badge-danger,
+    .label-danger {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+    }
+
+    .badge-info,
+    .label-info {
+        background-color: #17a2b8 !important;
+        color: #fff !important;
+    }
+
+    .badge-primary,
+    .label-primary {
+        background-color: #007bff !important;
+        color: #fff !important;
+    }
+
+    .badge-secondary,
+    .label-default,
+    .label-secondary {
+        background-color: #6c757d !important;
+        color: #fff !important;
+    }
+
+    /* CSS rieng trang don hang. */
+    .admin-orders-page .dropdown-menu {
+        min-width: 150px;
+    }
+
+    .admin-orders-page .dropdown-item {
+        display: block;
+        padding: 7px 14px;
+        color: #333;
+    }
+
+    .admin-orders-page .dropdown-item:hover {
+        background-color: #f5f5f5;
+        text-decoration: none;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="right_col admin-orders-page" role="main">
     <div class="">
@@ -32,7 +123,7 @@
                                         Theo dõi đơn hàng, trạng thái thanh toán và xử lý giao hàng ngay trên danh sách.
                                     </p>
 
-                                    <table id="datatable-responsive" class="table table-striped table-bordered admin-table-centered">
+                                    <table id="datatable-responsive" class="table table-striped table-bordered admin-table-centered" style="width:100%; text-align:center;">
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
@@ -52,168 +143,175 @@
                                                     <td>{{ $donHang->ten_khach_hang }}</td>
                                                     <td>
                                                         <a href="javascript:void(0)" data-toggle="modal" data-target="#diaChiGiaoHangModal-{{ $donHang->ma_don_hang }}">
-                                                            {{ $donHang->dia_chi_nguoi_nhan }}
-                                                        </a>
-                                                    </td>
-                                                    <td>
-                                                        {{ number_format($donHang->tong_tien, 0, ',', '.') }}
-                                                        <small>đ</small>
-                                                    </td>
-                                                    <td class="order-status">
-                                                        @if ($donHang->yeuCauDoiTra)
-                                                            @if ($donHang->yeuCauDoiTra->trang_thai == 'cho_duyet')
-                                                                <span class="custom-badge badge badge-warning">Chờ duyệt yêu cầu</span>
-                                                            @elseif ($donHang->yeuCauDoiTra->trang_thai == 'da_duyet')
-                                                                <span class="custom-badge badge badge-info">Đã duyệt yêu cầu</span>
-                                                            @elseif ($donHang->yeuCauDoiTra->trang_thai == 'dang_xu_ly')
-                                                                <span class="custom-badge badge badge-info">Đang xử lý đổi trả</span>
-                                                            @elseif ($donHang->yeuCauDoiTra->trang_thai == 'dang_giao_hang_doi')
-                                                                <span class="custom-badge badge badge-primary">Đang giao hàng đổi</span>
-                                                            @elseif ($donHang->yeuCauDoiTra->trang_thai == 'hoan_tat')
-                                                                <span class="custom-badge badge badge-success">Hoàn tất đổi trả</span>
-                                                            @else
-                                                                <span class="custom-badge badge badge-secondary">-</span>
-                                                            @endif
+                                                        {{ $donHang->dia_chi_nguoi_nhan }}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    {{ number_format($donHang->tong_tien, 0, ',', '.') }}
+                                                    <small>đ</small>
+                                                </td>
+                                                <td class="order-status">
+                                                    @if ($donHang->yeuCauDoiTra)
+                                                        @if ($donHang->yeuCauDoiTra->trang_thai == 'cho_duyet')
+                                                            <span class="custom-badge badge badge-warning">Chờ duyệt yêu cầu</span>
+                                                        @elseif ($donHang->yeuCauDoiTra->trang_thai == 'da_duyet')
+                                                            <span class="custom-badge badge badge-info">Đã duyệt yêu cầu</span>
+                                                        @elseif ($donHang->yeuCauDoiTra->trang_thai == 'dang_xu_ly')
+                                                            <span class="custom-badge badge badge-info">Đang xử lý đổi trả</span>
+                                                        @elseif ($donHang->yeuCauDoiTra->trang_thai == 'dang_giao_hang_doi')
+                                                            <span class="custom-badge badge badge-primary">Đang giao hàng đổi</span>
+                                                        @elseif ($donHang->yeuCauDoiTra->trang_thai == 'hoan_tat')
+                                                            <span class="custom-badge badge badge-success">Hoàn tất đổi trả</span>
                                                         @else
-                                                            @if ($donHang->trang_thai == 'cho_xac_nhan')
-                                                                <span class="custom-badge badge badge-warning">Chờ xác nhận</span>
-                                                            @elseif ($donHang->trang_thai == 'da_xac_nhan')
-                                                                <span class="custom-badge badge badge-primary">Đã xác nhận</span>
-                                                            @elseif ($donHang->trang_thai == 'dang_giao')
-                                                                <span class="custom-badge badge badge-info">Đang giao hàng</span>
-                                                            @elseif ($donHang->trang_thai == 'dang_hoan_hang')
-                                                                <span class="custom-badge badge badge-info">Đang hoàn hàng</span>
-                                                            @elseif ($donHang->trang_thai == 'hoan_thanh')
-                                                                <span class="custom-badge badge badge-success">Hoàn thành</span>
-                                                            @elseif ($donHang->trang_thai == 'da_hoan_ve_kho')
-                                                                <span class="custom-badge badge badge-success">Đã hoàn về kho</span>
-                                                            @elseif ($donHang->trang_thai == 'giao_that_bai')
-                                                                <span class="custom-badge badge badge-danger">Giao hàng thất bại</span>
-                                                            @elseif ($donHang->trang_thai == 'da_huy' && $donHang->nguoi_huy == 'quan_tri')
-                                                                <span class="custom-badge badge badge-danger">Đã hủy bởi Shop</span>
-                                                            @elseif ($donHang->trang_thai == 'da_huy')
-                                                                <span class="custom-badge badge badge-danger">Đã hủy</span>
-                                                            @else
-                                                                <span class="custom-badge badge badge-secondary">{{ $donHang->trang_thai }}</span>
-                                                            @endif
+                                                            <span class="custom-badge badge badge-secondary">-</span>
                                                         @endif
-                                                    </td>
-                                                    <td>
-                                                        <span class="{{ $donHang->lop_trang_thai_thanh_toan }}">
-                                                            {{ $donHang->ten_trang_thai_thanh_toan }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#chiTietDonHangModal-{{ $donHang->ma_don_hang }}">
-                                                            Xem
-                                                        </button>
-                                                    </td>
-                                                    <td>
-                                                        <div class="btn-group">
-                                                            <button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
-                                                            <div class="dropdown-menu">
-                                                                @if ($donHang->trang_thai == 'cho_xac_nhan')
-                                                                    <a class="dropdown-item nut-xac-nhan-don" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Xác nhận</a>
-                                                                    <a class="dropdown-item nut-mo-huy-don text-danger" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Hủy đơn</a>
-                                                                @endif
+                                                    @else
+                                                        @if ($donHang->trang_thai == 'cho_xac_nhan')
+                                                            <span class="custom-badge badge badge-warning">Chờ xác nhận</span>
+                                                        @elseif ($donHang->trang_thai == 'da_xac_nhan')
+                                                            <span class="custom-badge badge badge-primary">Đã xác nhận</span>
+                                                        @elseif ($donHang->trang_thai == 'dang_giao')
+                                                            <span class="custom-badge badge badge-info">Đang giao hàng</span>
+                                                        @elseif ($donHang->trang_thai == 'dang_hoan_hang')
+                                                            <span class="custom-badge badge badge-info">Đang hoàn hàng</span>
+                                                        @elseif ($donHang->trang_thai == 'hoan_thanh')
+                                                            <span class="custom-badge badge badge-success">Hoàn thành</span>
+                                                        @elseif ($donHang->trang_thai == 'da_hoan_ve_kho')
+                                                            <span class="custom-badge badge badge-success">Đã hoàn về kho</span>
+                                                        @elseif ($donHang->trang_thai == 'giao_that_bai')
+                                                            <span class="custom-badge badge badge-danger">Giao hàng thất bại</span>
+                                                        @elseif ($donHang->trang_thai == 'da_huy' && $donHang->nguoi_huy == 'quan_tri')
+                                                            <span class="custom-badge badge badge-danger">Đã hủy bởi Shop</span>
+                                                        @elseif ($donHang->trang_thai == 'da_huy')
+                                                            <span class="custom-badge badge badge-danger">Đã hủy</span>
+                                                        @else
+                                                            <span class="custom-badge badge badge-secondary">{{ $donHang->trang_thai }}</span>
+                                                        @endif
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <span class="{{ $donHang->lop_trang_thai_thanh_toan }}">
+                                                        {{ $donHang->ten_trang_thai_thanh_toan }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#chiTietDonHangModal-{{ $donHang->ma_don_hang }}">
+                                                        Xem
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                                                        <div class="dropdown-menu">
+                                                            @if ($donHang->trang_thai == 'cho_xac_nhan')
+                                                                <a class="dropdown-item nut-xac-nhan-don" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Xác nhận</a>
+                                                                <a class="dropdown-item nut-mo-huy-don text-danger" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Hủy đơn</a>
+                                                            @endif
 
-                                                                @if ($donHang->trang_thai == 'da_xac_nhan')
-                                                                    <a class="dropdown-item nut-giao-don" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Giao hàng</a>
-                                                                    <a class="dropdown-item nut-mo-huy-don text-danger" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Hủy đơn</a>
-                                                                @endif
+                                                            @if ($donHang->trang_thai == 'da_xac_nhan')
+                                                                <a class="dropdown-item nut-giao-don" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Giao hàng</a>
+                                                                <a class="dropdown-item nut-mo-huy-don text-danger" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Hủy đơn</a>
+                                                            @endif
 
-                                                                @if ($donHang->trang_thai == 'dang_giao')
-                                                                    <a class="dropdown-item nut-hoan-tat-don" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Đã giao</a>
-                                                                    <a class="dropdown-item nut-mo-giao-that-bai text-danger" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Giao thất bại</a>
-                                                                @endif
+                                                            @if ($donHang->trang_thai == 'dang_giao')
+                                                                <a class="dropdown-item nut-hoan-tat-don" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Đã giao</a>
+                                                                <a class="dropdown-item nut-mo-giao-that-bai text-danger" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Giao thất bại</a>
+                                                            @endif
 
-                                                                @if ($donHang->coTheGiaoLai())
-                                                                    <a class="dropdown-item nut-giao-lai" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Giao lại</a>
-                                                                @endif
+                                                            @if ($donHang->coTheGiaoLai())
+                                                                <a class="dropdown-item nut-giao-lai" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Giao lại</a>
+                                                            @endif
 
-                                                                @if ($donHang->coTheHoanVeCuaHang())
-                                                                    <a class="dropdown-item nut-hoan-ve" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Hoàn về cửa hàng</a>
-                                                                @endif
+                                                            @if ($donHang->coTheHoanVeCuaHang())
+                                                                <a class="dropdown-item nut-hoan-ve" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Hoàn về cửa hàng</a>
+                                                            @endif
 
-                                                                @if ($donHang->trang_thai == 'dang_hoan_hang')
-                                                                    <a class="dropdown-item nut-mo-nhan-hang-hoan" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Nhận hàng hoàn</a>
-                                                                @endif
+                                                            @if ($donHang->trang_thai == 'dang_hoan_hang')
+                                                                <a class="dropdown-item nut-mo-nhan-hang-hoan" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Nhận hàng hoàn</a>
+                                                            @endif
 
-                                                                @if ($donHang->trang_thai == 'da_hoan_ve_kho')
-                                                                    @if ($donHang->thanhToan && $donHang->thanhToan->phuong_thuc == 'paypal' && $donHang->thanhToan->trang_thai == 'da_thanh_toan')
-                                                                        <a class="dropdown-item nut-hoan-tien-paypal" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Đã hoàn tiền PayPal</a>
-                                                                    @else
-                                                                        <a class="dropdown-item nut-ket-thuc-don-hoan text-danger" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Kết thúc đơn hoàn</a>
-                                                                    @endif
-                                                                @endif
+                                                            @php
+                                                            $coTheHoanTienPaypal = $donHang->thanhToan
+                                                            && $donHang->thanhToan->phuong_thuc == 'paypal'
+                                                            && $donHang->thanhToan->trang_thai == 'da_thanh_toan'
+                                                            && (
+                                                            $donHang->trang_thai == 'da_hoan_ve_kho'
+                                                            || ($donHang->trang_thai == 'da_huy' && $donHang->nguoi_huy == 'khach_hang')
+                                                            );
+                                                            @endphp
 
-                                                                <a class="dropdown-item" target="_blank" href="{{ route('admin.don-hang.chi-tiet', $donHang->ma_don_hang) }}">Xem chi tiết</a>
-                                                            </div>
+                                                            @if ($coTheHoanTienPaypal)
+                                                                <a class="dropdown-item nut-hoan-tien-paypal" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Đã hoàn tiền PayPal</a>
+                                                            @elseif ($donHang->trang_thai == 'da_hoan_ve_kho')
+                                                                <a class="dropdown-item nut-ket-thuc-don-hoan text-danger" href="#" data-ma-don-hang="{{ $donHang->ma_don_hang }}">Kết thúc đơn hoàn</a>
+                                                            @endif
+
+                                                            <a class="dropdown-item" target="_blank" href="{{ route('admin.don-hang.chi-tiet', $donHang->ma_don_hang) }}">Xem chi tiết</a>
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
 
-                                    @foreach ($donHangs as $donHang)
-                                        <div class="modal fade" id="diaChiGiaoHangModal-{{ $donHang->ma_don_hang }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Thông tin giao hàng</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p><strong>Người nhận:</strong> {{ $donHang->ten_nguoi_nhan }}</p>
-                                                        <p><strong>Địa chỉ:</strong> {{ $donHang->dia_chi_nguoi_nhan }}</p>
-                                                        <p><strong>Tỉnh thành:</strong> {{ $donHang->tinh_thanh_nguoi_nhan }}</p>
-                                                        <p><strong>Điện thoại:</strong> {{ $donHang->so_dien_thoai_nguoi_nhan }}</p>
-                                                    </div>
+                                @foreach ($donHangs as $donHang)
+                                    <div class="modal fade" id="diaChiGiaoHangModal-{{ $donHang->ma_don_hang }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Thông tin giao hàng</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p><strong>Người nhận:</strong> {{ $donHang->ten_nguoi_nhan }}</p>
+                                                    <p><strong>Địa chỉ:</strong> {{ $donHang->dia_chi_nguoi_nhan }}</p>
+                                                    <p><strong>Tỉnh thành:</strong> {{ $donHang->tinh_thanh_nguoi_nhan }}</p>
+                                                    <p><strong>Điện thoại:</strong> {{ $donHang->so_dien_thoai_nguoi_nhan }}</p>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <div class="modal fade" id="chiTietDonHangModal-{{ $donHang->ma_don_hang }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog modal-lg">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Chi tiết hóa đơn</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <table class="table table-bordered">
-                                                            <thead>
+                                    <div class="modal fade" id="chiTietDonHangModal-{{ $donHang->ma_don_hang }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Chi tiết hóa đơn</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <table class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th>Tên sản phẩm</th>
+                                                                <th>Số lượng</th>
+                                                                <th>Đơn giá</th>
+                                                                <th>Thành tiền</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($donHang->chiTietDonHangs as $chiTietDonHang)
                                                                 <tr>
-                                                                    <th>#</th>
-                                                                    <th>Tên sản phẩm</th>
-                                                                    <th>Số lượng</th>
-                                                                    <th>Đơn giá</th>
-                                                                    <th>Thành tiền</th>
+                                                                    <td>{{ $loop->iteration }}</td>
+                                                                    <td>{{ $chiTietDonHang->ten_san_pham }}</td>
+                                                                    <td>{{ $chiTietDonHang->so_luong }}</td>
+                                                                    <td>{{ number_format($chiTietDonHang->gia, 0, ',', '.') }} <small>đ</small></td>
+                                                                    <td>{{ number_format($chiTietDonHang->thanh_tien, 0, ',', '.') }} <small>đ</small></td>
                                                                 </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach ($donHang->chiTietDonHangs as $chiTietDonHang)
-                                                                    <tr>
-                                                                        <td>{{ $loop->iteration }}</td>
-                                                                        <td>{{ $chiTietDonHang->ten_san_pham }}</td>
-                                                                        <td>{{ $chiTietDonHang->so_luong }}</td>
-                                                                        <td>{{ number_format($chiTietDonHang->gia, 0, ',', '.') }} <small>đ</small></td>
-                                                                        <td>{{ number_format($chiTietDonHang->thanh_tien, 0, ',', '.') }} <small>đ</small></td>
-                                                                    </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
                                         </div>
-                                    @endforeach
-                                </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -221,6 +319,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <div class="modal fade" id="modal-huy-don" tabindex="-1" aria-hidden="true">

@@ -16,7 +16,17 @@
                     @forelse($phieuHangHus as $phieuHangHu)
                         <tr>
                             <td><strong>{{ $phieuHangHu->so_phieu }}</strong></td>
-                            <td>{{ $phieuHangHu->tenNguon() }}</td>
+                            <td>
+                                @if ($phieuHangHu->ma_don_hang)
+                                    Hàng hoàn từ đơn hàng
+                                @elseif ($phieuHangHu->ma_phieu_nhap)
+                                    Phiếu nhập hàng
+                                @elseif ($phieuHangHu->ma_don_dat_nhap)
+                                    Đơn đặt nhập
+                                @else
+                                    Điều chỉnh kho
+                                @endif
+                            </td>
                             <td>{{ $phieuHangHu->nhaCungCap ? $phieuHangHu->nhaCungCap->ten : '-' }}</td>
                             <td class="text-left">{{ $phieuHangHu->tomTatSanPham() }}</td>
                             <td>{{ number_format($phieuHangHu->tongSoLuong()) }}</td>

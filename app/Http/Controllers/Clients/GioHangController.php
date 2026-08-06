@@ -62,17 +62,6 @@ class GioHangController extends Controller
         ]);
     }
 
-    // Hien thi trang gio hang lon.
-    public function hienThiGioHang()
-    {
-        $sanPhamGioHangs = $this->gioHang->laySanPhamGioHang();
-        $tongTienGioHang = $this->gioHang->tinhTongTien();
-
-        return view(
-            'clients.pages.gio-hang',
-            compact('sanPhamGioHangs', 'tongTienGioHang')
-        );
-    }
 
     // Cap nhat so luong san pham trong gio hang.
     public function capNhatGioHang(Request $request)
@@ -119,11 +108,6 @@ class GioHangController extends Controller
         return $this->xoaSanPhamKhoiGioHang($request);
     }
 
-    // Xoa san pham khoi trang gio hang.
-    public function xoaKhoiGioHang(Request $request)
-    {
-        return $this->xoaSanPhamKhoiGioHang($request);
-    }
 
     // Xu ly chung viec xoa mot san pham khoi gio hang.
     private function xoaSanPhamKhoiGioHang(Request $request)

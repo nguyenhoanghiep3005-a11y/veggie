@@ -32,4 +32,21 @@ class MinhChungPhieuHangHu extends Model
     {
         return $this->belongsTo(PhieuHangHu::class, 'ma_phieu_hang_hu');
     }
+    // Tao duong dan day du de admin bam xem minh chung.
+    public function getDuongDanHienThiAttribute()
+    {
+        if (! $this->duong_dan) {
+            return '#';
+        }
+
+        if ($this->o_dia == 'cloudinary') {
+            return $this->duong_dan;
+        }
+
+        if (str_starts_with($this->duong_dan, 'http://') || str_starts_with($this->duong_dan, 'https://')) {
+            return $this->duong_dan;
+        }
+
+        return asset('storage/'.$this->duong_dan);
+    }
 }

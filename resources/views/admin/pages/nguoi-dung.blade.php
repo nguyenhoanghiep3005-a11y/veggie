@@ -38,26 +38,26 @@
                                                 data-userid="{{ $nguoiDung->ma_nguoi_dung }}"
                                                 data-status="hoat_dong">
                                                 <i class="fa fa-check"></i> Bỏ chặn
-                                            </button>
-                                        @else
-                                            <button type="button" class="btn btn-warning btn-sm changeStatus"
-                                                data-userid="{{ $nguoiDung->ma_nguoi_dung }}"
-                                                data-status="bi_khoa">
-                                                <i class="fa fa-ban"></i> Chặn
-                                            </button>
-                                        @endif
+                                                </button>
+                                            @else
+                                                <button type="button" class="btn btn-warning btn-sm changeStatus"
+                                                    data-userid="{{ $nguoiDung->ma_nguoi_dung }}"
+                                                    data-status="bi_khoa">
+                                                    <i class="fa fa-ban"></i> Chặn
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            @empty
+                                <div class="col-md-12">Chưa có tài khoản khách hàng.</div>
+                            @endforelse
                         </div>
-                    @empty
-                        <div class="col-md-12">Chưa có tài khoản khách hàng.</div>
-                    @endforelse
-                </div>
 
-                <div class="text-center">{{ $nguoiDungs->links() }}</div>
+                        <div class="text-center">{{ $nguoiDungs->links() }}</div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-@endsection
+    @endsection

@@ -14,7 +14,17 @@
         <div class="x_title"><h2>Thông tin phiếu</h2><div class="clearfix"></div></div>
         <div class="x_content row">
             <div class="col-md-6">
-                <p><strong>Nguồn:</strong> {{ $phieuHangHu->tenNguon() }}</p>
+                <p><strong>Nguồn:</strong>
+                    @if ($phieuHangHu->ma_don_hang)
+                        Hàng hoàn từ đơn hàng
+                    @elseif ($phieuHangHu->ma_phieu_nhap)
+                        Phiếu nhập hàng
+                    @elseif ($phieuHangHu->ma_don_dat_nhap)
+                        Đơn đặt nhập
+                    @else
+                        Điều chỉnh kho
+                    @endif
+                </p>
                 <p><strong>Đơn đặt nhập:</strong> {{ $phieuHangHu->donDatNhap ? $phieuHangHu->donDatNhap->so_don : '-' }}</p>
                 <p><strong>Phiếu nhập:</strong> {{ $phieuHangHu->phieuNhap ? $phieuHangHu->phieuNhap->so_phieu : '-' }}</p>
             </div>
@@ -50,7 +60,7 @@
             <div class="x_content row">
                 @foreach($phieuHangHu->minhChungs as $minhChung)
                     <div class="col-md-3 mb-3">
-                        <a href="{{ $minhChung->duong_dan }}" target="_blank">{{ $minhChung->ten_goc ? $minhChung->ten_goc : 'Xem minh chứng' }}</a>
+                        <a href="{{ $minhChung->duong_dan_hien_thi }}" target="_blank">{{ $minhChung->ten_goc ? $minhChung->ten_goc : 'Xem minh chứng' }}</a>
                     </div>
                 @endforeach
             </div>

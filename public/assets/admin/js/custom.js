@@ -6,6 +6,7 @@ $(document).ready(function () {
         }
     });
 
+    // ==================== ADMIN - NGUOI DUNG ====================
     // Cap nhat trang thai tai khoan khach hang.
     $(document).on('click', '.changeStatus', function () {
         var nutBam = $(this);
@@ -59,6 +60,7 @@ $(document).ready(function () {
         });
     });
 
+    // ==================== ADMIN - DANH MUC ====================
     // Xem truoc hinh anh khi them danh muc.
     $('#category-image').on('change', function () {
         var tepHinhAnh = this.files[0];
@@ -183,6 +185,7 @@ $(document).ready(function () {
         });
     });
 
+    // ==================== ADMIN - SAN PHAM ====================
     // Xem truoc cac hinh anh khi them san pham.
     $('#product-images').on('change', function (suKien) {
         var tepHinhAnhs = suKien.target.files;
@@ -321,6 +324,7 @@ $(document).ready(function () {
             }
         });
     });
+    // ==================== ADMIN - DON HANG ====================
     // Xu ly cac thao tac don hang o trang danh sach va chi tiet.
     // Gui thao tac don hang va tai lai trang khi thanh cong.
     function guiThaoTacDonHang(duongDan, data) {
@@ -341,7 +345,6 @@ $(document).ready(function () {
                     toastr.error(response.thong_bao);
                     return;
                 }
-
                 toastr.success(response.thong_bao);
                 setTimeout(function () {
                     window.location.reload();
@@ -513,6 +516,7 @@ $(document).ready(function () {
         });
     });
 
+    // ==================== ADMIN - DOI TRA ====================
     // Gui cac buoc xu ly yeu cau doi tra.
     function guiThaoTacDoiTra(duongDanXuLy, maYeuCau) {
         guiThaoTacDonHang('/admin/doi-tra/' + maYeuCau + '/' + duongDanXuLy, {});
@@ -546,6 +550,7 @@ $(document).ready(function () {
         );
     });
 
+    // ==================== ADMIN - PHIEU GIAM GIA ====================
     // Hien hoac an danh sach khach hang theo pham vi su dung.
     function khoiTaoFormPhieuGiamGia() {
         function capNhatKhuVucKhachHang(oLuaChon) {
@@ -575,6 +580,8 @@ $(document).ready(function () {
         }
     }
     // Khởi tạo các dòng sản phẩm trong form đơn đặt nhập.
+    // ==================== ADMIN - DON DAT NHAP ====================
+    // Khoi tao cac dong san pham trong form don dat nhap.
     function khoiTaoFormDonDatNhap() {
         let thanBang = document.getElementById('purchase-order-items');
         let nutThem = document.getElementById('btn-add-purchase-row');
@@ -617,6 +624,8 @@ $(document).ready(function () {
     }
 
     // Kiểm tra số lượng và minh chứng trong form nhập kho.
+    // ==================== ADMIN - NHAP KHO ====================
+    // Kiem tra so luong va minh chung trong form nhap kho.
     function khoiTaoFormNhapKho() {
         let form = document.getElementById('purchase-import-form');
         let tepMinhChung = document.getElementById('defect-evidence');
@@ -667,6 +676,7 @@ $(document).ready(function () {
     khoiTaoFormNhapKho();
 
 });
+// ==================== ADMIN - TONG QUAN ====================
 // Ve cac bieu do bang du lieu da duoc TongQuanController chuan bi.
 $(document).ready(function () {
     if (typeof Chart === 'undefined' || !document.getElementById('bieu-do-doanh-thu-thang')) {

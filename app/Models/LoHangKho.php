@@ -103,39 +103,4 @@ class LoHangKho extends Model
         return $giaKhuyenMai > 0 && $giaGoc > 0 && $giaKhuyenMai < $giaGoc;
     }
 
-    // Lấy tên trạng thái hạn sử dụng.
-    public function tenHanSuDung()
-    {
-        if ($this->han_su_dung == null) {
-            return 'Chưa có hạn sử dụng';
-        }
-
-        if ($this->daHetHan()) {
-            return 'Hết hạn';
-        }
-
-        if ($this->sapHetHan()) {
-            return 'Cận hạn';
-        }
-
-        return 'Còn mới';
-    }
-
-    // Lấy lớp màu hiển thị hạn sử dụng.
-    public function lopHanSuDung()
-    {
-        if ($this->han_su_dung == null) {
-            return 'label-default';
-        }
-
-        if ($this->daHetHan()) {
-            return 'label-danger';
-        }
-
-        if ($this->sapHetHan()) {
-            return 'label-warning';
-        }
-
-        return 'label-success';
-    }
 }

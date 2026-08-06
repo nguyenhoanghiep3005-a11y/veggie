@@ -4,6 +4,91 @@
 @section('breadcrumb', 'Chi tiết sản phẩm')
 
 @section('content')
+<style>
+    /* CSS rieng trang chi tiet san pham: sua bien the, mo ta va nut het hang tai day. */
+    .product-stock-detail {
+    color: var(--client-text);
+    font-size: 18px;
+    font-weight: 600;
+    }
+
+    .product-variant-box h6 {
+    margin-bottom: 10px;
+    font-weight: 700;
+    }
+
+    .product-variant-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    }
+
+    .product-variant-option {
+    min-width: 92px;
+    padding: 10px 12px;
+    border: 1px solid var(--client-border);
+    color: var(--client-text);
+    text-align: center;
+    background: #fff;
+    }
+
+    .product-variant-option span,
+    .product-variant-option small {
+    display: block;
+    }
+
+    .product-variant-option span {
+    font-weight: 700;
+    }
+
+    .product-variant-option small {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--client-muted);
+    }
+
+    .product-variant-option.active {
+    border-color: var(--client-primary);
+    box-shadow: inset 0 -3px 0 var(--client-primary);
+    }
+
+    .product-variant-option.out-of-stock {
+    opacity: .55;
+    }
+
+    .product-variant-option.is-loading {
+    pointer-events: none;
+    opacity: .75;
+    }
+
+    .product-detail-description {
+    font-size: 16px;
+    line-height: 1.8;
+    }
+
+    .product-detail-facts {
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+    }
+
+    .product-detail-facts li {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    }
+
+    .product-detail-facts strong {
+    min-width: 120px;
+    color: #071c1f;
+    }
+
+    .product-action-disabled {
+    pointer-events: none;
+    opacity: .6;
+    }
+</style>
 <div class="ltn__shop-details-area pb-85">
     <div class="container">
         <div class="row">
@@ -30,7 +115,7 @@
                 <div class="modal-product-info shop-details-info pl-0">
                     <h3 class="product-detail-name">{{ $sanPham->ten_hien_thi }}</h3>
 
-                    <div class="product-detail-rating-line">
+                    <div class="product-detail-rating-line" style="display:flex !important; align-items:center !important; flex-wrap:wrap !important; gap:12px !important; margin-bottom:12px !important; color:#555 !important;">
                         <span class="product-detail-rating-number">{{ number_format($sanPham->so_sao_trung_binh, 1) }}</span>
                         <span class="product-ratting">
                             @for ($soSao = 1; $soSao <= 5; $soSao++)
@@ -45,13 +130,13 @@
                         <span class="product-detail-sold">Đã bán {{ $sanPham->so_luong_da_ban }}</span>
                     </div>
 
-                    <div class="product-price product-detail-price-wrap">
+                    <div class="product-price product-detail-price-wrap" style="display:flex !important; align-items:baseline !important; gap:12px !important; margin-bottom:22px !important;">
                         @if ($sanPham->gia_hien_tai < $sanPham->gia)
-                            <del class="product-detail-old-price">{{ number_format($sanPham->gia, 0, ',', '.') }}<small class="product-price-symbol">đ</small></del>
+                            <del class="product-detail-old-price" style="color:#060606 !important; font-size:18px !important; font-weight:400 !important; line-height:1 !important;">{{ number_format($sanPham->gia, 0, ',', '.') }}<small class="product-price-symbol" style="margin-left:2px !important; font-size:45% !important; font-weight:400 !important; vertical-align:baseline !important; text-decoration:underline !important;">&#273;</small></del>
                         @else
                             <del class="product-detail-old-price" style="display:none"></del>
                         @endif
-                        <span class="product-detail-price">{{ number_format($sanPham->gia_hien_tai, 0, ',', '.') }}<small class="product-price-symbol">đ</small></span>
+                        <span class="product-detail-price" style="color:#80B500 !important; font-size:30px !important; font-weight:700 !important; line-height:1 !important;">{{ number_format($sanPham->gia_hien_tai, 0, ',', '.') }}<small class="product-price-symbol" style="margin-left:2px !important; font-size:45% !important; font-weight:400 !important; vertical-align:baseline !important; text-decoration:underline !important;">&#273;</small></span>
                     </div>
                     @if (count($bienTheSanPhams) > 0)
                         <div class="product-variant-selector mt-3">
@@ -80,7 +165,7 @@
                                 <div class="cart-plus-minus">
                                     <div class="dec qtybutton">-</div>
                                     <input type="text" value="{{ $sanPham->soLuongCoTheBan() > 0 ? 1 : 0 }}"
-                                        class="cart-plus-minus-box" readonly data-max="{{ $sanPham->soLuongCoTheBan() }}">
+                                    class="cart-plus-minus-box" readonly data-max="{{ $sanPham->soLuongCoTheBan() }}">
                                     <div class="inc qtybutton">+</div>
                                 </div>
                             </li>
@@ -96,12 +181,12 @@
                                 @endif
                             </li>
                             @auth
-                            <li>
-                                <a href="javascript:void(0)" class="product-detail-wishlist add-to-wishlist"
-                                    title="Yêu thích" data-id="{{ $sanPham->ma_san_pham }}">
-                                    <i class="far fa-heart"></i>
-                                </a>
-                            </li>
+                                <li>
+                                    <a href="javascript:void(0)" class="product-detail-wishlist add-to-wishlist"
+                                        title="Yêu thích" data-id="{{ $sanPham->ma_san_pham }}">
+                                        <i class="far fa-heart"></i>
+                                    </a>
+                                </li>
                             @endauth
                         </ul>
                     </div>
@@ -194,6 +279,4 @@
     </div>
 </div>
 
-@include('clients.components.modals.them-gio-hang', ['sanPham' => $sanPham])
-@include('clients.components.modals.yeu-thich', ['sanPham' => $sanPham])
 @endsection

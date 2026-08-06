@@ -37,7 +37,7 @@
                                 </label>
                                 <div class="col-md-6 col-sm-6 ">
                                     <input type="text" id="category-name" name="ten" required="required"
-                                        class="form-control ">
+                                    class="form-control ">
                                 </div>
                             </div>
                             <div class="item form-group">
@@ -47,31 +47,31 @@
                                 </label>
                                 <div class="col-md-6 col-sm-6 ">
                                     <input type="text" id="category-description" name="mo_ta"
-                                        required="required" class="form-control">
+                                    required="required" class="form-control">
                                 </div>
                             </div>
                             <div class="item form-group">
                                 <label class="col-form-label col-md-3 col-sm-3 label-align" for="category-image">Hình
                                     ảnh</label>
-                                <div class="col-md-6 col-sm-6 ">
-                                    <label class="custom-file-upload" for="category-image"> Chọn Ảnh</label>
-                                <input type="file" name="hinh_anh" id="category-image" accept="image/*">
-                                <img src="" alt="Ảnh xem trước" id="image-preview" class="image-preview">
-                            </div>
-                            </div>
-                            <div class="ln_solid"></div>
-                            <div class="item form-group">
-                                <div class="col-md-6 col-sm-6 offset-md-3">
-                                    <button type="submit" class="btn btn-success">Thêm Danh Mục</button>
+                                    <div class="col-md-6 col-sm-6 ">
+                                        <label class="custom-file-upload" style="display:inline-block; margin-top:10px; padding:6px 12px; cursor:pointer; background:#368ae3; color:#fff; border-radius:6px; font-weight:bold; text-align:center;" for="category-image"> Chọn Ảnh</label>
+                                        <input type="file" name="hinh_anh" id="category-image" accept="image/*" style="display:none;">
+                                        <img src="" alt="Ảnh xem trước" id="image-preview" class="image-preview" style="width:120px; height:120px; object-fit:cover; border-radius:8px; margin-top:10px; margin-bottom:10px; border:1px solid #ddd;">
+                                    </div>
                                 </div>
-                            </div>
+                                <div class="ln_solid"></div>
+                                <div class="item form-group">
+                                    <div class="col-md-6 col-sm-6 offset-md-3">
+                                        <button type="submit" class="btn btn-success">Thêm Danh Mục</button>
+                                    </div>
+                                </div>
 
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<!-- /page content -->
-@endsection
+    <!-- /page content -->
+    @endsection

@@ -159,10 +159,76 @@ class NhapKhoController extends Controller
             'chi_tiets.*.han_su_dung' => 'nullable|date',
         ]);
 
-        $donDatNhap = DonDatNhap::with('chiTietDonDatNhaps.sanPham')->findOrFail($maDonDatNhap);
-        $lois = $this->kiemTraChiTietNhapKho($donDatNhap, $data['chi_tiets']);
-        $tongSoLuongTuChoi = $this->tinhTongSoLuongTuChoi($data['chi_tiets']);
-        $tepMinhChungs = $this->layTepMinhChung($request);
+        $donDatNhap = DonDatNhap::with('chiTietDonDatNhaps.sanPham')
+            ->findOrFail($maDonDatNhap);
+
+        if ($donDatNhap->trang_thai != 'cho_nhap_hang') {
+            return redirect()->route('admin.don-dat-nhap.danh-sach')
+                ->with('error', 'Đơn đặt nhập này đã được xử lý.');
+        }
+
+        $chiTietTheoMa = [];
+        foreach ($donDatNhap->chiTietDonDatNhaps as $chiTiet) {
+            $chiTietTheoMa[$chiTiet->ma_chi_tiet_don_dat_nhap] = $chiTiet;
+        }
+
+        $lois = [];
+        $maDaGui = [];
+        $tongSoLuongTuChoi = 0;
+
+        foreach ($data['chi_tiets'] as $viTri => $dongNhap) {
+            $maChiTiet = (int) $dongNhap['ma_chi_tiet_don_dat_nhap'];
+            $soLuongNhan = (int) $dongNhap['so_luong_nhan'];
+            $soLuongTuChoi = (int) $dongNhap['so_luong_tu_choi'];
+            $soLuongNhap = $soLuongNhan - $soLuongTuChoi;
+            $ngaySanXuat = $dongNhap['ngay_san_xuat'] ?? '';
+            $hanSuDung = $dongNhap['han_su_dung'] ?? '';
+            $tienToLoi = 'chi_tiets.'.$viTri.'.';
+
+            if (isset($maDaGui[$maChiTiet])) {
+                $lois[$tienToLoi.'ma_chi_tiet_don_dat_nhap'] = 'Sản phẩm bị gửi trùng trong form nhập kho.';
+                continue;
+            }
+            $maDaGui[$maChiTiet] = true;
+
+            if (! isset($chiTietTheoMa[$maChiTiet])) {
+                $lois[$tienToLoi.'ma_chi_tiet_don_dat_nhap'] = 'Sản phẩm không thuộc đơn đặt nhập.';
+                continue;
+            }
+
+            $chiTiet = $chiTietTheoMa[$maChiTiet];
+            $tongSoLuongTuChoi += $soLuongTuChoi;
+
+            if ($soLuongNhan > $chiTiet->so_luong_dat) {
+                $lois[$tienToLoi.'so_luong_nhan'] = 'Số nhận không được lớn hơn số đã đặt.';
+            }
+
+            if ($soLuongTuChoi > $soLuongNhan) {
+                $lois[$tienToLoi.'so_luong_tu_choi'] = 'Số từ chối không được lớn hơn số nhận.';
+            }
+
+            if ($soLuongNhap > 0 && $ngaySanXuat == '') {
+                $lois[$tienToLoi.'ngay_san_xuat'] = 'Vui lòng nhập ngày sản xuất.';
+            }
+
+            if ($soLuongNhap > 0 && $hanSuDung == '') {
+                $lois[$tienToLoi.'han_su_dung'] = 'Vui lòng nhập hạn sử dụng.';
+            }
+
+            if ($soLuongNhap > 0 && $hanSuDung != '' && $hanSuDung < date('Y-m-d')) {
+                $lois[$tienToLoi.'han_su_dung'] = 'Hàng hết hạn không được nhập vào kho bán.';
+            }
+
+            if ($soLuongNhap > 0 && $ngaySanXuat != '' && $hanSuDung != '' && $hanSuDung < $ngaySanXuat) {
+                $lois[$tienToLoi.'han_su_dung'] = 'Hạn sử dụng phải sau ngày sản xuất.';
+            }
+        }
+
+        if (count($maDaGui) != count($chiTietTheoMa)) {
+            $lois['chi_tiets'] = 'Danh sách nhận hàng phải đúng với đơn đặt nhập.';
+        }
+
+        $tepMinhChungs = array_filter($request->file('minh_chungs', []));
 
         if ($tongSoLuongTuChoi > 0 && trim((string) $data['mo_ta_hang_loi']) == '') {
             $lois['mo_ta_hang_loi'] = 'Vui lòng nhập lý do hàng bị từ chối.';
@@ -188,41 +254,112 @@ class NhapKhoController extends Controller
                 throw new Exception('Đơn đặt nhập đã được xử lý.');
             }
 
-            $phieuNhap = $this->taoPhieuNhap($donDatNhap);
-            $hangBiTuChois = $this->luuChiTietNhapKho(
-                $donDatNhap,
-                $phieuNhap,
-                $data['chi_tiets']
-            );
-            $minhChungs = [];
+            $chiTietTheoMa = [];
+            foreach ($donDatNhap->chiTietDonDatNhaps as $chiTiet) {
+                $chiTietTheoMa[$chiTiet->ma_chi_tiet_don_dat_nhap] = $chiTiet;
+            }
 
-            if ($tongSoLuongTuChoi > 0) {
+            $phieuNhap = PhieuNhap::create([
+                'so_phieu' => PhieuNhap::taoSoPhieu(),
+                'ma_don_dat_nhap' => $donDatNhap->ma_don_dat_nhap,
+                'ma_nha_cung_cap' => $donDatNhap->ma_nha_cung_cap,
+                'nhan_hang_luc' => now(),
+                'ghi_chu' => null,
+            ]);
+
+            $hangBiTuChois = [];
+
+            foreach ($data['chi_tiets'] as $dongNhap) {
+                $maChiTiet = (int) $dongNhap['ma_chi_tiet_don_dat_nhap'];
+                $chiTiet = $chiTietTheoMa[$maChiTiet];
+                $soLuongNhan = (int) $dongNhap['so_luong_nhan'];
+                $soLuongTuChoi = (int) $dongNhap['so_luong_tu_choi'];
+                $soLuongNhap = $soLuongNhan - $soLuongTuChoi;
+                $ngaySanXuat = null;
+                $hanSuDung = null;
+
+                if ($soLuongNhap > 0) {
+                    $ngaySanXuat = $dongNhap['ngay_san_xuat'];
+                    $hanSuDung = $dongNhap['han_su_dung'];
+                }
+
+                $chiTiet->update([
+                    'so_luong_nhan' => $soLuongNhan,
+                    'so_luong_tu_choi' => $soLuongTuChoi,
+                    'so_luong_da_nhap' => $soLuongNhap,
+                    'ngay_san_xuat' => $ngaySanXuat,
+                    'han_su_dung' => $hanSuDung,
+                ]);
+
+                if ($soLuongNhap > 0) {
+                    $chiTietPhieuNhap = ChiTietPhieuNhap::create([
+                        'ma_phieu_nhap' => $phieuNhap->ma_phieu_nhap,
+                        'ma_chi_tiet_don_dat_nhap' => $chiTiet->ma_chi_tiet_don_dat_nhap,
+                        'ma_san_pham' => $chiTiet->ma_san_pham,
+                        'so_luong' => $soLuongNhap,
+                        'ngay_san_xuat' => $ngaySanXuat,
+                        'han_su_dung' => $hanSuDung,
+                    ]);
+
+                    LoHangKho::create([
+                        'ma_chi_tiet_phieu_nhap' => $chiTietPhieuNhap->ma_chi_tiet_phieu_nhap,
+                        'ma_phieu_nhap' => $phieuNhap->ma_phieu_nhap,
+                        'ma_san_pham' => $chiTiet->ma_san_pham,
+                        'ma_nha_cung_cap' => $donDatNhap->ma_nha_cung_cap,
+                        'so_luong_nhap' => $soLuongNhap,
+                        'so_luong_con' => $soLuongNhap,
+                        'ngay_san_xuat' => $ngaySanXuat,
+                        'han_su_dung' => $hanSuDung,
+                    ]);
+                }
+
+                if ($soLuongTuChoi > 0) {
+                    $hangBiTuChois[] = [
+                        'ma_san_pham' => $chiTiet->ma_san_pham,
+                        'so_luong' => $soLuongTuChoi,
+                        'ghi_chu' => 'Hàng bị từ chối khi nhập từ đơn '.$donDatNhap->so_don,
+                    ];
+                }
+            }
+
+            if (count($hangBiTuChois) > 0) {
                 $minhChungs = $this->dichVuLuuTru->taiNhieuTepLen(
                     $tepMinhChungs,
                     config('cloudinary.folders.damage_slips'),
                     $duongDanDaLuu
                 );
-            }
 
-            if (count($hangBiTuChois) > 0) {
-                $phieuHangHu = $this->taoPhieuHangHu(
-                    $donDatNhap,
-                    $phieuNhap,
-                    $data['mo_ta_hang_loi']
-                );
+                $phieuHangHu = PhieuHangHu::create([
+                    'so_phieu' => PhieuHangHu::taoSoPhieu(),
+                    'ma_don_dat_nhap' => $donDatNhap->ma_don_dat_nhap,
+                    'ma_phieu_nhap' => $phieuNhap->ma_phieu_nhap,
+                    'ma_nha_cung_cap' => $donDatNhap->ma_nha_cung_cap,
+                    'ly_do' => $data['mo_ta_hang_loi'],
+                    'xay_ra_luc' => now(),
+                ]);
 
                 foreach ($hangBiTuChois as $hangBiTuChoi) {
                     $phieuHangHu->chiTietPhieuHangHus()->create($hangBiTuChoi);
                 }
 
-                $this->luuMinhChungPhieuHangHu($phieuHangHu, $minhChungs);
+                foreach ($minhChungs as $minhChung) {
+                    $phieuHangHu->minhChungs()->create([
+                        'o_dia' => $minhChung['o_dia'] ?? 'public',
+                        'duong_dan' => $minhChung['duong_dan'] ?? '',
+                        'ten_goc' => $minhChung['ten_goc'] ?? null,
+                        'loai_mime' => $minhChung['loai_mime'] ?? null,
+                        'loai_tep' => $minhChung['loai_tep'] ?? 'hinh_anh',
+                        'kich_thuoc' => $minhChung['kich_thuoc'] ?? 0,
+                    ]);
+                }
             }
 
-            $this->hoanTatDonDatNhap(
-                $donDatNhap,
-                $tongSoLuongTuChoi,
-                $data['mo_ta_hang_loi']
-            );
+            $donDatNhap->update([
+                'trang_thai' => 'da_nhap_hang',
+                'nhan_hang_luc' => now(),
+                'mo_ta_hang_loi' => $tongSoLuongTuChoi > 0 ? $data['mo_ta_hang_loi'] : null,
+                'bao_nha_cung_cap_luc' => $tongSoLuongTuChoi > 0 ? now() : null,
+            ]);
 
             DB::commit();
 
@@ -238,7 +375,6 @@ class NhapKhoController extends Controller
             return back()->withInput()->with('error', 'Không thể nhập hàng: '.$exception->getMessage());
         }
     }
-
     // Hiển thị danh sách phiếu nhập.
     public function hienThiDanhSachPhieuNhap()
     {
@@ -339,289 +475,6 @@ class NhapKhoController extends Controller
         }
 
         return false;
-    }
-
-    // Lấy các tệp minh chứng hợp lệ từ request.
-    private function layTepMinhChung($request)
-    {
-        $tepMinhChungs = [];
-
-        foreach ($request->file('minh_chungs', []) as $tepMinhChung) {
-            if ($tepMinhChung) {
-                $tepMinhChungs[] = $tepMinhChung;
-            }
-        }
-
-        return $tepMinhChungs;
-    }
-
-    // Tính tổng số lượng hàng bị từ chối.
-    private function tinhTongSoLuongTuChoi($chiTiets)
-    {
-        $tongSoLuong = 0;
-
-        foreach ($chiTiets as $chiTiet) {
-            $tongSoLuong += (int) $chiTiet['so_luong_tu_choi'];
-        }
-
-        return $tongSoLuong;
-    }
-
-    // Kiểm tra từng dòng nhận hàng trước khi lưu.
-    private function kiemTraChiTietNhapKho($donDatNhap, $chiTietNhapKhos)
-    {
-        $lois = [];
-        $maGuiLens = $this->layMaChiTietTuForm($chiTietNhapKhos);
-        $maCanCos = $this->layMaChiTietDonDatNhap($donDatNhap);
-        sort($maGuiLens);
-        sort($maCanCos);
-
-        if ($maGuiLens != $maCanCos) {
-            return ['chi_tiets' => 'Danh sách nhận hàng phải đúng với đơn đặt nhập.'];
-        }
-
-        foreach ($chiTietNhapKhos as $viTri => $data) {
-            $chiTiet = $this->timChiTietDonDatNhap(
-                $donDatNhap,
-                (int) $data['ma_chi_tiet_don_dat_nhap']
-            );
-            $soLuongNhan = (int) $data['so_luong_nhan'];
-            $soLuongTuChoi = (int) $data['so_luong_tu_choi'];
-            $soLuongNhap = $soLuongNhan - $soLuongTuChoi;
-            $ngaySanXuat = '';
-            if (isset($data['ngay_san_xuat'])) {
-                $ngaySanXuat = $data['ngay_san_xuat'];
-            }
-
-            $hanSuDung = '';
-            if (isset($data['han_su_dung'])) {
-                $hanSuDung = $data['han_su_dung'];
-            }
-            $tienToLoi = 'chi_tiets.'.$viTri.'.';
-
-            if (! $chiTiet) {
-                $lois[$tienToLoi.'ma_chi_tiet_don_dat_nhap'] = 'Sản phẩm không thuộc đơn đặt nhập.';
-                continue;
-            }
-
-            if ($soLuongNhan > $chiTiet->so_luong_dat) {
-                $lois[$tienToLoi.'so_luong_nhan'] = 'Số nhận không được lớn hơn số đã đặt.';
-            }
-
-            if ($soLuongTuChoi > $soLuongNhan) {
-                $lois[$tienToLoi.'so_luong_tu_choi'] = 'Số từ chối không được lớn hơn số nhận.';
-            }
-
-            if ($soLuongNhap > 0 && $ngaySanXuat == '') {
-                $lois[$tienToLoi.'ngay_san_xuat'] = 'Vui lòng nhập ngày sản xuất.';
-            }
-
-            if ($soLuongNhap > 0 && $hanSuDung == '') {
-                $lois[$tienToLoi.'han_su_dung'] = 'Vui lòng nhập hạn sử dụng.';
-            }
-
-            if ($soLuongNhap > 0 && $hanSuDung != '' && $hanSuDung < now()->toDateString()) {
-                $lois[$tienToLoi.'han_su_dung'] = 'Hàng hết hạn không được nhập vào kho bán.';
-            }
-
-            if ($soLuongNhap > 0 && $ngaySanXuat != '' && $hanSuDung != '' && $hanSuDung < $ngaySanXuat) {
-                $lois[$tienToLoi.'han_su_dung'] = 'Hạn sử dụng phải sau ngày sản xuất.';
-            }
-        }
-
-        return $lois;
-    }
-
-    // Lấy mã chi tiết đơn đặt nhập từ form.
-    private function layMaChiTietTuForm($chiTietNhapKhos)
-    {
-        $maChiTiets = [];
-
-        foreach ($chiTietNhapKhos as $chiTietNhapKho) {
-            $maChiTiets[] = (int) $chiTietNhapKho['ma_chi_tiet_don_dat_nhap'];
-        }
-
-        return $maChiTiets;
-    }
-
-    // Lấy mã các dòng thuộc đơn đặt nhập.
-    private function layMaChiTietDonDatNhap($donDatNhap)
-    {
-        $maChiTiets = [];
-
-        foreach ($donDatNhap->chiTietDonDatNhaps as $chiTiet) {
-            $maChiTiets[] = (int) $chiTiet->ma_chi_tiet_don_dat_nhap;
-        }
-
-        return $maChiTiets;
-    }
-
-    // Tìm một dòng chi tiết trong đơn đặt nhập.
-    private function timChiTietDonDatNhap($donDatNhap, $maChiTietDonDatNhap)
-    {
-        foreach ($donDatNhap->chiTietDonDatNhaps as $chiTiet) {
-            if ($chiTiet->ma_chi_tiet_don_dat_nhap == $maChiTietDonDatNhap) {
-                return $chiTiet;
-            }
-        }
-
-        return null;
-    }
-
-    // Tạo phiếu nhập từ đơn đặt nhập.
-    private function taoPhieuNhap($donDatNhap)
-    {
-        return PhieuNhap::create([
-            'so_phieu' => PhieuNhap::taoSoPhieu(),
-            'ma_don_dat_nhap' => $donDatNhap->ma_don_dat_nhap,
-            'ma_nha_cung_cap' => $donDatNhap->ma_nha_cung_cap,
-            'nhan_hang_luc' => now(),
-            'ghi_chu' => null,
-        ]);
-    }
-
-    // Lưu chi tiết nhận hàng, tạo lô kho và trả các dòng bị từ chối.
-    private function luuChiTietNhapKho($donDatNhap, $phieuNhap, $chiTietNhapKhos)
-    {
-        $hangBiTuChois = [];
-
-        foreach ($chiTietNhapKhos as $data) {
-            $chiTiet = $this->timChiTietDonDatNhap(
-                $donDatNhap,
-                (int) $data['ma_chi_tiet_don_dat_nhap']
-            );
-            if (! $chiTiet) {
-                continue;
-            }
-
-            $soLuongNhan = (int) $data['so_luong_nhan'];
-            $soLuongTuChoi = (int) $data['so_luong_tu_choi'];
-            $soLuongNhap = $soLuongNhan - $soLuongTuChoi;
-            $ngaySanXuat = null;
-            $hanSuDung = null;
-
-            if ($soLuongNhap > 0) {
-                $ngaySanXuat = $data['ngay_san_xuat'];
-                $hanSuDung = $data['han_su_dung'];
-            }
-
-            $chiTiet->update([
-                'so_luong_nhan' => $soLuongNhan,
-                'so_luong_tu_choi' => $soLuongTuChoi,
-                'so_luong_da_nhap' => $soLuongNhap,
-                'ngay_san_xuat' => $ngaySanXuat,
-                'han_su_dung' => $hanSuDung,
-            ]);
-
-            if ($soLuongNhap > 0) {
-                $chiTietPhieuNhap = ChiTietPhieuNhap::create([
-                    'ma_phieu_nhap' => $phieuNhap->ma_phieu_nhap,
-                    'ma_chi_tiet_don_dat_nhap' => $chiTiet->ma_chi_tiet_don_dat_nhap,
-                    'ma_san_pham' => $chiTiet->ma_san_pham,
-                    'so_luong' => $soLuongNhap,
-                    'ngay_san_xuat' => $ngaySanXuat,
-                    'han_su_dung' => $hanSuDung,
-                ]);
-
-                LoHangKho::create([
-                    'ma_chi_tiet_phieu_nhap' => $chiTietPhieuNhap->ma_chi_tiet_phieu_nhap,
-                    'ma_phieu_nhap' => $phieuNhap->ma_phieu_nhap,
-                    'ma_san_pham' => $chiTiet->ma_san_pham,
-                    'ma_nha_cung_cap' => $donDatNhap->ma_nha_cung_cap,
-                    'so_luong_nhap' => $soLuongNhap,
-                    'so_luong_con' => $soLuongNhap,
-                    'ngay_san_xuat' => $ngaySanXuat,
-                    'han_su_dung' => $hanSuDung,
-                ]);
-            }
-
-            if ($soLuongTuChoi > 0) {
-                $hangBiTuChois[] = [
-                    'ma_san_pham' => $chiTiet->ma_san_pham,
-                    'so_luong' => $soLuongTuChoi,
-                    'ghi_chu' => 'Hàng bị từ chối khi nhập từ đơn '.$donDatNhap->so_don,
-                ];
-            }
-        }
-
-        return $hangBiTuChois;
-    }
-
-    // Tạo phiếu ghi nhận hàng hư khi nhập kho.
-    private function taoPhieuHangHu($donDatNhap, $phieuNhap, $lyDo)
-    {
-        return PhieuHangHu::create([
-            'so_phieu' => PhieuHangHu::taoSoPhieu(),
-            'ma_don_dat_nhap' => $donDatNhap->ma_don_dat_nhap,
-            'ma_phieu_nhap' => $phieuNhap->ma_phieu_nhap,
-            'ma_nha_cung_cap' => $donDatNhap->ma_nha_cung_cap,
-            'ly_do' => $lyDo,
-            'xay_ra_luc' => now(),
-        ]);
-    }
-
-    // Cập nhật đơn đặt nhập sau khi nhận hàng xong.
-    private function hoanTatDonDatNhap($donDatNhap, $tongSoLuongTuChoi, $moTaHangLoi)
-    {
-        $moTaHangLoiCanLuu = null;
-        $thoiGianBaoNhaCungCap = null;
-
-        if ($tongSoLuongTuChoi > 0) {
-            $moTaHangLoiCanLuu = $moTaHangLoi;
-            $thoiGianBaoNhaCungCap = now();
-        }
-
-        $donDatNhap->update([
-            'trang_thai' => 'da_nhap_hang',
-            'nhan_hang_luc' => now(),
-            'mo_ta_hang_loi' => $moTaHangLoiCanLuu,
-            'bao_nha_cung_cap_luc' => $thoiGianBaoNhaCungCap,
-        ]);
-    }
-// Lưu thông tin các tệp minh chứng vào phiếu hàng hư.
-    private function luuMinhChungPhieuHangHu($phieuHangHu, $minhChungs)
-    {
-        foreach ($minhChungs as $minhChung) {
-            $oDia = 'public';
-            $duongDan = '';
-            $tenGoc = null;
-            $loaiMime = null;
-            $loaiTep = 'hinh_anh';
-            $kichThuoc = 0;
-
-            if (isset($minhChung['o_dia'])) {
-                $oDia = $minhChung['o_dia'];
-            }
-
-            if (isset($minhChung['duong_dan'])) {
-                $duongDan = $minhChung['duong_dan'];
-            }
-
-            if (isset($minhChung['ten_goc'])) {
-                $tenGoc = $minhChung['ten_goc'];
-            }
-
-            if (isset($minhChung['loai_mime'])) {
-                $loaiMime = $minhChung['loai_mime'];
-            }
-
-            if (isset($minhChung['loai_tep'])) {
-                $loaiTep = $minhChung['loai_tep'];
-            }
-
-            if (isset($minhChung['kich_thuoc'])) {
-                $kichThuoc = $minhChung['kich_thuoc'];
-            }
-
-            $phieuHangHu->minhChungs()->create([
-                'o_dia' => $oDia,
-                'duong_dan' => $duongDan,
-                'ten_goc' => $tenGoc,
-                'loai_mime' => $loaiMime,
-                'loai_tep' => $loaiTep,
-                'kich_thuoc' => $kichThuoc,
-            ]);
-        }
     }
 
     // Chuẩn bị thông tin chung của đơn đặt nhập để View chỉ hiển thị.

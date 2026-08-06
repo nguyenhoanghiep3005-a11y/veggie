@@ -17,11 +17,11 @@
     <!-- Font Icons css -->
     <link rel="stylesheet" href="{{ asset('assets/clients/css/font-icons.css' )}}">
     <!-- plugins css -->
-    <link rel="stylesheet" href="{{ asset('assets/clients/css/plugins.css' )}}">
+    <link rel="stylesheet" href="{{ asset('assets/clients/css/plugins.css' )}}?v={{ filemtime(public_path('assets/clients/css/plugins.css')) }}">
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="{{ asset('assets/clients/css/style.css' )}}">
+    <link rel="stylesheet" href="{{ asset('assets/clients/css/style.css' )}}?v={{ filemtime(public_path('assets/clients/css/style.css')) }}">
     <!-- Responsive css -->
-    <link rel="stylesheet" href="{{ asset('assets/clients/css/responsive.css' )}}">
+    <link rel="stylesheet" href="{{ asset('assets/clients/css/responsive.css' )}}?v={{ filemtime(public_path('assets/clients/css/responsive.css')) }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     {{-- Import custom css --}}
     <link rel="stylesheet" href="{{ asset('assets/clients/css/custom.css' )}}?v={{ filemtime(public_path('assets/clients/css/custom.css')) }}">

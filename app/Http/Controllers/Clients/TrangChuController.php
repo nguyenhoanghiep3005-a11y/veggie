@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Clients;
 use App\Http\Controllers\Controller;
 use App\Models\ChiTietDonHang;
 use App\Models\DanhMuc;
+use App\Models\DonHang;
 use App\Models\SanPham;
+use App\Models\SanPhamYeuThich;
+use Illuminate\Support\Facades\Auth;
 
 class TrangChuController extends Controller
 {
@@ -43,16 +46,63 @@ class TrangChuController extends Controller
         }
 
         $sanPhamBanChays = $this->laySanPhamBanChay($danhMucs);
-        $sanPhamModals = $this->laySanPhamModal(
-            $sanPhamKhuyenMais,
-            $sanPhamBanChays
-        );
+        $sanPhamCaNhans = [];
+
+        if (Auth::check()) {
+            $maSanPhamCaNhans = [];
+            $maSanPhamDaCo = [];
+
+            $sanPhamYeuThichs = SanPhamYeuThich::where('ma_nguoi_dung', Auth::id())
+                ->orderBy('ma_san_pham_yeu_thich', 'desc')
+                ->get();
+
+            foreach ($sanPhamYeuThichs as $sanPhamYeuThich) {
+                if (! isset($maSanPhamDaCo[$sanPhamYeuThich->ma_san_pham])) {
+                    $maSanPhamCaNhans[] = $sanPhamYeuThich->ma_san_pham;
+                    $maSanPhamDaCo[$sanPhamYeuThich->ma_san_pham] = true;
+                }
+            }
+
+            $donHangs = DonHang::with('chiTietDonHangs')
+                ->where('ma_nguoi_dung', Auth::id())
+                ->where('trang_thai', 'hoan_thanh')
+                ->orderBy('ma_don_hang', 'desc')
+                ->get();
+
+            foreach ($donHangs as $donHang) {
+                foreach ($donHang->chiTietDonHangs as $chiTietDonHang) {
+                    if (! isset($maSanPhamDaCo[$chiTietDonHang->ma_san_pham])) {
+                        $maSanPhamCaNhans[] = $chiTietDonHang->ma_san_pham;
+                        $maSanPhamDaCo[$chiTietDonHang->ma_san_pham] = true;
+                    }
+                }
+            }
+
+            foreach ($maSanPhamCaNhans as $maSanPham) {
+                if (count($sanPhamCaNhans) >= 12) {
+                    break;
+                }
+
+                $sanPham = SanPham::with([
+                    'hinhAnhDauTien',
+                    'danhGias',
+                    'loHangKhos',
+                ])->find($maSanPham);
+
+                if (! $sanPham || $sanPham->soLuongCoTheBan() <= 0) {
+                    continue;
+                }
+
+                $this->chuanBiSanPhamTrangChu($sanPham, $soLuongDaBans);
+                $sanPhamCaNhans[] = $sanPham;
+            }
+        }
 
         return view('clients.pages.home', compact(
             'danhMucs',
             'sanPhamKhuyenMais',
             'sanPhamBanChays',
-            'sanPhamModals'
+            'sanPhamCaNhans'
         ));
     }
 
@@ -63,10 +113,6 @@ class TrangChuController extends Controller
         $chiTietDonHangs = ChiTietDonHang::with('donHang')->get();
         $trangThaiDaBan = [
             'hoan_thanh',
-            
-            
-            
-            
         ];
 
         foreach ($chiTietDonHangs as $chiTietDonHang) {
@@ -153,26 +199,4 @@ class TrangChuController extends Controller
         return array_slice($sanPhamBanChays, 0, 12);
     }
 
-    // Gom san pham de tao modal xem nhanh mot lan o cuoi trang.
-    private function laySanPhamModal($sanPhamKhuyenMais, $sanPhamBanChays)
-    {
-        $sanPhamModals = [];
-        $maSanPhamDaThems = [];
-
-        foreach ($sanPhamKhuyenMais as $sanPham) {
-            $sanPhamModals[] = $sanPham;
-            $maSanPhamDaThems[$sanPham->ma_san_pham] = true;
-        }
-
-        foreach ($sanPhamBanChays as $sanPham) {
-            if (isset($maSanPhamDaThems[$sanPham->ma_san_pham])) {
-                continue;
-            }
-
-            $sanPhamModals[] = $sanPham;
-            $maSanPhamDaThems[$sanPham->ma_san_pham] = true;
-        }
-
-        return $sanPhamModals;
-    }
 }

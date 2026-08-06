@@ -40,7 +40,7 @@ class ThanhToanController extends Controller
         if (count($sanPhamGioHangs) == 0) {
             toastr()->error('Giỏ hàng đang trống.');
 
-            return redirect()->route('gio-hang.hien-thi');
+            return redirect()->route('trang-chu');
         }
 
         $diaChis = $this->layDanhSachDiaChiNguoiDung($nguoiDung);
@@ -58,13 +58,9 @@ class ThanhToanController extends Controller
             $maDiaChiMacDinh = $diaChiMacDinh->ma_dia_chi_giao_hang;
         }
 
-        $loaiGiaoHangDaChon = old('loai_giao_hang', $loaiGiaoHangMacDinh);
-        $maDiaChiDaChon = old('ma_dia_chi_giao_hang', $maDiaChiMacDinh);
-        $diaChiDaChon = $this->timDiaChiTrongDanhSach($diaChis, $maDiaChiDaChon);
-
-        if (! $diaChiDaChon) {
-            $diaChiDaChon = $diaChiMacDinh;
-        }
+        $loaiGiaoHangDaChon = $loaiGiaoHangMacDinh;
+        $maDiaChiDaChon = $maDiaChiMacDinh;
+        $diaChiDaChon = $diaChiMacDinh;
 
         $tenNguoiNhan = '';
         $soDienThoaiNguoiNhan = '';
@@ -263,87 +259,164 @@ class ThanhToanController extends Controller
     // Dat don thanh toan khi nhan hang.
     public function datHang(Request $request)
     {
-        if (! Auth::check() || $request->input('loai_giao_hang') != 'tai_khoan') {
+        if (! Auth::check()) {
+            toastr()->error('Vui lòng đăng nhập để thanh toán khi nhận hàng.');
+
+            return redirect()->route('thanh-toan.hien-thi')->withInput();
+        }
+
+        if ($request->input('loai_giao_hang') != 'tai_khoan') {
             toastr()->error('Địa chỉ khác chỉ được thanh toán trước bằng PayPal.');
 
             return redirect()->route('thanh-toan.hien-thi')->withInput();
         }
 
-        $data = $this->kiemTraDuLieuDatHang($request, false);
+        $data = $request->validate([
+            'loai_giao_hang' => 'required|in:tai_khoan',
+            'ma_dia_chi_giao_hang' => 'required|integer|exists:dia_chi_giao_hang,ma_dia_chi_giao_hang',
+            'phuong_thuc' => 'required|in:tien_mat',
+        ]);
 
         try {
-            $donHang = $this->luuDonHang($data, 'tien_mat');
+            DB::beginTransaction();
+
+            $sanPhamGioHangs = $this->gioHang->laySanPhamGioHang();
+
+            if (count($sanPhamGioHangs) == 0) {
+                throw new Exception('Giỏ hàng đang trống.');
+            }
+
+            $diaChi = DiaChiGiaoHang::where('ma_dia_chi_giao_hang', $data['ma_dia_chi_giao_hang'])
+                ->where('ma_nguoi_dung', Auth::id())
+                ->first();
+
+            if (! $diaChi || ! $diaChi->coDiaChiGhn()) {
+                throw new Exception('Địa chỉ giao hàng chưa đầy đủ.');
+            }
+            $donHang = DonHang::create([
+                'ma_nguoi_dung' => Auth::id(),
+                'ma_dia_chi_giao_hang' => $diaChi->ma_dia_chi_giao_hang,
+                'du_lieu_dia_chi_giao_hang' => [
+                    'ho_ten' => $diaChi->ho_ten,
+                    'so_dien_thoai' => $diaChi->so_dien_thoai,
+                    'dia_chi' => $diaChi->dia_chi,
+                    'tinh_thanh' => $diaChi->tinh_thanh,
+                    'ma_tinh' => $diaChi->ma_tinh,
+                    'ma_huyen' => $diaChi->ma_huyen,
+                    'ma_xa' => $diaChi->ma_xa,
+                ],
+                'tam_tinh' => 0,
+                'phi_van_chuyen' => 0,
+                'so_tien_giam' => 0,
+                'tong_tien' => 0,
+                'trang_thai' => 'cho_xac_nhan',
+            ]);
+
+            $tamTinh = 0;
+
+            foreach ($sanPhamGioHangs as $sanPhamGioHang) {
+                $sanPham = SanPham::find($sanPhamGioHang['ma_san_pham']);
+                $soLuong = (int) $sanPhamGioHang['so_luong'];
+
+                if (! $sanPham) {
+                    throw new Exception('Có sản phẩm không còn tồn tại.');
+                }
+
+                if ($soLuong > $sanPham->soLuongCoTheBan()) {
+                    throw new Exception('Sản phẩm "'.$sanPham->ten_hien_thi.'" không đủ hàng.');
+                }
+
+                $gia = (float) $sanPham->gia_hien_tai;
+                $phanBoTonKho = $sanPham->truTonKho($soLuong);
+
+                ChiTietDonHang::create([
+                    'ma_don_hang' => $donHang->ma_don_hang,
+                    'ma_san_pham' => $sanPham->ma_san_pham,
+                    'so_luong' => $soLuong,
+                    'gia' => $gia,
+                    'phan_bo_ton_kho' => $phanBoTonKho,
+                ]);
+
+                $tamTinh += $gia * $soLuong;
+            }
+
+            $phieuGiamGia = $this->layPhieuGiamGiaTrongSession($tamTinh);
+            $soTienGiam = 0;
+
+            if ($phieuGiamGia) {
+                $soTienGiam = $phieuGiamGia->tinhSoTienGiam($tamTinh);
+            }
+
+            $phiVanChuyen = $this->phiVanChuyenGhn->tinhPhiVanChuyen($diaChi, $sanPhamGioHangs);
+            $tongTien = $tamTinh + $phiVanChuyen - $soTienGiam;
+
+            if ($tongTien < 0) {
+                $tongTien = 0;
+            }
+
+            $donHang->tam_tinh = $tamTinh;
+            $donHang->phi_van_chuyen = $phiVanChuyen;
+            $donHang->so_tien_giam = $soTienGiam;
+            $donHang->tong_tien = $tongTien;
+
+            if ($phieuGiamGia) {
+                $donHang->ma_phieu_giam_gia = $phieuGiamGia->ma_phieu_giam_gia;
+                $donHang->ma_giam_gia = $phieuGiamGia->ma_giam_gia;
+            }
+
+            $donHang->save();
+
+            ThanhToan::create([
+                'ma_don_hang' => $donHang->ma_don_hang,
+                'phuong_thuc' => 'tien_mat',
+                'ma_giao_dich' => null,
+                'trang_thai' => 'chua_thanh_toan',
+                'thanh_toan_luc' => null,
+                'so_tien' => $tongTien,
+            ]);
+
+            if ($phieuGiamGia) {
+                $phieuGiamGia->so_lan_da_dung = (int) $phieuGiamGia->so_lan_da_dung + 1;
+                $phieuGiamGia->save();
+
+                DB::table('nguoi_dung_phieu_giam_gia')
+                    ->where('ma_nguoi_dung', Auth::id())
+                    ->where('ma_phieu_giam_gia', $phieuGiamGia->ma_phieu_giam_gia)
+                    ->update(['ngay_su_dung' => now()]);
+            }
+
+            $this->gioHang->xoaGioHang();
+            session()->forget('phieu_giam_gia_thanh_toan');
+
+            DB::commit();
+
+            toastr()->success('Đặt hàng thành công.');
+
+            return redirect()->route('tai-khoan.hien-thi');
         } catch (Exception $exception) {
+            DB::rollBack();
             Log::error('Lỗi đặt hàng COD: '.$exception->getMessage());
             toastr()->error($exception->getMessage());
 
             return redirect()->route('thanh-toan.hien-thi')->withInput();
         }
-
-        $this->xoaDuLieuSauKhiDatHang();
-        toastr()->success('Đặt hàng thành công.');
-
-        if ($donHang->ma_nguoi_dung) {
-            return redirect()->route('tai-khoan.hien-thi');
-        }
-
-        return redirect()->route('trang-chu');
     }
 
     // Luu don sau khi PayPal da xac nhan thanh toan thanh cong.
     public function datHangPayPal(Request $request)
     {
-        $data = $this->kiemTraDuLieuDatHang($request, true);
-
-        try {
-            $donHang = $this->luuDonHang(
-                $data,
-                'paypal',
-                $data['ma_giao_dich']
-            );
-        } catch (Exception $exception) {
-            Log::error('Lỗi đặt hàng PayPal: '.$exception->getMessage());
-
-            return response()->json([
-                'trang_thai' => false,
-                'thong_bao' => $exception->getMessage(),
-            ], 422);
-        }
-
-        $this->xoaDuLieuSauKhiDatHang();
-
-        $duongDanChuyen = route('trang-chu');
-        if ($donHang->ma_nguoi_dung) {
-            $duongDanChuyen = route('tai-khoan.hien-thi');
-        }
-
-        return response()->json([
-            'trang_thai' => true,
-            'thong_bao' => 'Thanh toán thành công.',
-            'duong_dan_chuyen' => $duongDanChuyen,
-        ]);
-    }
-
-    // Kiem tra cac truong bat buoc khi dat hang.
-    private function kiemTraDuLieuDatHang(Request $request, $laPayPal)
-    {
         $quyTac = [
             'loai_giao_hang' => 'required|in:tai_khoan,dia_chi_moi',
+            'phuong_thuc' => 'required|in:paypal',
+            'ma_giao_dich' => 'required|string|max:191',
         ];
-
-        if ($laPayPal) {
-            $quyTac['phuong_thuc'] = 'required|in:paypal';
-            $quyTac['ma_giao_dich'] = 'required|string|max:191';
-        } else {
-            $quyTac['phuong_thuc'] = 'required|in:tien_mat';
-        }
 
         if ($request->input('loai_giao_hang') == 'tai_khoan' && Auth::check()) {
             $quyTac['ma_dia_chi_giao_hang'] =
                 'required|integer|exists:dia_chi_giao_hang,ma_dia_chi_giao_hang';
         } else {
             $quyTac['ho_ten_nguoi_nhan'] = 'required|string|min:2|max:100';
-            $quyTac['so_dien_thoai_nguoi_nhan'] = 'required|regex:/^[0-9]{10,11}$/';
+            $quyTac['so_dien_thoai_nguoi_nhan'] = 'required|regex:/^0[0-9]{9,10}$/';
             $quyTac['dia_chi_nguoi_nhan'] = 'required|string|min:5|max:191';
             $quyTac['ma_tinh'] = 'required';
             $quyTac['ma_huyen'] = 'required';
@@ -353,37 +426,57 @@ class ThanhToanController extends Controller
             $quyTac['ten_xa'] = 'required|string';
         }
 
-        return $request->validate($quyTac);
-    }
-
-    // Luu don hang, chi tiet don, thanh toan va cap nhat ton kho.
-    private function luuDonHang($data, $phuongThuc, $maGiaoDich = null)
-    {
-        $sanPhamGioHangs = $this->gioHang->laySanPhamGioHang();
-
-        if (count($sanPhamGioHangs) == 0) {
-            throw new Exception('Giỏ hàng đang trống.');
-        }
-
-        $thongTinDiaChi = $this->taoThongTinDiaChi($data);
-        $diaChi = $thongTinDiaChi['dia_chi'];
-
-        if (! $diaChi || ! $diaChi->coDiaChiGhn()) {
-            throw new Exception('Địa chỉ giao hàng chưa đầy đủ.');
-        }
-
-        DB::beginTransaction();
+        $data = $request->validate($quyTac);
 
         try {
-            $maNguoiDung = null;
-            if ($data['loai_giao_hang'] == 'tai_khoan') {
-                $maNguoiDung = Auth::id();
+            DB::beginTransaction();
+
+            $sanPhamGioHangs = $this->gioHang->laySanPhamGioHang();
+
+            if (count($sanPhamGioHangs) == 0) {
+                throw new Exception('Giỏ hàng đang trống.');
             }
 
+            $maNguoiDung = null;
+            $maDiaChiGiaoHang = null;
+
+            if ($data['loai_giao_hang'] == 'tai_khoan' && Auth::check()) {
+                $diaChi = DiaChiGiaoHang::where('ma_dia_chi_giao_hang', $data['ma_dia_chi_giao_hang'])
+                    ->where('ma_nguoi_dung', Auth::id())
+                    ->first();
+
+                if (! $diaChi) {
+                    throw new Exception('Địa chỉ giao hàng không hợp lệ.');
+                }
+
+                $maNguoiDung = Auth::id();
+                $maDiaChiGiaoHang = $diaChi->ma_dia_chi_giao_hang;
+            } else {
+                $diaChi = new DiaChiGiaoHang();
+                $diaChi->ho_ten = $data['ho_ten_nguoi_nhan'];
+                $diaChi->so_dien_thoai = $data['so_dien_thoai_nguoi_nhan'];
+                $diaChi->dia_chi = $data['dia_chi_nguoi_nhan'];
+                $diaChi->tinh_thanh = $data['ten_xa'].', '.$data['ten_huyen'].', '.$data['ten_tinh'];
+                $diaChi->ma_tinh = $data['ma_tinh'];
+                $diaChi->ma_huyen = $data['ma_huyen'];
+                $diaChi->ma_xa = $data['ma_xa'];
+            }
+
+            if (! $diaChi || ! $diaChi->coDiaChiGhn()) {
+                throw new Exception('Địa chỉ giao hàng chưa đầy đủ.');
+            }
             $donHang = DonHang::create([
                 'ma_nguoi_dung' => $maNguoiDung,
-                'ma_dia_chi_giao_hang' => $thongTinDiaChi['ma_dia_chi_giao_hang'],
-                'du_lieu_dia_chi_giao_hang' => $thongTinDiaChi['du_lieu_dia_chi'],
+                'ma_dia_chi_giao_hang' => $maDiaChiGiaoHang,
+                'du_lieu_dia_chi_giao_hang' => [
+                    'ho_ten' => $diaChi->ho_ten,
+                    'so_dien_thoai' => $diaChi->so_dien_thoai,
+                    'dia_chi' => $diaChi->dia_chi,
+                    'tinh_thanh' => $diaChi->tinh_thanh,
+                    'ma_tinh' => $diaChi->ma_tinh,
+                    'ma_huyen' => $diaChi->ma_huyen,
+                    'ma_xa' => $diaChi->ma_xa,
+                ],
                 'tam_tinh' => 0,
                 'phi_van_chuyen' => 0,
                 'so_tien_giam' => 0,
@@ -391,169 +484,104 @@ class ThanhToanController extends Controller
                 'trang_thai' => 'cho_xac_nhan',
             ]);
 
-            $tamTinh = $this->taoChiTietDonHang($donHang, $sanPhamGioHangs);
+            $tamTinh = 0;
+
+            foreach ($sanPhamGioHangs as $sanPhamGioHang) {
+                $sanPham = SanPham::find($sanPhamGioHang['ma_san_pham']);
+                $soLuong = (int) $sanPhamGioHang['so_luong'];
+
+                if (! $sanPham) {
+                    throw new Exception('Có sản phẩm không còn tồn tại.');
+                }
+
+                if ($soLuong > $sanPham->soLuongCoTheBan()) {
+                    throw new Exception('Sản phẩm "'.$sanPham->ten_hien_thi.'" không đủ hàng.');
+                }
+
+                $gia = (float) $sanPham->gia_hien_tai;
+                $phanBoTonKho = $sanPham->truTonKho($soLuong);
+
+                ChiTietDonHang::create([
+                    'ma_don_hang' => $donHang->ma_don_hang,
+                    'ma_san_pham' => $sanPham->ma_san_pham,
+                    'so_luong' => $soLuong,
+                    'gia' => $gia,
+                    'phan_bo_ton_kho' => $phanBoTonKho,
+                ]);
+
+                $tamTinh += $gia * $soLuong;
+            }
+
             $phieuGiamGia = $this->layPhieuGiamGiaTrongSession($tamTinh);
-            $soTienGiam = $this->tinhTienGiam($phieuGiamGia, $tamTinh);
-            $phiVanChuyen = $this->phiVanChuyenGhn->tinhPhiVanChuyen(
-                $diaChi,
-                $sanPhamGioHangs
-            );
+            $soTienGiam = 0;
 
-            $this->capNhatTienDonHang(
-                $donHang,
-                $tamTinh,
-                $phiVanChuyen,
-                $soTienGiam,
-                $phieuGiamGia
-            );
-            $this->taoThanhToan($donHang, $phuongThuc, $maGiaoDich);
+            if ($phieuGiamGia) {
+                $soTienGiam = $phieuGiamGia->tinhSoTienGiam($tamTinh);
+            }
 
-            $this->ghiNhanSuDungPhieuGiamGia($phieuGiamGia);
+            $phiVanChuyen = $this->phiVanChuyenGhn->tinhPhiVanChuyen($diaChi, $sanPhamGioHangs);
+            $tongTien = $tamTinh + $phiVanChuyen - $soTienGiam;
+
+            if ($tongTien < 0) {
+                $tongTien = 0;
+            }
+
+            $donHang->tam_tinh = $tamTinh;
+            $donHang->phi_van_chuyen = $phiVanChuyen;
+            $donHang->so_tien_giam = $soTienGiam;
+            $donHang->tong_tien = $tongTien;
+
+            if ($phieuGiamGia) {
+                $donHang->ma_phieu_giam_gia = $phieuGiamGia->ma_phieu_giam_gia;
+                $donHang->ma_giam_gia = $phieuGiamGia->ma_giam_gia;
+            }
+
+            $donHang->save();
+
+            ThanhToan::create([
+                'ma_don_hang' => $donHang->ma_don_hang,
+                'phuong_thuc' => 'paypal',
+                'ma_giao_dich' => $data['ma_giao_dich'],
+                'trang_thai' => 'da_thanh_toan',
+                'thanh_toan_luc' => now(),
+                'so_tien' => $tongTien,
+            ]);
+
+            if ($phieuGiamGia && Auth::check()) {
+                $phieuGiamGia->so_lan_da_dung = (int) $phieuGiamGia->so_lan_da_dung + 1;
+                $phieuGiamGia->save();
+
+                DB::table('nguoi_dung_phieu_giam_gia')
+                    ->where('ma_nguoi_dung', Auth::id())
+                    ->where('ma_phieu_giam_gia', $phieuGiamGia->ma_phieu_giam_gia)
+                    ->update(['ngay_su_dung' => now()]);
+            }
+
+            $this->gioHang->xoaGioHang();
+            session()->forget('phieu_giam_gia_thanh_toan');
 
             DB::commit();
 
-            return $donHang;
+            $duongDanChuyen = route('trang-chu');
+            if ($donHang->ma_nguoi_dung) {
+                $duongDanChuyen = route('tai-khoan.hien-thi');
+            }
+
+            return response()->json([
+                'trang_thai' => true,
+                'thong_bao' => 'Thanh toán thành công.',
+                'duong_dan_chuyen' => $duongDanChuyen,
+            ]);
         } catch (Exception $exception) {
             DB::rollBack();
-            throw $exception;
+            Log::error('Lỗi đặt hàng PayPal: '.$exception->getMessage());
+
+            return response()->json([
+                'trang_thai' => false,
+                'thong_bao' => $exception->getMessage(),
+            ], 422);
         }
     }
-
-    // Tao cac dong chi tiet don hang va tru ton tung san pham.
-    private function taoChiTietDonHang($donHang, $sanPhamGioHangs)
-    {
-        $tamTinh = 0;
-
-        foreach ($sanPhamGioHangs as $sanPhamGioHang) {
-            $sanPham = SanPham::find($sanPhamGioHang['ma_san_pham']);
-            $soLuong = (int) $sanPhamGioHang['so_luong'];
-
-            if (! $sanPham) {
-                throw new Exception('Có sản phẩm không còn tồn tại.');
-            }
-
-            if ($sanPham->soLuongCoTheBan() < $soLuong) {
-                throw new Exception(
-                    'Sản phẩm "'.$sanPham->ten_hien_thi.'" không đủ hàng.'
-                );
-            }
-
-            $gia = $sanPham->layDonGiaTheoSoLuong($soLuong);
-            $phanBoTonKho = $sanPham->truTonKho($soLuong);
-
-            ChiTietDonHang::create([
-                'ma_don_hang' => $donHang->ma_don_hang,
-                'ma_san_pham' => $sanPham->ma_san_pham,
-                'so_luong' => $soLuong,
-                'gia' => $gia,
-                'phan_bo_ton_kho' => $phanBoTonKho,
-            ]);
-
-            $tamTinh += $gia * $soLuong;
-        }
-
-        return $tamTinh;
-    }
-
-    // Cap nhat tam tinh, phi van chuyen, tien giam va tong tien cho don hang.
-    private function capNhatTienDonHang(
-        $donHang,
-        $tamTinh,
-        $phiVanChuyen,
-        $soTienGiam,
-        $phieuGiamGia
-    ) {
-        $tongTien = $tamTinh + $phiVanChuyen - $soTienGiam;
-
-        if ($tongTien < 0) {
-            $tongTien = 0;
-        }
-
-        $donHang->tam_tinh = $tamTinh;
-        $donHang->phi_van_chuyen = $phiVanChuyen;
-        $donHang->so_tien_giam = $soTienGiam;
-        $donHang->tong_tien = $tongTien;
-
-        if ($phieuGiamGia) {
-            $donHang->ma_phieu_giam_gia = $phieuGiamGia->ma_phieu_giam_gia;
-            $donHang->ma_giam_gia = $phieuGiamGia->ma_giam_gia;
-        }
-
-        $donHang->save();
-    }
-
-    // Tao dong thanh toan cua don hang COD hoac PayPal.
-    private function taoThanhToan($donHang, $phuongThuc, $maGiaoDich = null)
-    {
-        $trangThaiThanhToan = 'chua_thanh_toan';
-        $thanhToanLuc = null;
-
-        if ($phuongThuc == 'paypal') {
-            $trangThaiThanhToan = 'da_thanh_toan';
-            $thanhToanLuc = now();
-        }
-
-        ThanhToan::create([
-            'ma_don_hang' => $donHang->ma_don_hang,
-            'phuong_thuc' => $phuongThuc,
-            'ma_giao_dich' => $maGiaoDich,
-            'trang_thai' => $trangThaiThanhToan,
-            'thanh_toan_luc' => $thanhToanLuc,
-            'so_tien' => $donHang->tong_tien,
-        ]);
-    }
-
-    // Tao doi tuong dia chi va du lieu dia chi luu kem don hang.
-    private function taoThongTinDiaChi($data)
-    {
-        if ($data['loai_giao_hang'] == 'tai_khoan' && Auth::check()) {
-            $diaChi = $this->timDiaChiNguoiDung(
-                Auth::id(),
-                $data['ma_dia_chi_giao_hang']
-            );
-
-            if (! $diaChi) {
-                throw new Exception('Địa chỉ giao hàng không hợp lệ.');
-            }
-
-            return [
-                'dia_chi' => $diaChi,
-                'ma_dia_chi_giao_hang' => $diaChi->ma_dia_chi_giao_hang,
-                'du_lieu_dia_chi' => $this->taoMangDiaChi($diaChi),
-            ];
-        }
-
-        $diaChi = new DiaChiGiaoHang([
-            'ho_ten' => $data['ho_ten_nguoi_nhan'],
-            'so_dien_thoai' => $data['so_dien_thoai_nguoi_nhan'],
-            'dia_chi' => $data['dia_chi_nguoi_nhan'],
-            'tinh_thanh' => $data['ten_xa'].', '.$data['ten_huyen'].', '.$data['ten_tinh'],
-            'ma_tinh' => $data['ma_tinh'],
-            'ma_huyen' => $data['ma_huyen'],
-            'ma_xa' => $data['ma_xa'],
-        ]);
-
-        return [
-            'dia_chi' => $diaChi,
-            'ma_dia_chi_giao_hang' => null,
-            'du_lieu_dia_chi' => $this->taoMangDiaChi($diaChi),
-        ];
-    }
-
-    // Chuyen doi tuong dia chi thanh mang de luu cung don hang.
-    private function taoMangDiaChi($diaChi)
-    {
-        return [
-            'ho_ten' => $diaChi->ho_ten,
-            'so_dien_thoai' => $diaChi->so_dien_thoai,
-            'dia_chi' => $diaChi->dia_chi,
-            'tinh_thanh' => $diaChi->tinh_thanh,
-            'ma_tinh' => $diaChi->ma_tinh,
-            'ma_huyen' => $diaChi->ma_huyen,
-            'ma_xa' => $diaChi->ma_xa,
-        ];
-    }
-
     // Lay danh sach dia chi da luu cua nguoi dung.
     private function layDanhSachDiaChiNguoiDung($nguoiDung)
     {
@@ -587,7 +615,10 @@ class ThanhToanController extends Controller
             );
         }
 
-        $soTienGiam = $this->tinhTienGiam($phieuGiamGia, $tamTinh);
+        $soTienGiam = 0;
+        if ($phieuGiamGia) {
+            $soTienGiam = $phieuGiamGia->tinhSoTienGiam($tamTinh);
+        }
         $tongTien = $tamTinh + $phiVanChuyen - $soTienGiam;
 
         if ($tongTien < 0) {
@@ -602,17 +633,8 @@ class ThanhToanController extends Controller
         ];
     }
 
-    // Tinh so tien duoc giam tu phieu giam gia.
-    private function tinhTienGiam($phieuGiamGia, $tamTinh)
-    {
-        if (! $phieuGiamGia) {
-            return 0;
-        }
-
-        return $phieuGiamGia->tinhSoTienGiam($tamTinh);
-    }
-
     // Lay dia chi da luu hoac dia chi moi tu du lieu yeu cau.
+
     private function layDiaChiTinhPhiTuRequest($data)
     {
         $coMaDiaChi = isset($data['ma_dia_chi_giao_hang'])
@@ -653,17 +675,6 @@ class ThanhToanController extends Controller
         )->where('ma_nguoi_dung', $maNguoiDung)->first();
     }
 
-    // Tim dia chi theo ma trong danh sach da lay.
-    private function timDiaChiTrongDanhSach($diaChis, $maDiaChi)
-    {
-        foreach ($diaChis as $diaChi) {
-            if ($diaChi->ma_dia_chi_giao_hang == $maDiaChi) {
-                return $diaChi;
-            }
-        }
-
-        return null;
-    }
 
     // Lay dia chi mac dinh, neu khong co thi lay dia chi dau tien.
     private function layDiaChiMacDinh($diaChis)
@@ -770,27 +781,4 @@ class ThanhToanController extends Controller
         return $phieuDaNhans;
     }
 
-    // Cap nhat so luot va danh dau phieu giam gia da duoc su dung.
-    private function ghiNhanSuDungPhieuGiamGia($phieuGiamGia)
-    {
-        if (! $phieuGiamGia || ! Auth::check()) {
-            return;
-        }
-
-        $phieuGiamGia->so_lan_da_dung =
-            (int) $phieuGiamGia->so_lan_da_dung + 1;
-        $phieuGiamGia->save();
-
-        DB::table('nguoi_dung_phieu_giam_gia')
-            ->where('ma_nguoi_dung', Auth::id())
-            ->where('ma_phieu_giam_gia', $phieuGiamGia->ma_phieu_giam_gia)
-            ->update(['ngay_su_dung' => now()]);
-    }
-
-    // Xoa gio hang va phieu giam gia sau khi dat hang thanh cong.
-    private function xoaDuLieuSauKhiDatHang()
-    {
-        $this->gioHang->xoaGioHang();
-        session()->forget('phieu_giam_gia_thanh_toan');
-    }
 }
