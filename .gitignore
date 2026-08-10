@@ -5,6 +5,9 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
+*.pyc
+/.codex_*
+/__pycache__
 /.fleet
 /.idea
 /.nova
