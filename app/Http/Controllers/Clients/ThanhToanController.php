@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Clients;
 
 use App\Http\Controllers\Controller;
+use App\Mail\HoaDonDonHangMail;
 use App\Models\ChiTietDonHang;
 use App\Models\DiaChiGiaoHang;
 use App\Models\DonHang;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ThanhToanController extends Controller
 {
@@ -418,6 +420,7 @@ class ThanhToanController extends Controller
             $quyTac['ho_ten_nguoi_nhan'] = 'required|string|min:2|max:100';
             $quyTac['so_dien_thoai_nguoi_nhan'] = 'required|regex:/^0[0-9]{9,10}$/';
             $quyTac['dia_chi_nguoi_nhan'] = 'required|string|min:5|max:191';
+            $quyTac['email_nhan_hoa_don'] = 'required|email|max:255';
             $quyTac['ma_tinh'] = 'required';
             $quyTac['ma_huyen'] = 'required';
             $quyTac['ma_xa'] = 'required';
@@ -472,6 +475,7 @@ class ThanhToanController extends Controller
                     'ho_ten' => $diaChi->ho_ten,
                     'so_dien_thoai' => $diaChi->so_dien_thoai,
                     'dia_chi' => $diaChi->dia_chi,
+                    'email_nhan_hoa_don' => $data['email_nhan_hoa_don'] ?? null,
                     'tinh_thanh' => $diaChi->tinh_thanh,
                     'ma_tinh' => $diaChi->ma_tinh,
                     'ma_huyen' => $diaChi->ma_huyen,
@@ -561,6 +565,8 @@ class ThanhToanController extends Controller
             session()->forget('phieu_giam_gia_thanh_toan');
 
             DB::commit();
+
+            $this->guiHoaDonDenEmailNhanHoaDon($donHang, $data['email_nhan_hoa_don'] ?? null);
 
             $duongDanChuyen = route('trang-chu');
             if ($donHang->ma_nguoi_dung) {
@@ -781,4 +787,22 @@ class ThanhToanController extends Controller
         return $phieuDaNhans;
     }
 
+    // Gui hoa don den email khach nhap khi chon dia chi giao hang khac.
+    private function guiHoaDonDenEmailNhanHoaDon($donHang, $emailNhanHoaDon)
+    {
+        if (! $emailNhanHoaDon) {
+            return false;
+        }
+
+        app()->terminating(function () use ($donHang, $emailNhanHoaDon) {
+            try {
+                Mail::to($emailNhanHoaDon)
+                    ->send(new HoaDonDonHangMail($donHang));
+            } catch (Exception $exception) {
+                Log::warning('Khong gui duoc hoa don den email nhan hoa don: '.$exception->getMessage());
+            }
+        });
+
+        return true;
+    }
 }

@@ -898,6 +898,7 @@ $(document).ready(function () {
       var hoTen = $('#ho_ten_nguoi_nhan').val().trim();
       var soDienThoai = $('#so_dien_thoai_nguoi_nhan').val().trim();
       var diaChi = $('#dia_chi_nguoi_nhan').val().trim();
+      var emailNhanHoaDon = $('#email_nhan_hoa_don').val().trim();
 
       if (hoTen.length < 3) {
         toastr.error('Vui lòng nhập họ tên người nhận.');
@@ -914,6 +915,11 @@ $(document).ready(function () {
         return false;
       }
 
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNhanHoaDon)) {
+        toastr.error('Vui lòng nhập email nhận hóa đơn hợp lệ.');
+        return false;
+      }
       if (!$('#ma_tinh_moi').val() || !$('#ma_huyen_moi').val() || !$('#ma_xa_moi').val()) {
         toastr.error('Vui lòng chọn đầy đủ tỉnh, quận và phường.');
         return false;
@@ -984,6 +990,7 @@ $(document).ready(function () {
               ho_ten_nguoi_nhan: $('#ho_ten_nguoi_nhan').val(),
               so_dien_thoai_nguoi_nhan: $('#so_dien_thoai_nguoi_nhan').val(),
               dia_chi_nguoi_nhan: $('#dia_chi_nguoi_nhan').val(),
+              email_nhan_hoa_don: $('#email_nhan_hoa_don').val(),
               ma_tinh: $('#ma_tinh_moi').val(),
               ma_huyen: $('#ma_huyen_moi').val(),
               ma_xa: $('#ma_xa_moi').val(),

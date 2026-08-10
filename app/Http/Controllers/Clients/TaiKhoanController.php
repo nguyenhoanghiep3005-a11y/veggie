@@ -19,10 +19,22 @@ class TaiKhoanController extends Controller
             'ma_nguoi_dung',
             $nguoiDung->ma_nguoi_dung
         )->get();
-        $donHangs = DonHang::with('yeuCauDoiTra')
+        $donHangs = DonHang::with(['yeuCauDoiTra', 'thanhToan'])
             ->where('ma_nguoi_dung', $nguoiDung->ma_nguoi_dung)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+
+        foreach ($donHangs as $donHang) {
+            $donHang->ten_phuong_thuc_thanh_toan = '-';
+
+            if ($donHang->thanhToan) {
+                if ($donHang->thanhToan->phuong_thuc == 'paypal') {
+                    $donHang->ten_phuong_thuc_thanh_toan = 'PayPal';
+                } else {
+                    $donHang->ten_phuong_thuc_thanh_toan = 'Thanh toán khi nhận hàng';
+                }
+            }
+        }
 
         return view(
             'clients.pages.tai-khoan',

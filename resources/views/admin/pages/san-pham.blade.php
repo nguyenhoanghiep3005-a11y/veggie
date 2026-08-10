@@ -133,7 +133,11 @@
                                             <div class="item form-group">
                                                 <label class="col-form-label col-md-3 label-align">Đơn vị/khối lượng <span class="required">*</span></label>
                                                 <div class="col-md-8">
-                                                    <input type="text" name="don_vi" class="form-control" value="{{ $sanPham->don_vi }}" required>
+                                                    <select name="don_vi" class="form-control" required>
+                                                        <option value="">Chọn đơn vị</option>
+                                                        <option value="g" @selected($sanPham->don_vi == 'g')>Gram (g)</option>
+                                                        <option value="kg" @selected($sanPham->don_vi == 'kg')>Kilogram (kg)</option>
+                                                    </select>
                                                 </div>
                                             </div>
 

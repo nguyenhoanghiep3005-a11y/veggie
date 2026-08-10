@@ -8,6 +8,7 @@ use App\Models\DonHang;
 use App\Models\NguoiDung;
 use App\Models\SanPham;
 use App\Models\SanPhamYeuThich;
+use Illuminate\Support\Facades\DB;
 
 class TongQuanController extends Controller
 {
@@ -61,30 +62,21 @@ class TongQuanController extends Controller
     {
         $ngayBatDau = now()->startOfDay()->subDays(6);
         $ngayKetThuc = now()->endOfDay();
-        $donHangs = DonHang::whereIn('trang_thai', $trangThaiCoDoanhThu)->get();
-
-        $nhanNgay = [];
-        $doanhThus = [];
-
-        for ($soNgay = 0; $soNgay < 7; $soNgay++) {
-            $ngay = $ngayBatDau->copy()->addDays($soNgay);
-            $doanhThuTrongNgay = 0;
-
-            foreach ($donHangs as $donHang) {
-                $ngayHoanTat = $donHang->hoan_tat_luc ?: $donHang->updated_at;
-
-                if ($ngayHoanTat->isSameDay($ngay)) {
-                    $doanhThuTrongNgay += (float) $donHang->tong_tien;
-                }
-            }
-
-            $nhanNgay[] = $ngay->format('d/m');
-            $doanhThus[] = $doanhThuTrongNgay;
-        }
+        $duLieu = DonHang::query()
+            ->selectRaw('DATE(COALESCE(hoan_tat_luc, updated_at)) as ngay')
+            ->selectRaw("DATE_FORMAT(COALESCE(hoan_tat_luc, updated_at), '%d/%m') as nhan")
+            ->selectRaw('SUM(tong_tien) as doanh_thu')
+            ->whereIn('trang_thai', $trangThaiCoDoanhThu)
+            ->whereBetween(DB::raw('COALESCE(hoan_tat_luc, updated_at)'), [$ngayBatDau, $ngayKetThuc])
+            ->groupBy('ngay', 'nhan')
+            ->orderBy('ngay')
+            ->get();
 
         return [
-            'nhan' => $nhanNgay,
-            'doanh_thu' => $doanhThus,
+            'nhan' => $duLieu->pluck('nhan')->all(),
+            'doanh_thu' => $duLieu->pluck('doanh_thu')
+                ->map(fn ($doanhThu) => (float) $doanhThu)
+                ->all(),
         ];
     }
 
@@ -92,24 +84,20 @@ class TongQuanController extends Controller
     private function layDoanhThuTheoThang($trangThaiCoDoanhThu)
     {
         $namHienTai = now()->year;
-        $donHangs = DonHang::whereIn('trang_thai', $trangThaiCoDoanhThu)->get();
+        $doanhThuTheoThang = DonHang::query()
+            ->selectRaw('MONTH(COALESCE(hoan_tat_luc, updated_at)) as thang')
+            ->selectRaw('SUM(tong_tien) as doanh_thu')
+            ->whereIn('trang_thai', $trangThaiCoDoanhThu)
+            ->whereYear(DB::raw('COALESCE(hoan_tat_luc, updated_at)'), $namHienTai)
+            ->groupBy('thang')
+            ->pluck('doanh_thu', 'thang');
 
         $nhanThang = [];
         $doanhThus = [];
 
         for ($thang = 1; $thang <= 12; $thang++) {
-            $doanhThuTrongThang = 0;
-
-            foreach ($donHangs as $donHang) {
-                $ngayHoanTat = $donHang->hoan_tat_luc ?: $donHang->updated_at;
-
-                if ($ngayHoanTat->year == $namHienTai && $ngayHoanTat->month == $thang) {
-                    $doanhThuTrongThang += (float) $donHang->tong_tien;
-                }
-            }
-
             $nhanThang[] = 'Tháng '.$thang;
-            $doanhThus[] = $doanhThuTrongThang;
+            $doanhThus[] = (float) ($doanhThuTheoThang[$thang] ?? 0);
         }
 
         return [

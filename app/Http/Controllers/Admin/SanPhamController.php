@@ -135,7 +135,7 @@ class SanPhamController extends Controller
             'ma_danh_muc' => 'required|exists:danh_muc,ma_danh_muc',
             'mo_ta' => 'required|string',
             'gia' => 'required|numeric|min:0',
-            'don_vi' => 'required|string|max:50',
+            'don_vi' => 'required|in:g,kg',
             'images' => 'nullable|array',
             'images.*' => 'file|image|mimes:jpeg,png,jpg,gif,webp',
         ];

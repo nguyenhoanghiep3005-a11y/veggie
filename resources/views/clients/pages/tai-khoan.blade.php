@@ -51,6 +51,7 @@
                                                                 <th>Đơn hàng</th>
                                                                 <th>Ngày đặt</th>
                                                                 <th>Trạng thái</th>
+                                                                <th>Hình thức thanh toán</th>
                                                                 <th>Tổng tiền</th>
                                                                 <th>Hành động</th>
                                                             </tr>
@@ -96,6 +97,7 @@
                                                                             @endif
                                                                         @endif
                                                                     </td>
+                                                                    <td>{{ $donHang->ten_phuong_thuc_thanh_toan }}</td>
                                                                     <td>{{ number_format($donHang->tong_tien, 0, ',', '.') }} đ</td>
                                                                     <td>
                                                                         <a href="{{ route('don-hang.chi-tiet', $donHang->ma_don_hang) }}" class="btn btn-sm btn-info">Xem chi tiết</a>
@@ -104,7 +106,7 @@
                                                             @endforeach
                                                             @else
                                                                 <tr>
-                                                                    <td colspan="5" class="text-center">Bạn chưa có đơn hàng nào.</td>
+                                                                    <td colspan="6" class="text-center">Bạn chưa có đơn hàng nào.</td>
                                                                 </tr>
                                                             @endif
                                                         </tbody>

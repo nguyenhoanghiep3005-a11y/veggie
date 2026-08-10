@@ -252,6 +252,15 @@
             class="checkout-input checkout-input-wide"
             >
         </div>
+        <div class="input-item input-item-email ltn__custom-icon">
+            <input
+            type="email"
+            id="email_nhan_hoa_don"
+            name="email_nhan_hoa_don"
+            placeholder="Gmail nhận hóa đơn *"
+            class="checkout-input checkout-input-wide"
+            >
+        </div>
 
         <h6 class="mt-10 checkout-section-title">Khu vực giao nhận hàng</h6>
 

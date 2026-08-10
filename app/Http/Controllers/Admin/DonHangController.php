@@ -25,21 +25,51 @@ class DonHangController extends Controller
     }
 
     // Hien thi danh sach don hang co phan trang.
-    public function hienThiDanhSachDonHang()
+    public function hienThiDanhSachDonHang(Request $request)
     {
-        $donHangs = DonHang::with([
+        $cacTrangThaiDonHang = [
+            'cho_xac_nhan' => 'Chờ xác nhận',
+            'da_xac_nhan' => 'Đã xác nhận',
+            'dang_giao' => 'Đang giao hàng',
+            'hoan_thanh' => 'Hoàn thành',
+            'giao_that_bai' => 'Giao hàng thất bại',
+            'dang_hoan_hang' => 'Đang hoàn hàng',
+            'da_hoan_ve_kho' => 'Đã hoàn về kho',
+            'da_huy' => 'Đã hủy',
+        ];
+        $trangThaiDaChon = $request->input('trang_thai', 'tat_ca');
+
+        $truyVanDonHang = DonHang::with([
             'chiTietDonHangs.sanPham',
             'diaChiGiaoHang',
             'nguoiDung',
             'thanhToan',
             'yeuCauDoiTra',
-        ])->orderBy('ma_don_hang', 'desc')->paginate(20);
+        ]);
+
+        if (
+            $trangThaiDaChon != 'tat_ca'
+            && isset($cacTrangThaiDonHang[$trangThaiDaChon])
+        ) {
+            $truyVanDonHang->where('trang_thai', $trangThaiDaChon);
+        } else {
+            $trangThaiDaChon = 'tat_ca';
+        }
+
+        $donHangs = $truyVanDonHang
+            ->orderBy('ma_don_hang', 'desc')
+            ->paginate(20)
+            ->appends(['trang_thai' => $trangThaiDaChon]);
 
         foreach ($donHangs as $donHang) {
             $this->chuanBiDonHangHienThi($donHang);
         }
 
-        return view('admin.pages.don-hang', compact('donHangs'));
+        return view('admin.pages.don-hang', compact(
+            'donHangs',
+            'cacTrangThaiDonHang',
+            'trangThaiDaChon'
+        ));
     }
 
     // Hien thi chi tiet don hang va thong tin doi tra.

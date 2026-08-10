@@ -239,12 +239,6 @@ class SanPham extends Model
     // Lấy nhãn khối lượng của biến thể sản phẩm.
     public function getTenBienTheAttribute()
     {
-        $donVi = trim((string) $this->don_vi);
-
-        if ($donVi != '') {
-            return str_replace(' ', '', $donVi);
-        }
-
         if (preg_match('/(\d+(?:[,.]\d+)?\s*(g|gram|kg))$/iu', (string) $this->ten, $ketQua)) {
             $tenBienThe = str_replace(' ', '', $ketQua[1]);
 

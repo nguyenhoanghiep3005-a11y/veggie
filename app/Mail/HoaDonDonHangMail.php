@@ -95,7 +95,7 @@ class HoaDonDonHangMail extends Mailable
             $this->tenKhachHang = $this->donHang->nguoiDung->ten;
         }
 
-        $diaChiGiaoHang = $this->donHang->diaChiGiaoHang;
+        $diaChiGiaoHang = $this->donHang->layDiaChiGiaoHang();
 
         if (! $diaChiGiaoHang) {
             return;

@@ -123,6 +123,19 @@
                                         Theo dõi đơn hàng, trạng thái thanh toán và xử lý giao hàng ngay trên danh sách.
                                     </p>
 
+                                    <form method="GET" action="{{ route('admin.don-hang.danh-sach') }}" class="form-inline mb-3">
+                                        <label for="trang_thai" class="mr-2"><strong>Trạng thái đơn</strong></label>
+                                        <select name="trang_thai" id="trang_thai" class="form-control mr-2" onchange="this.form.submit()">
+                                            <option value="tat_ca" {{ $trangThaiDaChon == 'tat_ca' ? 'selected' : '' }}>Tất cả trạng thái</option>
+                                            @foreach ($cacTrangThaiDonHang as $giaTri => $tenTrangThai)
+                                                <option value="{{ $giaTri }}" {{ $trangThaiDaChon == $giaTri ? 'selected' : '' }}>{{ $tenTrangThai }}</option>
+                                            @endforeach
+                                        </select>
+                                        @if ($trangThaiDaChon != 'tat_ca')
+                                            <a href="{{ route('admin.don-hang.danh-sach') }}" class="btn btn-secondary">Bỏ lọc</a>
+                                        @endif
+                                    </form>
+
                                     <table id="datatable-responsive" class="table table-striped table-bordered admin-table-centered" style="width:100%; text-align:center;">
                                         <thead>
                                             <tr>
