@@ -102,5 +102,4 @@ class LoHangKho extends Model
 
         return $giaKhuyenMai > 0 && $giaGoc > 0 && $giaKhuyenMai < $giaGoc;
     }
-
 }

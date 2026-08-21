@@ -56,7 +56,6 @@ class TongQuanController extends Controller
             'topSanPhamBanChay'
         ));
     }
-
     // Lay doanh thu cua tung ngay trong 7 ngay gan nhat.
     private function layDoanhThuBayNgay($trangThaiCoDoanhThu)
     {

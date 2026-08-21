@@ -22,12 +22,14 @@ class SanPham extends Model
         'ma_danh_muc',
         'mo_ta',
         'gia',
+        'khoi_luong',
         'don_vi',
         'danh_gia_trung_binh',
     ];
 
     protected $casts = [
         'gia' => 'decimal:2',
+        'khoi_luong' => 'decimal:3',
         'danh_gia_trung_binh' => 'decimal:2',
     ];
 
@@ -239,13 +241,13 @@ class SanPham extends Model
     // Lấy nhãn khối lượng của biến thể sản phẩm.
     public function getTenBienTheAttribute()
     {
-        if (preg_match('/(\d+(?:[,.]\d+)?\s*(g|gram|kg))$/iu', (string) $this->ten, $ketQua)) {
-            $tenBienThe = str_replace(' ', '', $ketQua[1]);
-
-            return preg_replace('/gram$/i', 'g', $tenBienThe);
+        if ($this->khoi_luong === null || (float) $this->khoi_luong <= 0 || trim((string) $this->don_vi) == '') {
+            return 'Mặc định';
         }
 
-        return 'Mặc định';
+        $khoiLuong = rtrim(rtrim((string) $this->khoi_luong, '0'), '.');
+
+        return $khoiLuong.trim((string) $this->don_vi);
     }
 
     // Ghép tên gốc và nhãn biến thể để hiển thị.
@@ -288,7 +290,7 @@ class SanPham extends Model
         if ($this->soLuongCoTheBan() < $soLuongCon) {
             throw new Exception('Sản phẩm "' . $this->ten_hien_thi . '" không đủ hàng.');
         }
-
+//Nếu đã trừ đủ số lượng cần mua thì dừng vòng lặp.
         foreach ($loHangKhos as $loHangKho) {
             if ($soLuongCon <= 0) {
                 break;

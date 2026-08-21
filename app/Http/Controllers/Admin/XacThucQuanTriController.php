@@ -33,7 +33,7 @@ class XacThucQuanTriController extends Controller
                 $tenVaiTro = $nguoiDung->vaiTro->ten;
             }
 
-            if (in_array($tenVaiTro, ['quan_tri', 'staff'])) {
+            if ($tenVaiTro == 'quan_tri') {
                 $request->session()->regenerate();
                 toastr()->success('Đăng nhập quản trị thành công.');
 

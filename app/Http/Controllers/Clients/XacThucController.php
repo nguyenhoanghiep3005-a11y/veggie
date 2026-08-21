@@ -145,6 +145,7 @@ class XacThucController extends Controller
         }
 
         $request->session()->regenerate();
+        $this->khoiPhucGioHangTaiKhoan($request, $nguoiDung->ma_nguoi_dung);
         toastr()->success('Đăng nhập thành công.');
 
         return redirect()->route('trang-chu');
@@ -153,12 +154,67 @@ class XacThucController extends Controller
     // Dang xuat va lam moi phien dang nhap.
     public function dangXuat(Request $request)
     {
+        $gioHang = $request->session()->get('gio_hang', []);
+        $maNguoiDung = Auth::id();
+        $cacGioHangTaiKhoan = $request->session()->get('gio_hang_tai_khoan', []);
+
+        if ($maNguoiDung) {
+            $cacGioHangTaiKhoan[(string) $maNguoiDung] = [
+                'gio_hang' => $gioHang,
+                'so_luong_gio_hang' => $this->tinhTongSoLuongGioHang($gioHang),
+            ];
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        $request->session()->put('gio_hang_tai_khoan', $cacGioHangTaiKhoan);
+
         toastr()->success('Đăng xuất thành công.');
 
         return redirect()->route('dang-nhap.hien-thi');
+    }
+
+    // Khoi phuc dung gio hang cua tai khoan vua dang nhap.
+    private function khoiPhucGioHangTaiKhoan(Request $request, $maNguoiDung)
+    {
+        $gioHangKhach = (array) $request->session()->get('gio_hang', []);
+        $cacGioHangTaiKhoan = (array) $request->session()->get('gio_hang_tai_khoan', []);
+        $khoaTaiKhoan = (string) $maNguoiDung;
+        $gioHangTaiKhoan = [];
+
+        if (isset($cacGioHangTaiKhoan[$khoaTaiKhoan]['gio_hang'])) {
+            $gioHangTaiKhoan = (array) $cacGioHangTaiKhoan[$khoaTaiKhoan]['gio_hang'];
+        }
+
+        foreach ($gioHangKhach as $maSanPham => $dongGioHang) {
+            if (! isset($gioHangTaiKhoan[$maSanPham])) {
+                $gioHangTaiKhoan[$maSanPham] = $dongGioHang;
+            }
+        }
+
+        $soLuongGioHang = $this->tinhTongSoLuongGioHang($gioHangTaiKhoan);
+        $cacGioHangTaiKhoan[$khoaTaiKhoan] = [
+            'gio_hang' => $gioHangTaiKhoan,
+            'so_luong_gio_hang' => $soLuongGioHang,
+        ];
+
+        $request->session()->put('gio_hang_tai_khoan', $cacGioHangTaiKhoan);
+        $request->session()->put('gio_hang', $gioHangTaiKhoan);
+        $request->session()->put('so_luong_gio_hang', $soLuongGioHang);
+    }
+
+    // Tinh lai tong so luong de khong phu thuoc du lieu dem cu trong session.
+    private function tinhTongSoLuongGioHang($gioHang)
+    {
+        $tongSoLuong = 0;
+
+        foreach ((array) $gioHang as $dongGioHang) {
+            if (is_array($dongGioHang) && isset($dongGioHang['so_luong'])) {
+                $tongSoLuong += max(0, (int) $dongGioHang['so_luong']);
+            }
+        }
+        return $tongSoLuong;
     }
 }

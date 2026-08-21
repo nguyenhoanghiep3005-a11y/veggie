@@ -11,9 +11,8 @@ class RolesTableSeeder extends Seeder
     public function run()
     {
         $vaiTros = [
-            1 => 'admin',
-            2 => 'staff',
-            3 => 'customer',
+            1 => 'quan_tri',
+            3 => 'khach_hang',
         ];
 
         foreach ($vaiTros as $maVaiTro => $tenVaiTro) {

@@ -188,6 +188,23 @@ $(document).ready(function () {
   }
 
   $(document).on('show.bs.modal', '#addAddressModal', taiTinhTaiKhoan);
+  // Mo dung tab va form them dia chi khi di tu trang thanh toan.
+  var thamSoTrangTaiKhoan = new URLSearchParams(window.location.search);
+  if (thamSoTrangTaiKhoan.get('tab') === 'dia-chi') {
+    var lienKetTabDiaChi = document.querySelector('[data-bs-toggle="tab"][href="#liton_tab_address"]');
+
+    if (lienKetTabDiaChi && window.bootstrap && bootstrap.Tab) {
+      bootstrap.Tab.getOrCreateInstance(lienKetTabDiaChi).show();
+    }
+
+    if (thamSoTrangTaiKhoan.get('them_dia_chi') === '1') {
+      var modalThemDiaChi = document.getElementById('addAddressModal');
+
+      if (modalThemDiaChi && modalThemDiaChi.dataset.coDiaChi !== '1' && window.bootstrap && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(modalThemDiaChi).show();
+      }
+    }
+  }
 
   $(document).on('change', '#ma_tinh', function () {
     var maTinh = $(this).val();

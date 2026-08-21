@@ -19,7 +19,6 @@ return new class extends Migration
                 ->constrained('san_pham', 'ma_san_pham');
             $table->unsignedInteger('so_luong');
             $table->decimal('gia', 10, 2);
-            $table->json('phan_bo_ton_kho')->nullable();
             $table->timestamps();
         });
     }

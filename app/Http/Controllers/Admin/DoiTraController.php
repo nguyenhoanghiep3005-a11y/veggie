@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\SanPham;
 use App\Models\YeuCauDoiTra;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +35,7 @@ class DoiTraController extends Controller
     {
         $yeuCauDoiTra = YeuCauDoiTra::with([
             'donHang.chiTietDonHangs.sanPham',
+            'chiTiets.chiTietDonHang.sanPham',
         ])->find($maYeuCauDoiTra);
 
         if (
@@ -50,31 +50,27 @@ class DoiTraController extends Controller
         try {
             DB::beginTransaction();
 
-            $sanPhamDoiTras = $yeuCauDoiTra->san_pham;
-
-            if (! is_array($sanPhamDoiTras)) {
+            if ($yeuCauDoiTra->chiTiets->isEmpty()) {
                 throw new Exception('Yêu cầu không có sản phẩm đổi trả.');
             }
 
-            foreach ($sanPhamDoiTras as $viTri => $sanPhamDoiTra) {
-                $maSanPham = isset($sanPhamDoiTra['ma_san_pham'])
-                    ? $sanPhamDoiTra['ma_san_pham']
+            foreach ($yeuCauDoiTra->chiTiets as $chiTietYeuCau) {
+                $chiTietDonHang = $chiTietYeuCau->chiTietDonHang;
+                $sanPham = $chiTietDonHang
+                    ? $chiTietDonHang->sanPham
                     : null;
-                $soLuong = isset($sanPhamDoiTra['so_luong'])
-                    ? (int) $sanPhamDoiTra['so_luong']
-                    : 0;
-                $sanPham = SanPham::find($maSanPham);
+                $soLuong = (int) $chiTietYeuCau->so_luong;
 
                 if (! $sanPham || $sanPham->soLuongCoTheBan() < $soLuong) {
-                    throw new Exception('Không đủ tồn kho để chuẩn bị sản phẩm đổi.');
+                    throw new Exception(
+                        'Không đủ tồn kho để chuẩn bị sản phẩm đổi.'
+                    );
                 }
 
-                $sanPhamDoiTras[$viTri]['ma_san_pham'] = $maSanPham;
-                $sanPhamDoiTras[$viTri]['so_luong'] = $soLuong;
-                $sanPhamDoiTras[$viTri]['phan_bo_hang_doi'] = $sanPham->truTonKho($soLuong);
+                $sanPham->truTonKho($soLuong);
+                $chiTietYeuCau->da_xuat_hang_doi = true;
+                $chiTietYeuCau->save();
             }
-
-            $yeuCauDoiTra->san_pham = $sanPhamDoiTras;
             $yeuCauDoiTra->trang_thai = 'dang_xu_ly';
             $yeuCauDoiTra->nhan_hang_luc = now();
             $yeuCauDoiTra->save();

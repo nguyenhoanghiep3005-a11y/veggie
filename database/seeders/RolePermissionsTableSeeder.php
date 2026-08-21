@@ -7,14 +7,12 @@ use Illuminate\Support\Facades\DB;
 
 class RolePermissionsTableSeeder extends Seeder
 {
-    // Gan quyen mac dinh cho admin va nhan vien.
+    // Gan toan bo quyen quan tri cho vai tro quan tri.
     public function run()
     {
         $quyenAdmin = [1, 2, 3, 4];
-        $quyenNhanVien = [2, 3];
 
         $this->ganQuyenChoVaiTro(1, $quyenAdmin);
-        $this->ganQuyenChoVaiTro(2, $quyenNhanVien);
     }
 
     // Gan danh sach quyen cho mot vai tro.

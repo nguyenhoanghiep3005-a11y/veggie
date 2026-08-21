@@ -207,6 +207,12 @@
                         @if ($donHang->so_tien_giam > 0)
                             <div class="d-flex justify-content-between"><span>Giảm giá</span><strong>-{{ number_format($donHang->so_tien_giam, 0, ',', '.') }}<small>đ</small></strong></div>
                         @endif
+                        <div class="d-flex justify-content-between align-items-center order-payment-summary">
+                            <span>Hình thức thanh toán</span>
+                            <span class="order-payment-badge {{ $donHang->ten_phuong_thuc_thanh_toan == 'PayPal' ? 'is-paypal' : 'is-cod' }}">
+                                {{ $donHang->ten_phuong_thuc_thanh_toan }}
+                            </span>
+                        </div>
                         <hr>
                         <div class="d-flex justify-content-between">
                             <span>Tổng tiền đơn hàng</span>

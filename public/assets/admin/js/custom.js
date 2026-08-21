@@ -261,7 +261,7 @@ $(document).ready(function () {
                 dong.find('td:eq(1)').html('<strong>' + sanPham.ten_hien_thi + '</strong>');
                 dong.find('td:eq(2)').text(sanPham.ten_danh_muc);
                 dong.find('td:eq(3)').text(new Intl.NumberFormat('vi-VN').format(sanPham.gia) + ' đ');
-                dong.find('td:eq(4)').text(sanPham.don_vi);
+                dong.find('td:eq(4)').text(sanPham.ten_bien_the);
 
                 $('#modalupdate-' + sanPham.ma_san_pham).modal('hide');
                 toastr.success(response.thong_bao);

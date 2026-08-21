@@ -31,7 +31,8 @@ class DonHangController extends Controller
             'nguoiDung',
             'diaChiGiaoHang',
             'thanhToan',
-            'yeuCauDoiTra',
+            'yeuCauDoiTra.chiTiets',
+            'yeuCauDoiTra.minhChungs',
         ])->where('ma_nguoi_dung', Auth::id())
             ->where('ma_don_hang', $maDonHang)
             ->firstOrFail();
@@ -71,7 +72,8 @@ class DonHangController extends Controller
     {
         $donHang = DonHang::with([
             'chiTietDonHangs.sanPham',
-            'yeuCauDoiTra',
+            'yeuCauDoiTra.chiTiets',
+            'yeuCauDoiTra.minhChungs',
         ])->where('ma_don_hang', $maDonHang)
             ->where('ma_nguoi_dung', Auth::id())
             ->firstOrFail();
@@ -129,15 +131,15 @@ class DonHangController extends Controller
                 $duongDanDaLuu
             );
 
-            YeuCauDoiTra::create([
+            $yeuCauDoiTra = YeuCauDoiTra::create([
                 'ma_don_hang' => $donHang->ma_don_hang,
                 'loai' => 'hang_loi',
                 'mo_ta' => trim($data['mo_ta']),
-                'san_pham' => $sanPhamsYeuCau,
-                'minh_chung' => $minhChungs,
                 'trang_thai' => 'cho_duyet',
                 'yeu_cau_luc' => now(),
             ]);
+            $yeuCauDoiTra->chiTiets()->createMany($sanPhamsYeuCau);
+            $yeuCauDoiTra->minhChungs()->createMany($minhChungs);
 
             DB::commit();
             toastr()->success('Đã gửi yêu cầu đổi trả.');
@@ -163,7 +165,10 @@ class DonHangController extends Controller
             'ly_do_huy' => 'required|string|max:1000',
         ]);
 
-        $donHang = DonHang::with(['chiTietDonHangs.sanPham', 'thanhToan'])
+        $donHang = DonHang::with([
+            'chiTietDonHangs.sanPham',
+            'thanhToan',
+        ])
             ->where('ma_don_hang', $maDonHang)
             ->where('ma_nguoi_dung', Auth::id())
             ->where('trang_thai', 'cho_xac_nhan')
@@ -184,7 +189,7 @@ class DonHangController extends Controller
                 if ($sanPham) {
                     $sanPham->hoanTonKho(
                         $chiTietDonHang->so_luong,
-                        $chiTietDonHang->phan_bo_ton_kho
+                        $chiTietDonHang->layPhanBoTonKhoDeHoan()
                     );
                 }
             }
@@ -241,8 +246,7 @@ class DonHangController extends Controller
             }
 
             $sanPhamsYeuCau[] = [
-                'ma_chi_tiet_don_hang' =>
-                    $chiTietCanTim->ma_chi_tiet_don_hang,
+                'ma_chi_tiet_don_hang' => $chiTietCanTim->ma_chi_tiet_don_hang,
                 'ma_san_pham' => $chiTietCanTim->ma_san_pham,
                 'so_luong' => $soLuong,
             ];
@@ -254,6 +258,13 @@ class DonHangController extends Controller
     // Chuan bi ten, anh va thanh tien cho tung dong don hang.
     private function chuanBiChiTietDonHang($donHang)
     {
+        $donHang->ten_phuong_thuc_thanh_toan = 'COD';
+
+        if ($donHang->thanhToan) {
+            $donHang->ten_phuong_thuc_thanh_toan =
+                $donHang->thanhToan->phuong_thuc == 'paypal' ? 'PayPal' : 'COD';
+        }
+
         foreach ($donHang->chiTietDonHangs as $chiTietDonHang) {
             $chiTietDonHang->ten_san_pham = 'Sản phẩm đã xóa';
             $chiTietDonHang->hinh_anh_san_pham = asset(

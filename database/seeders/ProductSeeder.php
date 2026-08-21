@@ -20,17 +20,21 @@ class ProductSeeder extends Seeder
             }
 
             foreach ($sanPhams as $sanPham) {
-                foreach ($sanPham['bien_thes'] as $donVi => $gia) {
-                    $tenDayDu = $sanPham['ten'].' '.$donVi;
+                foreach ($sanPham['bien_thes'] as $bienThe => $gia) {
+                    preg_match('/(\d+(?:[,.]\d+)?)\s*(g|kg)$/i', $bienThe, $ketQua);
+                    $khoiLuong = (float) str_replace(',', '.', $ketQua[1]);
+                    $donVi = strtolower($ketQua[2]);
+                    $tenDayDu = $sanPham['ten'].' '.$bienThe;
                     $duongDan = Str::slug($tenDayDu);
 
                     SanPham::updateOrCreate(
                         ['duong_dan' => $duongDan],
                         [
-                            'ten' => $tenDayDu,
+                            'ten' => $sanPham['ten'],
                             'ma_danh_muc' => $danhMuc->ma_danh_muc,
                             'mo_ta' => $this->taoMoTa($sanPham),
                             'gia' => $gia,
+                            'khoi_luong' => $khoiLuong,
                             'don_vi' => $donVi,
                             'danh_gia_trung_binh' => 5,
                         ]

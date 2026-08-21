@@ -34,7 +34,6 @@ class DonHang extends Model
         'hoan_ton_kho_luc',
         'hoan_tat_luc',
         'ma_dia_chi_giao_hang',
-        'du_lieu_dia_chi_giao_hang',
         'so_lan_giao_that_bai',
     ];
 
@@ -43,7 +42,6 @@ class DonHang extends Model
         'tam_tinh' => 'decimal:2',
         'phi_van_chuyen' => 'decimal:2',
         'so_tien_giam' => 'decimal:2',
-        'du_lieu_dia_chi_giao_hang' => 'array',
         'da_hoan_ton_kho' => 'boolean',
         'giao_that_bai_luc' => 'datetime',
         'hoan_ve_cua_hang_luc' => 'datetime',
@@ -89,51 +87,9 @@ class DonHang extends Model
         return $this->hasOne(YeuCauDoiTra::class, 'ma_don_hang');
     }
 
-    // Lấy địa chỉ giao hàng từ dữ liệu đơn hoặc địa chỉ tài khoản.
+    // Lay dia chi giao hang thong qua khoa ngoai cua don.
     public function layDiaChiGiaoHang()
     {
-        if ($this->du_lieu_dia_chi_giao_hang) {
-            $data = $this->du_lieu_dia_chi_giao_hang;
-            $diaChiGiaoHang = new DiaChiGiaoHang();
-            $diaChiGiaoHang->ho_ten = 'Khách vãng lai';
-            $diaChiGiaoHang->so_dien_thoai = '-';
-            $diaChiGiaoHang->dia_chi = '-';
-            $diaChiGiaoHang->tinh_thanh = '-';
-            $diaChiGiaoHang->ma_tinh = null;
-            $diaChiGiaoHang->ma_huyen = null;
-            $diaChiGiaoHang->ma_xa = null;
-
-            if (isset($data['ho_ten'])) {
-                $diaChiGiaoHang->ho_ten = $data['ho_ten'];
-            }
-
-            if (isset($data['so_dien_thoai'])) {
-                $diaChiGiaoHang->so_dien_thoai = $data['so_dien_thoai'];
-            }
-
-            if (isset($data['dia_chi'])) {
-                $diaChiGiaoHang->dia_chi = $data['dia_chi'];
-            }
-
-            if (isset($data['tinh_thanh'])) {
-                $diaChiGiaoHang->tinh_thanh = $data['tinh_thanh'];
-            }
-
-            if (isset($data['ma_tinh'])) {
-                $diaChiGiaoHang->ma_tinh = $data['ma_tinh'];
-            }
-
-            if (isset($data['ma_huyen'])) {
-                $diaChiGiaoHang->ma_huyen = $data['ma_huyen'];
-            }
-
-            if (isset($data['ma_xa'])) {
-                $diaChiGiaoHang->ma_xa = $data['ma_xa'];
-            }
-
-            return $diaChiGiaoHang;
-        }
-
         return $this->diaChiGiaoHang;
     }
 

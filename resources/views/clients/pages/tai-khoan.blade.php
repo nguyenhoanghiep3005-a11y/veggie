@@ -21,7 +21,7 @@
                     <div class="ltn__product-tab-area">
                         <div class="container">
                             <div class="row">
-                                <div class="col-lg-4">
+                                <div class="col-lg-3">
                                     <div class="ltn__tab-menu-list mb-50">
                                         <div class="nav">
                                             <a class="active show" data-bs-toggle="tab" href="#liton_tab_dashboard">Bảng điều khiển <i class="fas fa-home"></i></a>
@@ -33,7 +33,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-lg-8">
+                                <div class="col-lg-9">
                                     <div class="tab-content">
                                         <div class="tab-pane fade active show" id="liton_tab_dashboard">
                                             <div class="ltn__myaccount-tab-content-inner">
@@ -44,8 +44,8 @@
 
                                         <div class="tab-pane fade" id="liton_tab_orders">
                                             <div class="ltn__myaccount-tab-content-inner">
-                                                <div class="table-responsive account-orders-table">
-                                                    <table class="table">
+                                                <div class="table-responsive account-orders-table account-order-list">
+                                                    <table class="table align-middle">
                                                         <thead>
                                                             <tr>
                                                                 <th>Đơn hàng</th>
@@ -60,8 +60,8 @@
                                                             @if ($donHangs->count() > 0)
                                                             @foreach ($donHangs as $donHang)
                                                                 <tr>
-                                                                    <td>#{{ $donHang->ma_don_hang }}</td>
-                                                                    <td>{{ $donHang->created_at->format('d/m/Y') }}</td>
+                                                                    <td class="order-code">#{{ $donHang->ma_don_hang }}</td>
+                                                                    <td class="order-date">{{ $donHang->created_at->format('d/m/Y') }}</td>
                                                                     <td>
                                                                         @if ($donHang->yeuCauDoiTra)
                                                                             @if ($donHang->yeuCauDoiTra->trang_thai == 'cho_duyet')
@@ -97,10 +97,17 @@
                                                                             @endif
                                                                         @endif
                                                                     </td>
-                                                                    <td>{{ $donHang->ten_phuong_thuc_thanh_toan }}</td>
-                                                                    <td>{{ number_format($donHang->tong_tien, 0, ',', '.') }} đ</td>
                                                                     <td>
-                                                                        <a href="{{ route('don-hang.chi-tiet', $donHang->ma_don_hang) }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                                                        <span class="order-payment-badge {{ $donHang->ten_phuong_thuc_thanh_toan == 'PayPal' ? 'is-paypal' : 'is-cod' }}">
+                                                                            {{ $donHang->ten_phuong_thuc_thanh_toan }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td class="order-total">{{ number_format($donHang->tong_tien, 0, ',', '.') }}<small>đ</small></td>
+                                                                    <td class="order-action">
+                                                                        <a href="{{ route('don-hang.chi-tiet', $donHang->ma_don_hang) }}" class="order-detail-button" title="Xem chi tiết đơn hàng">
+                                                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                                                            <span>Chi tiết</span>
+                                                                        </a>
                                                                     </td>
                                                                 </tr>
                                                             @endforeach
@@ -168,7 +175,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+                                        <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true" data-co-dia-chi="{{ $diaChis->isNotEmpty() ? 1 : 0 }}">
                                             <div class="modal-dialog">
                                                 <div class="modal-content account-address-modal">
                                                     <div class="modal-header">

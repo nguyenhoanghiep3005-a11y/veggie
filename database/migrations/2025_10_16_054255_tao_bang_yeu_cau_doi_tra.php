@@ -18,8 +18,6 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->enum('loai', ['hang_loi'])->default('hang_loi');
             $table->text('mo_ta');
-            $table->json('san_pham');
-            $table->json('minh_chung')->nullable();
             $table->enum('trang_thai', [
                 'cho_duyet',
                 'da_duyet',

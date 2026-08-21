@@ -25,13 +25,13 @@ class TaiKhoanController extends Controller
             ->paginate(10);
 
         foreach ($donHangs as $donHang) {
-            $donHang->ten_phuong_thuc_thanh_toan = '-';
+            $donHang->ten_phuong_thuc_thanh_toan = 'COD';
 
             if ($donHang->thanhToan) {
                 if ($donHang->thanhToan->phuong_thuc == 'paypal') {
                     $donHang->ten_phuong_thuc_thanh_toan = 'PayPal';
                 } else {
-                    $donHang->ten_phuong_thuc_thanh_toan = 'Thanh toán khi nhận hàng';
+                    $donHang->ten_phuong_thuc_thanh_toan = 'COD';
                 }
             }
         }

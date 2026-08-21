@@ -362,7 +362,7 @@
 
         @if ($coTheHoanTienPaypal)
             <button class="btn btn-warning pull-right nut-hoan-tien-paypal" data-ma-don-hang="{{ $donHang->ma_don_hang }}">
-                <i class="fa fa-money"></i> Đã hoàn tiền PayPal
+                <i class="fa fa-money"></i> Hoàn Tiền Paypal
             </button>
         @elseif ($donHang->trang_thai == 'da_hoan_ve_kho')
             <button class="btn btn-danger pull-right nut-ket-thuc-don-hoan" data-ma-don-hang="{{ $donHang->ma_don_hang }}">

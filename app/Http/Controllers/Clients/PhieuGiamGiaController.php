@@ -63,28 +63,33 @@ class PhieuGiamGiaController extends Controller
     // Ghi nhận phiếu giảm giá người dùng đã chọn vào tài khoản.
     public function nhanPhieuGiamGia(PhieuGiamGia $phieuGiamGia)
     {
-        $loi = $phieuGiamGia->kiemTraDieuKienSuDung(Auth::id());
+        return DB::transaction(function () use ($phieuGiamGia) {
+            $phieuGiamGia = PhieuGiamGia::whereKey($phieuGiamGia->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $loi = $phieuGiamGia->kiemTraDieuKienSuDung(Auth::id());
 
-        if ($loi) {
-            return back()->with('error', $loi);
-        }
+            if ($loi) {
+                return back()->with('error', $loi);
+            }
 
-        $daNhan = DB::table('nguoi_dung_phieu_giam_gia')
-            ->where('ma_nguoi_dung', Auth::id())
-            ->where('ma_phieu_giam_gia', $phieuGiamGia->ma_phieu_giam_gia)
-            ->exists();
+            $daNhan = DB::table('nguoi_dung_phieu_giam_gia')
+                ->where('ma_nguoi_dung', Auth::id())
+                ->where('ma_phieu_giam_gia', $phieuGiamGia->ma_phieu_giam_gia)
+                ->exists();
 
-        if (! $daNhan) {
-            DB::table('nguoi_dung_phieu_giam_gia')->insert([
-                'ma_nguoi_dung' => Auth::id(),
-                'ma_phieu_giam_gia' => $phieuGiamGia->ma_phieu_giam_gia,
-                'ngay_nhan' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+            if (! $daNhan) {
+                DB::table('nguoi_dung_phieu_giam_gia')->insert([
+                    'ma_nguoi_dung' => Auth::id(),
+                    'ma_phieu_giam_gia' => $phieuGiamGia->ma_phieu_giam_gia,
+                    'ngay_nhan' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
-        return back()->with('success', 'Đã nhận mã '.$phieuGiamGia->ma_giam_gia.'.');
+            return back()->with('success', 'Đã nhận mã '.$phieuGiamGia->ma_giam_gia.'.');
+        });
     }
 
     // Chuẩn bị trạng thái và nội dung hiển thị của một phiếu giảm giá.

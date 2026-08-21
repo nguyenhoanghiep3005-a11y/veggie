@@ -1152,3 +1152,131 @@
         width: 100%;
     }
 }
+
+/* Danh sach don hang va nhan hinh thuc thanh toan cua khach hang. */
+.account-order-list {
+    border: 1px solid #e6e9ed;
+    background: #fff;
+}
+
+.account-order-list .table {
+    min-width: 760px;
+    margin-bottom: 0;
+}
+
+.account-order-list .table > :not(caption) > * > * {
+    padding: 14px 12px;
+    border-color: #e9ecef;
+    vertical-align: middle;
+}
+
+.account-order-list thead th {
+    border-bottom: 1px solid #d8dde3;
+    background: #f5f7f8;
+    color: #20252b;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.account-order-list tbody td {
+    color: #333b43;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.account-order-list .badge {
+    padding: 6px 9px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.account-order-list .order-code {
+    color: #1f2933;
+    font-weight: 700;
+}
+
+.account-order-list .order-date,
+.account-order-list .order-total {
+    white-space: nowrap;
+}
+
+.account-order-list .order-total {
+    font-weight: 700;
+}
+
+.account-order-list .order-total small {
+    margin-left: 2px;
+}
+
+.order-payment-badge {
+    display: inline-flex;
+    min-width: 58px;
+    min-height: 28px;
+    padding: 5px 10px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.order-payment-badge.is-cod {
+    border-color: #cfe8b1;
+    background: #edf7e3;
+    color: #4c760c;
+}
+
+.order-payment-badge.is-paypal {
+    border-color: #b8d5f2;
+    background: #eaf4fd;
+    color: #075da8;
+}
+
+.order-detail-button {
+    display: inline-flex;
+    width: 92px;
+    height: 34px;
+    padding: 0 11px;
+    gap: 7px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #6f9f00;
+    border-radius: 4px;
+    background: #80b500;
+    color: #fff !important;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none !important;
+    white-space: nowrap;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+
+.order-detail-button:hover,
+.order-detail-button:focus {
+    border-color: #587f00;
+    background: #638e00;
+    color: #fff !important;
+}
+
+.account-order-list .order-action {
+    width: 116px;
+    text-align: center;
+}
+
+.order-payment-summary {
+    margin-top: 10px;
+}
+
+@media (max-width: 767px) {
+    .account-order-list .table > :not(caption) > * > * {
+        padding: 12px 10px;
+    }
+}

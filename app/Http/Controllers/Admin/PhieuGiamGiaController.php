@@ -48,28 +48,28 @@ class PhieuGiamGiaController extends Controller
     // Cap nhat phieu giam gia da co.
     public function capNhatPhieuGiamGia(Request $request, PhieuGiamGia $phieuGiamGia)
     {
-        $data = $this->kiemTraDuLieuCapNhat($request, $phieuGiamGia);
-        $maNguoiDungs = $data['ma_nguoi_dungs'];
-        unset($data['ma_nguoi_dungs']);
+        DB::transaction(function () use ($request, $phieuGiamGia) {
+            $phieuGiamGia = PhieuGiamGia::whereKey($phieuGiamGia->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $daCoNguoiNhan = $this->daCoNguoiNhan($phieuGiamGia);
+            $data = $this->kiemTraDuLieuCapNhat($request, $phieuGiamGia);
+            $maNguoiDungs = $data['ma_nguoi_dungs'] ?? [];
+            unset($data['ma_nguoi_dungs']);
 
-        DB::transaction(function () use ($phieuGiamGia, $data, $maNguoiDungs) {
             $phieuGiamGia->update($data);
-            $this->dongBoKhachHang($phieuGiamGia, $maNguoiDungs);
+
+            if (! $daCoNguoiNhan) {
+                $this->dongBoKhachHang($phieuGiamGia, $maNguoiDungs);
+            }
         });
 
         return back()->with('success', 'Cập nhật phiếu giảm giá thành công.');
     }
 
-    // Xoa phieu giam gia hoac khoa lai neu da phat sinh don hang.
+    // Xoa phieu giam gia; dung phat hanh duoc xu ly bang trang thai hoat dong.
     public function xoaPhieuGiamGia(PhieuGiamGia $phieuGiamGia)
     {
-        if ($phieuGiamGia->donHangs()->exists()) {
-            $phieuGiamGia->dang_hoat_dong = false;
-            $phieuGiamGia->save();
-
-            return back()->with('success', 'Phiếu đã được khóa vì đã phát sinh đơn hàng.');
-        }
-
         $phieuGiamGia->delete();
 
         return back()->with('success', 'Xóa phiếu giảm giá thành công.');
@@ -83,7 +83,7 @@ class PhieuGiamGiaController extends Controller
             'phan_tram_giam' => 'required|numeric|min:0.01|max:100',
             'gia_tri_don_toi_thieu' => 'nullable|numeric|min:0',
             'so_tien_giam_toi_da' => 'nullable|numeric|min:0',
-            'het_han_luc' => 'nullable|date',
+            'het_han_luc' => 'required|date',
             'gioi_han_su_dung' => 'nullable|integer|min:1',
             'loai_ap_dung' => 'required|in:tat_ca,khach_hang',
             'ma_nguoi_dungs' => 'nullable|array',
@@ -97,13 +97,17 @@ class PhieuGiamGiaController extends Controller
     // Kiem tra du lieu khi cap nhat phieu giam gia.
     private function kiemTraDuLieuCapNhat($request, $phieuGiamGia)
     {
+        if ($this->daCoNguoiNhan($phieuGiamGia)) {
+            return $this->kiemTraDuLieuPhieuDaCoNguoiNhan($request, $phieuGiamGia);
+        }
+
         $data = $request->validate([
             'ma_giam_gia' => 'required|string|max:50|unique:phieu_giam_gia,ma_giam_gia,'
                 .$phieuGiamGia->ma_phieu_giam_gia.',ma_phieu_giam_gia',
             'phan_tram_giam' => 'required|numeric|min:0.01|max:100',
             'gia_tri_don_toi_thieu' => 'nullable|numeric|min:0',
             'so_tien_giam_toi_da' => 'nullable|numeric|min:0',
-            'het_han_luc' => 'nullable|date',
+            'het_han_luc' => 'required|date',
             'gioi_han_su_dung' => 'nullable|integer|min:1',
             'loai_ap_dung' => 'required|in:tat_ca,khach_hang',
             'ma_nguoi_dungs' => 'nullable|array',
@@ -112,6 +116,90 @@ class PhieuGiamGiaController extends Controller
         ]);
 
         return $this->chuanBiDuLieuLuu($request, $data);
+    }
+
+    // Sau khi co nguoi nhan, chi cho tang so luong, gia han va dung phat hanh.
+    private function kiemTraDuLieuPhieuDaCoNguoiNhan($request, $phieuGiamGia)
+    {
+        $this->tuChoiThayDoiThuocTinhDaKhoa($request, $phieuGiamGia);
+
+        $quyTacGioiHan = 'nullable|integer|min:1';
+        if ($phieuGiamGia->gioi_han_su_dung == null) {
+            if ($request->filled('gioi_han_su_dung')) {
+                throw ValidationException::withMessages([
+                    'gioi_han_su_dung' => 'Voucher không giới hạn không được đổi thành số lượng hữu hạn sau khi có người nhận.',
+                ]);
+            }
+
+            $quyTacGioiHan = 'nullable';
+        } else {
+            $quyTacGioiHan .= '|gte:'.$phieuGiamGia->gioi_han_su_dung;
+        }
+
+        $data = $request->validate([
+            'het_han_luc' => 'required|date|after_or_equal:'
+                .$phieuGiamGia->het_han_luc->format('Y-m-d H:i:s'),
+            'gioi_han_su_dung' => $quyTacGioiHan,
+            'dang_hoat_dong' => 'nullable|boolean',
+        ], [
+            'het_han_luc.after_or_equal' => 'Ngày kết thúc chỉ được phép gia hạn, không được rút ngắn.',
+            'gioi_han_su_dung.gte' => 'Tổng số lượng voucher chỉ được phép tăng, không được giảm.',
+        ]);
+
+        $dangHoatDong = $request->boolean('dang_hoat_dong');
+        if (! $phieuGiamGia->dang_hoat_dong && $dangHoatDong) {
+            throw ValidationException::withMessages([
+                'dang_hoat_dong' => 'Voucher đã dừng phát hành không được kích hoạt lại sau khi có người nhận.',
+            ]);
+        }
+
+        $data['dang_hoat_dong'] = $dangHoatDong;
+
+        return $data;
+    }
+
+    // Chan request thu cong thay doi cac thuoc tinh da khoa.
+    private function tuChoiThayDoiThuocTinhDaKhoa($request, $phieuGiamGia)
+    {
+        $giaTriDaKhoa = [
+            'ma_giam_gia' => $phieuGiamGia->ma_giam_gia,
+            'phan_tram_giam' => (float) $phieuGiamGia->phan_tram_giam,
+            'gia_tri_don_toi_thieu' => (float) $phieuGiamGia->gia_tri_don_toi_thieu,
+            'so_tien_giam_toi_da' => $phieuGiamGia->so_tien_giam_toi_da === null
+                ? null
+                : (float) $phieuGiamGia->so_tien_giam_toi_da,
+            'loai_ap_dung' => $phieuGiamGia->loai_ap_dung,
+        ];
+
+        foreach ($giaTriDaKhoa as $tenTruong => $giaTriHienTai) {
+            if (! $request->exists($tenTruong)) {
+                continue;
+            }
+
+            $giaTriGuiLen = $request->input($tenTruong);
+            if (is_numeric($giaTriHienTai)) {
+                $giaTriGuiLen = (float) $giaTriGuiLen;
+            }
+
+            if ($giaTriGuiLen !== $giaTriHienTai) {
+                throw ValidationException::withMessages([
+                    $tenTruong => 'Thuộc tính này đã bị khóa vì voucher đã có người nhận.',
+                ]);
+            }
+        }
+
+        if ($request->exists('ma_nguoi_dungs')) {
+            throw ValidationException::withMessages([
+                'ma_nguoi_dungs' => 'Danh sách khách hàng đã bị khóa vì voucher đã có người nhận.',
+            ]);
+        }
+    }
+
+    private function daCoNguoiNhan($phieuGiamGia)
+    {
+        return DB::table('nguoi_dung_phieu_giam_gia')
+            ->where('ma_phieu_giam_gia', $phieuGiamGia->ma_phieu_giam_gia)
+            ->exists();
     }
 
     // Chuan hoa du lieu truoc khi luu phieu giam gia.
@@ -192,6 +280,7 @@ class PhieuGiamGiaController extends Controller
         }
 
         $phieuGiamGia->ma_nguoi_dungs = $maNguoiDungs;
+        $phieuGiamGia->da_co_nguoi_nhan = $this->daCoNguoiNhan($phieuGiamGia);
 
         $phanTram = number_format($phieuGiamGia->phan_tram_giam, 2, '.', '');
         $phieuGiamGia->phan_tram_hien_thi = rtrim(rtrim($phanTram, '0'), '.');

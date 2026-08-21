@@ -113,19 +113,64 @@
         background: #80b500 !important;
         color: #fff !important;
     }
+    .checkout-address-empty {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .checkout-address-empty-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        flex: 1 1 280px;
+    }
+
+    .checkout-address-empty-content i {
+        margin-top: 4px;
+    }
+
+    .checkout-address-empty-content span {
+        display: block;
+        margin-top: 2px;
+    }
+
+    .checkout-address-empty-button {
+        white-space: nowrap;
+    }
 </style>
 <div class="ltn__checkout-area mb-105">
     <div class="container">
         <form action="{{ route('thanh-toan.dat-hang') }}" method="POST" id="form-thanh-toan">
             @csrf
-
             <div class="row checkout-main-row">
                 <div class="col-lg-6 checkout-left-column">
                     <div class="ltn__checkout-inner">
                         <div class="ltn__checkout-single-content mt-50" style="margin-top:35px !important;">
                             <h4 class="title-2">Thông tin giao hàng</h4>
+                            @if (Auth::check() && ! $coDiaChiDaLuu)
+                                <div class="alert alert-warning checkout-address-empty mb-25" role="alert">
+                                    <div class="checkout-address-empty-content">
+                                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                                        <div>
+                                            <strong>Bạn chưa có địa chỉ giao hàng đã lưu.</strong>
+                                            <span>Thêm địa chỉ vào tài khoản để chọn nhanh khi đặt hàng.</span>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href="{{ route('tai-khoan.hien-thi', ['tab' => 'dia-chi', 'them_dia_chi' => 1]) }}"
+                                        class="btn theme-btn-1 btn-effect-1 checkout-address-empty-button"
+                                    >
+                                        <i class="fas fa-plus" aria-hidden="true"></i>
+                                        Thêm địa chỉ
+                                    </a>
+                                </div>
+                            @endif
 
-                            <div class="delivery-type-select mb-30" style="display:flex; gap:12px; flex-wrap:wrap;">
+                            <div class="delivery-type-select mb-30" 
+                            style="display:flex; gap:12px; flex-wrap:wrap;">
                                 @if (Auth::check() && $coDiaChiDaLuu)
                                     <div
                                     id="lua-chon-tai-khoan"

@@ -67,13 +67,22 @@
                 </div>
 
                 <div class="item form-group">
-                    <label class="col-form-label col-md-3 label-align">Đơn vị/khối lượng <span class="required">*</span></label>
+                    <label class="col-form-label col-md-3 label-align">Khối lượng/đơn vị <span class="required">*</span></label>
                     <div class="col-md-6">
-                        <select name="don_vi" class="form-control" required>
-                            <option value="">Chọn đơn vị</option>
-                            <option value="g" @selected(old('don_vi') == 'g')>Gram (g)</option>
-                            <option value="kg" @selected(old('don_vi') == 'kg')>Kilogram (kg)</option>
-                        </select>
+                        <div class="row product-weight-fields">
+                            <div class="col-7">
+                                <input type="number" name="khoi_luong" class="form-control"
+                                    min="0.001" max="9999999" step="0.001"
+                                    value="{{ old('khoi_luong') }}" placeholder="Nhập khối lượng" required>
+                            </div>
+                            <div class="col-5">
+                                <select name="don_vi" class="form-control" required>
+                                    <option value="">Chọn đơn vị</option>
+                                    <option value="g" @selected(old('don_vi') == 'g')>Gram (g)</option>
+                                    <option value="kg" @selected(old('don_vi') == 'kg')>Kilogram (kg)</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

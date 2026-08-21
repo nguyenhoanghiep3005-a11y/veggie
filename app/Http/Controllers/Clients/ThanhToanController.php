@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Mail;
 class ThanhToanController extends Controller
 {
     private $phiVanChuyenGhn;
+
     private $gioHang;
 
     // Khoi tao dich vu gio hang va tinh phi van chuyen.
@@ -295,18 +296,11 @@ class ThanhToanController extends Controller
             if (! $diaChi || ! $diaChi->coDiaChiGhn()) {
                 throw new Exception('Địa chỉ giao hàng chưa đầy đủ.');
             }
+            $diaChiDonHang = $this->taoDiaChiChoDonHang($diaChi);
+
             $donHang = DonHang::create([
                 'ma_nguoi_dung' => Auth::id(),
-                'ma_dia_chi_giao_hang' => $diaChi->ma_dia_chi_giao_hang,
-                'du_lieu_dia_chi_giao_hang' => [
-                    'ho_ten' => $diaChi->ho_ten,
-                    'so_dien_thoai' => $diaChi->so_dien_thoai,
-                    'dia_chi' => $diaChi->dia_chi,
-                    'tinh_thanh' => $diaChi->tinh_thanh,
-                    'ma_tinh' => $diaChi->ma_tinh,
-                    'ma_huyen' => $diaChi->ma_huyen,
-                    'ma_xa' => $diaChi->ma_xa,
-                ],
+                'ma_dia_chi_giao_hang' => $diaChiDonHang->ma_dia_chi_giao_hang,
                 'tam_tinh' => 0,
                 'phi_van_chuyen' => 0,
                 'so_tien_giam' => 0,
@@ -329,15 +323,17 @@ class ThanhToanController extends Controller
                 }
 
                 $gia = (float) $sanPham->gia_hien_tai;
-                $phanBoTonKho = $sanPham->truTonKho($soLuong);
+                $phanBoTonKhos = $sanPham->truTonKho($soLuong);
 
-                ChiTietDonHang::create([
-                    'ma_don_hang' => $donHang->ma_don_hang,
-                    'ma_san_pham' => $sanPham->ma_san_pham,
-                    'so_luong' => $soLuong,
-                    'gia' => $gia,
-                    'phan_bo_ton_kho' => $phanBoTonKho,
-                ]);
+                foreach ($phanBoTonKhos as $phanBoTonKho) {
+                    ChiTietDonHang::create([
+                        'ma_don_hang' => $donHang->ma_don_hang,
+                        'ma_san_pham' => $sanPham->ma_san_pham,
+                        'ma_lo_hang_kho' => $phanBoTonKho['ma_lo_hang_kho'],
+                        'so_luong' => $phanBoTonKho['so_luong'],
+                        'gia' => $gia,
+                    ]);
+                }
 
                 $tamTinh += $gia * $soLuong;
             }
@@ -441,7 +437,6 @@ class ThanhToanController extends Controller
             }
 
             $maNguoiDung = null;
-            $maDiaChiGiaoHang = null;
 
             if ($data['loai_giao_hang'] == 'tai_khoan' && Auth::check()) {
                 $diaChi = DiaChiGiaoHang::where('ma_dia_chi_giao_hang', $data['ma_dia_chi_giao_hang'])
@@ -453,9 +448,8 @@ class ThanhToanController extends Controller
                 }
 
                 $maNguoiDung = Auth::id();
-                $maDiaChiGiaoHang = $diaChi->ma_dia_chi_giao_hang;
             } else {
-                $diaChi = new DiaChiGiaoHang();
+                $diaChi = new DiaChiGiaoHang;
                 $diaChi->ho_ten = $data['ho_ten_nguoi_nhan'];
                 $diaChi->so_dien_thoai = $data['so_dien_thoai_nguoi_nhan'];
                 $diaChi->dia_chi = $data['dia_chi_nguoi_nhan'];
@@ -468,19 +462,11 @@ class ThanhToanController extends Controller
             if (! $diaChi || ! $diaChi->coDiaChiGhn()) {
                 throw new Exception('Địa chỉ giao hàng chưa đầy đủ.');
             }
+            $diaChiDonHang = $this->taoDiaChiChoDonHang($diaChi);
+
             $donHang = DonHang::create([
                 'ma_nguoi_dung' => $maNguoiDung,
-                'ma_dia_chi_giao_hang' => $maDiaChiGiaoHang,
-                'du_lieu_dia_chi_giao_hang' => [
-                    'ho_ten' => $diaChi->ho_ten,
-                    'so_dien_thoai' => $diaChi->so_dien_thoai,
-                    'dia_chi' => $diaChi->dia_chi,
-                    'email_nhan_hoa_don' => $data['email_nhan_hoa_don'] ?? null,
-                    'tinh_thanh' => $diaChi->tinh_thanh,
-                    'ma_tinh' => $diaChi->ma_tinh,
-                    'ma_huyen' => $diaChi->ma_huyen,
-                    'ma_xa' => $diaChi->ma_xa,
-                ],
+                'ma_dia_chi_giao_hang' => $diaChiDonHang->ma_dia_chi_giao_hang,
                 'tam_tinh' => 0,
                 'phi_van_chuyen' => 0,
                 'so_tien_giam' => 0,
@@ -503,15 +489,17 @@ class ThanhToanController extends Controller
                 }
 
                 $gia = (float) $sanPham->gia_hien_tai;
-                $phanBoTonKho = $sanPham->truTonKho($soLuong);
+                $phanBoTonKhos = $sanPham->truTonKho($soLuong);
 
-                ChiTietDonHang::create([
-                    'ma_don_hang' => $donHang->ma_don_hang,
-                    'ma_san_pham' => $sanPham->ma_san_pham,
-                    'so_luong' => $soLuong,
-                    'gia' => $gia,
-                    'phan_bo_ton_kho' => $phanBoTonKho,
-                ]);
+                foreach ($phanBoTonKhos as $phanBoTonKho) {
+                    ChiTietDonHang::create([
+                        'ma_don_hang' => $donHang->ma_don_hang,
+                        'ma_san_pham' => $sanPham->ma_san_pham,
+                        'ma_lo_hang_kho' => $phanBoTonKho['ma_lo_hang_kho'],
+                        'so_luong' => $phanBoTonKho['so_luong'],
+                        'gia' => $gia,
+                    ]);
+                }
 
                 $tamTinh += $gia * $soLuong;
             }
@@ -588,6 +576,7 @@ class ThanhToanController extends Controller
             ], 422);
         }
     }
+
     // Lay danh sach dia chi da luu cua nguoi dung.
     private function layDanhSachDiaChiNguoiDung($nguoiDung)
     {
@@ -681,6 +670,21 @@ class ThanhToanController extends Controller
         )->where('ma_nguoi_dung', $maNguoiDung)->first();
     }
 
+    // Tao ban ghi dia chi rieng de don hang chi luu khoa ngoai.
+    private function taoDiaChiChoDonHang($diaChi)
+    {
+        return DiaChiGiaoHang::create([
+            'ma_nguoi_dung' => null,
+            'ho_ten' => $diaChi->ho_ten,
+            'so_dien_thoai' => $diaChi->so_dien_thoai,
+            'dia_chi' => $diaChi->dia_chi,
+            'tinh_thanh' => $diaChi->tinh_thanh,
+            'ma_tinh' => $diaChi->ma_tinh,
+            'ma_huyen' => $diaChi->ma_huyen,
+            'ma_xa' => $diaChi->ma_xa,
+            'mac_dinh' => false,
+        ]);
+    }
 
     // Lay dia chi mac dinh, neu khong co thi lay dia chi dau tien.
     private function layDiaChiMacDinh($diaChis)

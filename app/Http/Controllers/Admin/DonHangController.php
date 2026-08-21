@@ -44,7 +44,8 @@ class DonHangController extends Controller
             'diaChiGiaoHang',
             'nguoiDung',
             'thanhToan',
-            'yeuCauDoiTra',
+            'yeuCauDoiTra.chiTiets',
+            'yeuCauDoiTra.minhChungs',
         ]);
 
         if (
@@ -80,7 +81,8 @@ class DonHangController extends Controller
             'diaChiGiaoHang',
             'nguoiDung',
             'thanhToan',
-            'yeuCauDoiTra',
+            'yeuCauDoiTra.chiTiets',
+            'yeuCauDoiTra.minhChungs',
         ])->findOrFail($maDonHang);
 
         $this->chuanBiDonHangHienThi($donHang);
@@ -259,6 +261,7 @@ class DonHangController extends Controller
 
         return $this->phanHoiThanhCong('Đơn hàng đã được chuyển lại sang đang giao.');
     }
+
     // Nhan lai hang hoan va xu ly ton kho theo tinh trang thuc te.
     public function xacNhanNhanHangHoan(Request $request)
     {
@@ -391,6 +394,7 @@ class DonHangController extends Controller
 
         return $this->phanHoiThanhCong('Đã kết thúc đơn giao thất bại.');
     }
+
     // Huy don chua giao va hoan lai ton kho.
     public function huyDonHang(Request $request)
     {
@@ -469,7 +473,7 @@ class DonHangController extends Controller
             if ($sanPham) {
                 $sanPham->hoanTonKho(
                     $chiTietDonHang->so_luong,
-                    $chiTietDonHang->phan_bo_ton_kho
+                    $chiTietDonHang->layPhanBoTonKhoDeHoan()
                 );
             }
         }
@@ -627,6 +631,7 @@ class DonHangController extends Controller
             $chiTietDonHang->thanh_tien = $chiTietDonHang->gia * $chiTietDonHang->so_luong;
         }
     }
+
     // Lay lop mau hien thi trang thai thanh toan.
     private function layLopTrangThaiThanhToan($trangThai)
     {
@@ -638,13 +643,13 @@ class DonHangController extends Controller
             return 'custom-badge badge badge-warning';
         }
 
-
         if ($trangThai == 'da_hoan_tien') {
             return 'custom-badge badge badge-info';
         }
 
         return 'custom-badge badge badge-secondary';
     }
+
     // Lay danh sach san pham trong yeu cau doi tra.
     private function laySanPhamDoiTra($donHang, $yeuCauDoiTra)
     {
@@ -663,8 +668,7 @@ class DonHangController extends Controller
             foreach ($donHang->chiTietDonHangs as $chiTietDonHang) {
                 if ($chiTietDonHang->ma_chi_tiet_don_hang == $maChiTiet) {
                     $ketQuas[] = [
-                        'ten_san_pham' =>
-                            $chiTietDonHang->ten_san_pham,
+                        'ten_san_pham' => $chiTietDonHang->ten_san_pham,
                         'so_luong' => $this->laySoLuongSanPhamDoiTra($sanPhamDoiTra),
                     ];
                     break;

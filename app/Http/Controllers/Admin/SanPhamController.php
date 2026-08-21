@@ -26,7 +26,10 @@ class SanPhamController extends Controller
         $this->chuanHoaTepHinhAnh($request);
 
         $data = $request->validate($this->quyTacThemSanPham(), $this->thongBaoKiemTra());
-        $data['duong_dan'] = Str::slug($data['ten'].'-'.$data['don_vi']).'-'.time();
+        $data['ten'] = $this->chuanHoaTenSanPham($data['ten']);
+        $data['duong_dan'] = Str::slug(
+            $data['ten'].'-'.$data['khoi_luong'].$data['don_vi']
+        ).'-'.time();
 
         $sanPham = SanPham::create($data);
         $this->luuHinhAnhSanPham($sanPham, $request);
@@ -65,6 +68,7 @@ class SanPhamController extends Controller
 
         $sanPham = SanPham::findOrFail($data['ma_san_pham']);
         unset($data['ma_san_pham']);
+        $data['ten'] = $this->chuanHoaTenSanPham($data['ten']);
 
         $sanPham->fill($data);
         $sanPham->save();
@@ -92,7 +96,9 @@ class SanPhamController extends Controller
                 'ten_danh_muc' => $tenDanhMuc,
                 'mo_ta' => $sanPham->mo_ta,
                 'gia' => $sanPham->gia,
+                'khoi_luong' => $sanPham->khoi_luong,
                 'don_vi' => $sanPham->don_vi,
+                'ten_bien_the' => $sanPham->ten_bien_the,
                 'duong_dan_hinh_anh' => $sanPham->duong_dan_hinh_anh,
                 'hinh_anhs' => $this->layDuongDanHinhAnh($sanPham),
             ],
@@ -135,6 +141,7 @@ class SanPhamController extends Controller
             'ma_danh_muc' => 'required|exists:danh_muc,ma_danh_muc',
             'mo_ta' => 'required|string',
             'gia' => 'required|numeric|min:0',
+            'khoi_luong' => 'required|numeric|gt:0|max:9999999',
             'don_vi' => 'required|in:g,kg',
             'images' => 'nullable|array',
             'images.*' => 'file|image|mimes:jpeg,png,jpg,gif,webp',
@@ -178,6 +185,18 @@ class SanPhamController extends Controller
         }
 
         $request->files->set('images', $tepHinhAnhs);
+    }
+
+    // Bo nhan khoi luong neu nguoi dung nhap lap lai trong ten san pham.
+    private function chuanHoaTenSanPham($tenSanPham)
+    {
+        $tenSanPham = preg_replace(
+            '/\s+\d+(?:[,.]\d+)?\s*(g|gram|kg)$/iu',
+            '',
+            trim((string) $tenSanPham)
+        );
+
+        return trim($tenSanPham);
     }
 
     // Luu cac hinh anh cua san pham vao storage.

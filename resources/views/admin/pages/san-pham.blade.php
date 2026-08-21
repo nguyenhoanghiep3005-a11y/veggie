@@ -57,7 +57,7 @@
                         <th>Sản phẩm</th>
                         <th>Danh mục</th>
                         <th>Giá niêm yết</th>
-                        <th>Đơn vị</th>
+                        <th>Khối lượng</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
@@ -69,7 +69,7 @@
                             <td class="text-left"><strong>{{ $sanPham->ten_hien_thi }}</strong></td>
                             <td>{{ $sanPham->ten_danh_muc }}</td>
                             <td>{{ number_format((float) $sanPham->gia, 0, ',', '.') }} đ</td>
-                            <td>{{ $sanPham->don_vi }}</td>
+                            <td>{{ $sanPham->ten_bien_the }}</td>
                             <td>
                                 <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalupdate-{{ $sanPham->ma_san_pham }}">
                                     <i class="fa fa-edit"></i> Sửa
@@ -131,13 +131,22 @@
                                             </div>
 
                                             <div class="item form-group">
-                                                <label class="col-form-label col-md-3 label-align">Đơn vị/khối lượng <span class="required">*</span></label>
+                                                <label class="col-form-label col-md-3 label-align">Khối lượng/đơn vị <span class="required">*</span></label>
                                                 <div class="col-md-8">
-                                                    <select name="don_vi" class="form-control" required>
-                                                        <option value="">Chọn đơn vị</option>
-                                                        <option value="g" @selected($sanPham->don_vi == 'g')>Gram (g)</option>
-                                                        <option value="kg" @selected($sanPham->don_vi == 'kg')>Kilogram (kg)</option>
-                                                    </select>
+                                                    <div class="row product-weight-fields">
+                                                        <div class="col-7">
+                                                            <input type="number" name="khoi_luong" class="form-control"
+                                                                min="0.001" max="9999999" step="0.001"
+                                                                value="{{ (float) $sanPham->khoi_luong }}" placeholder="Nhập khối lượng" required>
+                                                        </div>
+                                                        <div class="col-5">
+                                                            <select name="don_vi" class="form-control" required>
+                                                                <option value="">Chọn đơn vị</option>
+                                                                <option value="g" @selected($sanPham->don_vi == 'g')>Gram (g)</option>
+                                                                <option value="kg" @selected($sanPham->don_vi == 'kg')>Kilogram (kg)</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
 

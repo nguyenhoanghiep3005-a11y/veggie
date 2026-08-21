@@ -16,7 +16,7 @@ return new class extends Migration
             $table->decimal('phan_tram_giam', 5, 2);
             $table->decimal('gia_tri_don_toi_thieu', 12, 2)->default(0);
             $table->decimal('so_tien_giam_toi_da', 12, 2)->nullable();
-            $table->dateTime('het_han_luc')->nullable();
+            $table->dateTime('het_han_luc');
             $table->unsignedInteger('gioi_han_su_dung')->nullable();
             $table->unsignedInteger('so_lan_da_dung')->default(0);
             $table->enum('loai_ap_dung', ['tat_ca', 'khach_hang'])

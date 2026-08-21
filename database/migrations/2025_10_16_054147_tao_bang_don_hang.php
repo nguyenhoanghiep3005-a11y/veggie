@@ -47,10 +47,8 @@ return new class extends Migration
             $table->timestamp('hoan_ton_kho_luc')->nullable();
             $table->timestamp('hoan_tat_luc')->nullable();
             $table->foreignId('ma_dia_chi_giao_hang')
-                ->nullable()
                 ->constrained('dia_chi_giao_hang', 'ma_dia_chi_giao_hang')
-                ->nullOnDelete();
-            $table->json('du_lieu_dia_chi_giao_hang')->nullable();
+                ->restrictOnDelete();
             $table->timestamps();
             $table->index(['trang_thai', 'created_at']);
         });

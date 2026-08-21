@@ -107,9 +107,9 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Thời hạn</label>
+                            <label>Ngày kết thúc *</label>
                             <input type="datetime-local" name="het_han_luc" class="form-control"
-                            value="{{ old('het_han_luc') }}">
+                            value="{{ old('het_han_luc') }}" required>
                         </div>
 
                         <div class="admin-coupon-status">
@@ -135,7 +135,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Giới hạn lượt dùng</label>
+                            <label>Tổng số lượng voucher</label>
                             <input type="number" name="gioi_han_su_dung" class="form-control"
                             value="{{ old('gioi_han_su_dung') }}" min="1">
                         </div>
@@ -233,7 +233,7 @@
                             <form method="POST"
                                 action="{{ route('admin.phieu-giam-gia.xoa', $phieuGiamGia) }}"
                                 class="d-inline"
-                                onsubmit="return confirm('Xóa hoặc khóa phiếu này?')">
+                                onsubmit="return confirm('Bạn có chắc muốn xóa phiếu giảm giá này?')">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-danger btn-sm">Xóa</button>
@@ -269,31 +269,35 @@
                     </div>
 
                     <div class="modal-body">
+                        @if ($phieuGiamGia->da_co_nguoi_nhan)
+                        @endif
                         <div class="row">
                             <div class="col-md-6 admin-coupon-column">
                                 <div class="form-group">
                                     <label>Mã giảm giá</label>
                                     <input name="ma_giam_gia" class="form-control"
-                                    value="{{ $phieuGiamGia->ma_giam_gia }}" required>
+                                    value="{{ $phieuGiamGia->ma_giam_gia }}" required @if ($phieuGiamGia->da_co_nguoi_nhan) disabled @endif>
                                 </div>
 
                                 <div class="form-group">
                                     <label>Phần trăm giảm (%)</label>
                                     <input type="number" name="phan_tram_giam" class="form-control"
                                     value="{{ $phieuGiamGia->phan_tram_giam }}"
-                                    min="0.01" max="100" step="0.01" required>
+                                    min="0.01" max="100" step="0.01" required @if ($phieuGiamGia->da_co_nguoi_nhan) disabled @endif>
                                 </div>
 
                                 <div class="form-group">
-                                    <label>Thời hạn</label>
+                                    <label>Ngày kết thúc *</label>
                                     <input type="datetime-local" name="het_han_luc" class="form-control"
-                                    value="{{ $phieuGiamGia->thoi_han_form }}">
+                                    value="{{ $phieuGiamGia->thoi_han_form }}" required
+                                    @if ($phieuGiamGia->da_co_nguoi_nhan) min="{{ $phieuGiamGia->thoi_han_form }}" @endif>
                                 </div>
 
                                 <div class="admin-coupon-status">
                                     <label>
                                         <input type="checkbox" name="dang_hoat_dong" value="1"
-                                        @if ($phieuGiamGia->dang_hoat_dong) checked @endif>
+                                        @if ($phieuGiamGia->dang_hoat_dong) checked @endif
+                                        @if ($phieuGiamGia->da_co_nguoi_nhan && ! $phieuGiamGia->dang_hoat_dong) disabled @endif>
                                         Đang hoạt động
                                     </label>
                                 </div>
@@ -303,24 +307,29 @@
                                 <div class="form-group">
                                     <label>Đơn tối thiểu</label>
                                     <input type="number" name="gia_tri_don_toi_thieu" class="form-control"
-                                    value="{{ $phieuGiamGia->gia_tri_don_toi_thieu }}" min="0" step="1000">
+                                    value="{{ $phieuGiamGia->gia_tri_don_toi_thieu }}" min="0" step="1000"
+                                    @if ($phieuGiamGia->da_co_nguoi_nhan) disabled @endif>
                                 </div>
 
                                 <div class="form-group">
                                     <label>Giảm tối đa</label>
                                     <input type="number" name="so_tien_giam_toi_da" class="form-control"
-                                    value="{{ $phieuGiamGia->so_tien_giam_toi_da }}" min="0" step="1000">
+                                    value="{{ $phieuGiamGia->so_tien_giam_toi_da }}" min="0" step="1000"
+                                    @if ($phieuGiamGia->da_co_nguoi_nhan) disabled @endif>
                                 </div>
 
                                 <div class="form-group">
-                                    <label>Giới hạn lượt dùng</label>
+                                    <label>Tổng số lượng voucher</label>
                                     <input type="number" name="gioi_han_su_dung" class="form-control"
-                                    value="{{ $phieuGiamGia->gioi_han_su_dung }}" min="1">
+                                    value="{{ $phieuGiamGia->gioi_han_su_dung }}"
+                                    min="{{ $phieuGiamGia->gioi_han_su_dung ?: 1 }}"
+                                    @if ($phieuGiamGia->da_co_nguoi_nhan && $phieuGiamGia->gioi_han_su_dung == null) disabled @endif>
                                 </div>
 
                                 <div class="form-group">
                                     <label>Phạm vi sử dụng</label>
-                                    <select name="loai_ap_dung" class="form-control js-coupon-apply-type">
+                                    <select name="loai_ap_dung" class="form-control js-coupon-apply-type"
+                                        @if ($phieuGiamGia->da_co_nguoi_nhan) disabled @endif>
                                         <option value="tat_ca"
                                             @if ($phieuGiamGia->loai_ap_dung == 'tat_ca') selected @endif>
                                             Tất cả khách hàng
@@ -334,7 +343,8 @@
 
                                 <div class="form-group admin-coupon-customer-box {{ $phieuGiamGia->loai_ap_dung == 'khach_hang' ? '' : 'd-none' }}">
                                     <label>Tài khoản được nhận phiếu</label>
-                                    <select name="ma_nguoi_dungs[]" class="form-control" multiple size="5">
+                                    <select name="ma_nguoi_dungs[]" class="form-control" multiple size="5"
+                                        @if ($phieuGiamGia->da_co_nguoi_nhan) disabled @endif>
                                         @foreach ($khachHangs as $khachHang)
                                             <option value="{{ $khachHang->ma_nguoi_dung }}"
                                                 @if (in_array($khachHang->ma_nguoi_dung, $phieuGiamGia->ma_nguoi_dungs)) selected @endif>
